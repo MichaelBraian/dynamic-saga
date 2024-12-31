@@ -111,12 +111,12 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
               {attr.icon}
               <span className="font-['Cinzel'] text-lg">{attr.label}</span>
               <span className="text-sm opacity-70">({attr.name})</span>
+              <InfoTooltip content={attr.description} />
             </div>
             <div className="flex items-center gap-2">
               {attributeRolls[attr.name] === undefined && (
                 <DiceRoll onRollComplete={(total) => handleRollComplete(attr.name, total)} />
               )}
-              <InfoTooltip content={attr.description} />
               {attributeRolls[attr.name] !== undefined && (
                 <span className="font-bold min-w-[2ch] text-center">{attributeRolls[attr.name]}</span>
               )}
