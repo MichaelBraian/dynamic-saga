@@ -216,6 +216,7 @@ export type Database = {
       }
       characters: {
         Row: {
+          animal_type: string | null
           class: string | null
           created_at: string
           gender: string | null
@@ -227,6 +228,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          animal_type?: string | null
           class?: string | null
           created_at?: string
           gender?: string | null
@@ -238,6 +240,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          animal_type?: string | null
           class?: string | null
           created_at?: string
           gender?: string | null

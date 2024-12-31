@@ -6,8 +6,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { showSuccessToast } from "@/utils/toast";
 
 interface ClassSelectionProps {
   characterId: string;
@@ -39,16 +39,7 @@ export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => 
   const { toast } = useToast();
 
   const handleSelected = () => {
-    toast({
-      className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
-      description: (
-        <div className="flex items-center gap-2">
-          <Check className="h-4 w-4 text-green-500" />
-          <span className="text-sm">Class selected</span>
-        </div>
-      ),
-      duration: 2000,
-    });
+    showSuccessToast(toast, "Class selected");
     navigate("/");
   };
 

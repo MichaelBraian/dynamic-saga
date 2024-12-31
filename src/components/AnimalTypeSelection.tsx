@@ -5,8 +5,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { showSuccessToast } from "@/utils/toast";
 
 interface AnimalTypeSelectionProps {
   characterId: string;
@@ -26,19 +26,7 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
   const { toast } = useToast();
 
   const handleSelected = (value: string) => {
-    // Show success toast
-    toast({
-      className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
-      description: (
-        <div className="flex items-center gap-2">
-          <Check className="h-4 w-4 text-green-500" />
-          <span className="text-sm">Animal type selected</span>
-        </div>
-      ),
-      duration: 2000,
-    });
-
-    // This will trigger the update in the database and move to the class selection
+    showSuccessToast(toast, "Animal type selected");
     onAnimalTypeSelected(value);
   };
 
