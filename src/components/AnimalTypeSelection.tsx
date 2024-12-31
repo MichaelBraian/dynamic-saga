@@ -26,6 +26,7 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
   const { toast } = useToast();
 
   const handleSelected = (value: string) => {
+    // Show success toast
     toast({
       className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
       description: (
@@ -36,6 +37,8 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
       ),
       duration: 2000,
     });
+
+    // This will trigger the update in the database and move to the class selection
     onAnimalTypeSelected(value);
   };
 
