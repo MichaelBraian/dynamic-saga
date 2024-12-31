@@ -21,7 +21,7 @@ const CreateCharacter = () => {
         title: "Name required",
         description: "Please enter a name for your character",
         variant: "destructive",
-        className: "bg-destructive text-destructive-foreground w-fit",
+        className: "bg-destructive text-destructive-foreground inline-flex max-w-fit",
       });
       return;
     }
@@ -35,7 +35,7 @@ const CreateCharacter = () => {
           title: "Error",
           description: "You must be logged in to create a character",
           variant: "destructive",
-          className: "bg-destructive text-destructive-foreground w-fit",
+          className: "bg-destructive text-destructive-foreground inline-flex max-w-fit",
         });
         return;
       }
@@ -55,7 +55,7 @@ const CreateCharacter = () => {
       if (error) throw error;
 
       toast({
-        className: "bg-background/50 backdrop-blur-sm border-green-500 w-fit",
+        className: "bg-background/50 backdrop-blur-sm border-green-500 inline-flex max-w-fit",
         description: (
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
@@ -74,7 +74,7 @@ const CreateCharacter = () => {
         title: "Error",
         description: "There was a problem creating your character. Please try again.",
         variant: "destructive",
-        className: "bg-destructive text-destructive-foreground w-fit",
+        className: "bg-destructive text-destructive-foreground inline-flex max-w-fit",
       });
     } finally {
       setIsSubmitting(false);
