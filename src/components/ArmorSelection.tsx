@@ -17,10 +17,8 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleArmorSelected = async (value: string) => {
-    console.log('Handling armor selection:', value);
     setIsSubmitting(true);
     try {
-      // Update both armor_type and status in a single operation
       const { error: updateError } = await supabase
         .from('characters')
         .update({ 
@@ -30,36 +28,18 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
         .eq('id', characterId);
 
       if (updateError) {
-        console.error('Error updating character:', updateError);
+        console.error('Error updating armor:', updateError);
         throw updateError;
       }
 
-      // Verify the update was successful
-      const { data: character, error: verifyError } = await supabase
-        .from('characters')
-        .select('status, armor_type')
-        .eq('id', characterId)
-        .single();
-
-      if (verifyError) {
-        console.error('Error verifying update:', verifyError);
-        throw verifyError;
-      }
-
-      console.log('Character updated:', character);
       showSuccessToast(toast, "Armor selected");
-
-      // Force a small delay to ensure the database update is complete
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 500);
-
     } catch (error) {
-      console.error('Error in armor selection:', error);
+      console.error('Error saving armor selection:', error);
       toast({
         variant: "destructive",
         description: "Failed to save armor selection. Please try again.",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };

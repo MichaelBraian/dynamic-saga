@@ -1,56 +1,55 @@
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu, LogOut, House, Settings2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/components/ui/use-toast"
+import { useNavigate } from "react-router-dom"
 
 export const HamburgerMenu = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      await supabase.auth.signOut();
       toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
+        title: "Logged out successfully",
+        description: "You have been logged out of your account.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error logging out",
+        description: "There was a problem logging out. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-    navigate("/login");
   };
 
   return (
-    <div className="fixed top-4 right-4 z-[99999]">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="icon"
-            className="bg-black/60 hover:bg-black/70 border-white/20 shadow-xl"
-          >
-            <Menu className="h-6 w-6 text-white" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => navigate("/")}>
-            Home
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/create-character")}>
-            Create Character
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleLogout}>
-            Logout
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-};
+    <DropdownMenu>
+      <DropdownMenuTrigger className="absolute top-4 left-4">
+        <Menu className="h-6 w-6 text-white hover:text-gray-300" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => navigate('/')}>
+          <House className="mr-2 h-4 w-4" />
+          <span>Home</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => console.log("Settings clicked")}>
+          <Settings2 className="mr-2 h-4 w-4" />
+          <span>Settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

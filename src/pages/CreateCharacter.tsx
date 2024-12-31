@@ -1,111 +1,167 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { CharacterStatus } from "@/types/character";
+import { useState, useEffect } from "react";
+import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
-import { CharacterBackground } from "@/components/character-creation/CharacterBackground";
-import { useToast } from "@/hooks/use-toast";
+import { CharacterStatus } from "@/types/character";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreateCharacter = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { characterId } = useParams();
-  const [status, setStatus] = useState<CharacterStatus>("naming");
+  const [characterId, setCharacterId] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
   const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchCharacterData = async (id: string) => {
-    try {
-      const { data: character, error } = await supabase
-        .from('characters')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-
-      if (character) {
-        console.log('Character data:', character);
-        setStatus(character.status);
-        setSelectedRace(character.race);
-        setSelectedAnimalType(character.animal_type);
-        setSelectedClass(character.class);
-      }
-    } catch (error) {
-      console.error('Error fetching character:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load character data",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Add effect to watch for character status changes
   useEffect(() => {
     if (characterId) {
-      console.log('Fetching character data for:', characterId);
-      fetchCharacterData(characterId);
-    } else {
-      setIsLoading(false);
+      const channel = supabase
+        .channel('character_status')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'characters',
+            filter: `id=eq.${characterId}`,
+          },
+          (payload: any) => {
+            console.log('Character status updated:', payload.new.status);
+            if (payload.new && payload.new.status) {
+              setCurrentStep(payload.new.status);
+            }
+          }
+        )
+        .subscribe();
+
+      // Initial fetch of character data
+      const fetchCharacter = async () => {
+        const { data, error } = await supabase
+          .from('characters')
+          .select('*')
+          .eq('id', characterId)
+          .single();
+
+        if (!error && data) {
+          setCurrentStep(data.status);
+          setSelectedRace(data.race);
+          setSelectedAnimalType(data.animal_type);
+          setSelectedClass(data.class);
+        }
+      };
+
+      fetchCharacter();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [characterId]);
 
   const handleNameSelected = (newCharacterId: string) => {
-    console.log('Name selected, navigating to:', newCharacterId);
-    navigate(`/create-character/${newCharacterId}`);
+    setCharacterId(newCharacterId);
+    setCurrentStep("gender");
   };
 
   const handleGenderSelected = () => {
-    console.log('Gender selected');
-    fetchCharacterData(characterId!);
+    setCurrentStep("race");
   };
 
   const handleRaceSelected = async () => {
-    console.log('Race selected');
-    await fetchCharacterData(characterId!);
+    if (characterId) {
+      const { data } = await supabase
+        .from('characters')
+        .select('race, status')
+        .eq('id', characterId)
+        .single();
+      
+      setSelectedRace(data?.race || null);
+      setCurrentStep(data?.status || 'class');
+    }
   };
 
   const handleAnimalTypeSelected = (animalType: string) => {
-    console.log('Animal type selected:', animalType);
     setSelectedAnimalType(animalType);
-    fetchCharacterData(characterId!);
+    setCurrentStep("class");
   };
 
-  const handleClassSelected = (characterClass: string) => {
-    console.log('Class selected:', characterClass);
+  const handleClassSelected = async (characterClass: string) => {
     setSelectedClass(characterClass);
-    fetchCharacterData(characterId!);
+    setCurrentStep("clothing");
   };
 
   const handleClothingSelected = () => {
-    console.log('Clothing selected');
-    fetchCharacterData(characterId!);
+    setCurrentStep("armor");
   };
 
   const handleBack = () => {
-    console.log('Going back');
-    navigate(-1);
+    switch (currentStep) {
+      case "gender":
+        setCurrentStep("naming");
+        setCharacterId(null);
+        break;
+      case "race":
+        setCurrentStep("gender");
+        break;
+      case "animal_type":
+        setCurrentStep("race");
+        setSelectedAnimalType(null);
+        break;
+      case "class":
+        if (selectedRace === 'Animal') {
+          setCurrentStep("animal_type");
+        } else {
+          setCurrentStep("race");
+          setSelectedRace(null);
+        }
+        break;
+      case "clothing":
+        setCurrentStep("class");
+        setSelectedClass(null);
+        break;
+      case "armor":
+        setCurrentStep("clothing");
+        break;
+      case "morality":
+        setCurrentStep("armor");
+        break;
+      default:
+        break;
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
-        <p className="text-white text-lg font-['Cinzel']">Loading character creation...</p>
-      </div>
-    );
-  }
+  const getBackgroundImage = () => {
+    switch (currentStep) {
+      case "naming":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
+      case "gender":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Choose_Gender.webp";
+      case "race":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Race.webp";
+      case "animal_type":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/animal.webp";
+      case "class":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
+      case "clothing":
+      case "armor":
+      case "morality":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
+      default:
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
+    }
+  };
 
   return (
-    <div className="relative min-h-screen">
-      <CharacterBackground currentStep={status} />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <CharacterCreationSteps 
-          currentStep={characterId ? status : "naming"}
-          characterId={characterId || ""}
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-500"
+      style={{
+        backgroundImage: `url('${getBackgroundImage()}')`
+      }}
+    >
+      <HamburgerMenu />
+      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
+        <CharacterCreationSteps
+          currentStep={currentStep}
+          characterId={characterId}
           selectedRace={selectedRace}
           selectedAnimalType={selectedAnimalType}
           selectedClass={selectedClass}

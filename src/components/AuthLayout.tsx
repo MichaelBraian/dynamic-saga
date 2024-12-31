@@ -1,22 +1,21 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { HamburgerMenu } from "./HamburgerMenu";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-interface AuthLayoutProps {
-  children: React.ReactNode;
-}
+export const AuthLayout = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate();
 
-export const AuthLayout = ({ children }: AuthLayoutProps) => {
-  const { session } = useAuth();
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!session) {
+          navigate("/login");
+        }
+      }
+    );
 
-  if (!session) {
-    return <Navigate to="/login" />;
-  }
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
-  return (
-    <div className="relative">
-      <HamburgerMenu />
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 };

@@ -1,16 +1,16 @@
 import { CharacterStatus } from "@/types/character";
 import { NameSelection } from "../NameSelection";
-import { GenderSelection } from "../character-selection/GenderSelection";
-import { RaceSelection } from "../character-selection/RaceSelection";
-import { AnimalTypeSelection } from "../character-selection/AnimalTypeSelection";
-import { ClassSelection } from "../character-selection/ClassSelection";
-import { ClothingSelection } from "../character-selection/ClothingSelection";
-import { ArmorSelection } from "../character-selection/ArmorSelection";
-import { MoralityContainer } from "../morality/MoralityContainer";
+import { GenderSelection } from "../GenderSelection";
+import { RaceSelection } from "../RaceSelection";
+import { AnimalTypeSelection } from "../AnimalTypeSelection";
+import { ClassSelection } from "../ClassSelection";
+import { ClothingSelection } from "../ClothingSelection";
+import { ArmorSelection } from "../ArmorSelection";
+import { MoralityQuestions } from "../MoralityQuestions";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
-  characterId: string;
+  characterId: string | null;
   selectedRace: string | null;
   selectedAnimalType: string | null;
   selectedClass: string | null;
@@ -37,74 +37,84 @@ export const CharacterCreationSteps = ({
   onClothingSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  const renderStep = () => {
-    switch (currentStep) {
-      case "naming":
-        return <NameSelection onNameSelected={onNameSelected} />;
-      case "gender":
-        return (
+  switch (currentStep) {
+    case "naming":
+      return (
+        <div className="animate-fade-in">
+          <NameSelection onNameSelected={onNameSelected} />
+        </div>
+      );
+    case "gender":
+      return (
+        <div className="animate-fade-in">
           <GenderSelection 
-            characterId={characterId} 
+            characterId={characterId!} 
             onGenderSelected={onGenderSelected}
             onBack={onBack}
           />
-        );
-      case "race":
-        return (
+        </div>
+      );
+    case "race":
+      return (
+        <div className="animate-fade-in">
           <RaceSelection 
-            characterId={characterId} 
+            characterId={characterId!} 
             onRaceSelected={onRaceSelected}
             onBack={onBack}
           />
-        );
-      case "animal_type":
-        return (
+        </div>
+      );
+    case "animal_type":
+      return (
+        <div className="animate-fade-in">
           <AnimalTypeSelection 
-            characterId={characterId}
+            characterId={characterId!}
             onBack={onBack}
             onAnimalTypeSelected={onAnimalTypeSelected}
           />
-        );
-      case "class":
-        return (
+        </div>
+      );
+    case "class":
+      return (
+        <div className="animate-fade-in">
           <ClassSelection 
-            characterId={characterId}
+            characterId={characterId!}
             onBack={onBack}
             onClassSelected={onClassSelected}
           />
-        );
-      case "clothing":
-        return (
+        </div>
+      );
+    case "clothing":
+      return (
+        <div className="animate-fade-in">
           <ClothingSelection
-            characterId={characterId}
+            characterId={characterId!}
             characterClass={selectedClass!}
             onBack={onBack}
             onClothingSelected={onClothingSelected}
           />
-        );
-      case "armor":
-        return (
+        </div>
+      );
+    case "armor":
+      return (
+        <div className="animate-fade-in">
           <ArmorSelection
-            characterId={characterId}
+            characterId={characterId!}
             characterClass={selectedClass!}
             onBack={onBack}
           />
-        );
-      case "morality":
-        return (
-          <MoralityContainer
-            characterId={characterId}
+        </div>
+      );
+    case "morality":
+      return (
+        <div className="animate-fade-in">
+          <MoralityQuestions
+            characterId={characterId!}
             onBack={onBack}
           />
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="animate-fade-in">
-      {renderStep()}
-    </div>
-  );
+        </div>
+      );
+    default:
+      return null;
+  }
 };

@@ -2,8 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
-import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -21,33 +19,10 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
     saveResponse,
   } = useMoralityQuestions(characterId);
 
-  useEffect(() => {
-    const verifyCharacterStatus = async () => {
-      const { data: character, error } = await supabase
-        .from('characters')
-        .select('status')
-        .eq('id', characterId)
-        .single();
-
-      if (error) {
-        console.error('Error verifying character status:', error);
-        return;
-      }
-
-      console.log('Current character status:', character?.status);
-    };
-
-    verifyCharacterStatus();
-  }, [characterId]);
-
   const handleAnswerSelected = async (answer: string) => {
-    console.log('Handling answer selection:', answer);
     try {
       const isComplete = await saveResponse(answer);
-      console.log('Save response complete:', isComplete);
-      
       if (isComplete) {
-        console.log('All questions completed, navigating to home');
         navigate("/");
       }
     } catch (error) {

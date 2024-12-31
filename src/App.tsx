@@ -19,7 +19,6 @@ const App = () => (
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/create-character" element={<AuthLayout><CreateCharacter /></AuthLayout>} />
-          <Route path="/create-character/:characterId" element={<AuthLayout><CreateCharacter /></AuthLayout>} />
           <Route path="/" element={<AuthLayout><Index /></AuthLayout>} />
         </Routes>
       </BrowserRouter>
