@@ -12,6 +12,7 @@ const CreateCharacter = () => {
   const [characterId, setCharacterId] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
+  const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
 
   const handleNameSelected = (newCharacterId: string) => {
     setCharacterId(newCharacterId);
@@ -35,6 +36,20 @@ const CreateCharacter = () => {
     }
   };
 
+  const handleAnimalTypeSelected = async (animalType: string) => {
+    if (characterId) {
+      const { error } = await supabase
+        .from('characters')
+        .update({ class: animalType })
+        .eq('id', characterId);
+
+      if (!error) {
+        setSelectedAnimalType(animalType);
+        setCurrentStep("class");
+      }
+    }
+  };
+
   const handleBack = () => {
     switch (currentStep) {
       case "gender":
@@ -45,8 +60,13 @@ const CreateCharacter = () => {
         setCurrentStep("gender");
         break;
       case "class":
-        setCurrentStep("race");
-        setSelectedRace(null);
+        if (selectedRace === 'Animal') {
+          setCurrentStep("race");
+          setSelectedAnimalType(null);
+        } else {
+          setCurrentStep("race");
+          setSelectedRace(null);
+        }
         break;
       default:
         break;
@@ -105,6 +125,7 @@ const CreateCharacter = () => {
               <AnimalTypeSelection 
                 characterId={characterId!}
                 onBack={handleBack}
+                onAnimalTypeSelected={handleAnimalTypeSelected}
               />
             ) : (
               <ClassSelection 

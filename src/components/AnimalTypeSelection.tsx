@@ -1,6 +1,5 @@
 import { Info } from "lucide-react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import { useNavigate } from "react-router-dom";
 import {
   Tooltip,
   TooltipContent,
@@ -12,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AnimalTypeSelectionProps {
   characterId: string;
   onBack: () => void;
+  onAnimalTypeSelected: (animalType: string) => void;
 }
 
 const ANIMAL_TYPES = [
@@ -22,11 +22,10 @@ const ANIMAL_TYPES = [
   { value: 'Bear', label: 'Bear', description: 'A powerful omnivore combining immense strength with surprising intelligence.' },
 ];
 
-export const AnimalTypeSelection = ({ characterId, onBack }: AnimalTypeSelectionProps) => {
-  const navigate = useNavigate();
+export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected }: AnimalTypeSelectionProps) => {
   const { toast } = useToast();
 
-  const handleSelected = () => {
+  const handleSelected = (value: string) => {
     toast({
       className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
       description: (
@@ -37,9 +36,7 @@ export const AnimalTypeSelection = ({ characterId, onBack }: AnimalTypeSelection
       ),
       duration: 2000,
     });
-    // Instead of navigating to home, we'll set the status to "class"
-    // The parent component will handle showing the class selection screen
-    navigate("/create-character");
+    onAnimalTypeSelected(value);
   };
 
   const animalTypesWithInfo = ANIMAL_TYPES.map(option => ({
