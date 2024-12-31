@@ -5,7 +5,6 @@ import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 import { ARMOR_OPTIONS } from "@/data/armorOptions";
 import { InfoTooltip } from "./shared/InfoTooltip";
-import { useNavigate } from "react-router-dom";
 
 interface ArmorSelectionProps {
   characterId: string;
@@ -15,24 +14,32 @@ interface ArmorSelectionProps {
 
 export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSelectionProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleArmorSelected = async (value: string) => {
     console.log('Handling armor selection:', value);
     setIsSubmitting(true);
     try {
-      const { error: updateError } = await supabase
+      // First update the armor type
+      const { error: armorError } = await supabase
         .from('characters')
-        .update({ 
-          armor_type: value,
-          status: 'morality'
-        })
+        .update({ armor_type: value })
         .eq('id', characterId);
 
-      if (updateError) {
-        console.error('Error updating armor:', updateError);
-        throw updateError;
+      if (armorError) {
+        console.error('Error updating armor:', armorError);
+        throw armorError;
+      }
+
+      // Then in a separate update, change the status
+      const { error: statusError } = await supabase
+        .from('characters')
+        .update({ status: 'morality' })
+        .eq('id', characterId);
+
+      if (statusError) {
+        console.error('Error updating status:', statusError);
+        throw statusError;
       }
 
       showSuccessToast(toast, "Armor selected");
