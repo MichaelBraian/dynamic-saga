@@ -8,12 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import { GenderSelection } from "@/components/GenderSelection";
 import { RaceSelection } from "@/components/RaceSelection";
+import { CharacterStatus } from "@/types/character";
 
 const CreateCharacter = () => {
   const [characterName, setCharacterName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [characterId, setCharacterId] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<"name" | "gender" | "race">("name");
+  const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -146,7 +147,7 @@ const CreateCharacter = () => {
     >
       <HamburgerMenu />
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
-        {currentStep === "name" && (
+        {currentStep === "naming" && (
           <form onSubmit={handleSubmit} className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
             <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">Name Your Character</h1>
             <div className="space-y-4">
