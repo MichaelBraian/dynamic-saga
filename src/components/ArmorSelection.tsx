@@ -25,8 +25,7 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
           armor_type: value,
           status: 'morality'
         })
-        .eq('id', characterId)
-        .select();
+        .eq('id', characterId);
 
       if (updateError) {
         console.error('Error updating armor:', updateError);
@@ -67,6 +66,7 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
         onBack={onBack}
         updateField="armor_type"
         nextStatus="morality"
+        showBackButton={true}
       />
     </div>
   );

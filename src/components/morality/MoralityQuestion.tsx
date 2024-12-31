@@ -27,6 +27,7 @@ export const MoralityQuestion = ({
       onBack={onBack}
       updateField="morality_response"
       nextStatus="questioning"
+      showBackButton={true}
     />
   );
 };
