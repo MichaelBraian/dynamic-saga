@@ -48,7 +48,14 @@ export const CharacterSelectionScreen = ({
       if (error) throw error;
 
       toast({
-        description: `Character ${updateField} set to ${value}`,
+        className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
+        description: (
+          <div className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-500" />
+            <span className="text-sm">{`${updateField} updated`}</span>
+          </div>
+        ),
+        duration: 2000,
       });
 
       onSelected();
@@ -57,6 +64,7 @@ export const CharacterSelectionScreen = ({
       toast({
         variant: "destructive",
         description: `Failed to save ${updateField} selection. Please try again.`,
+        className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
       });
     } finally {
       setIsSubmitting(false);

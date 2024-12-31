@@ -6,6 +6,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ClassSelectionProps {
   characterId: string;
@@ -34,6 +36,21 @@ const CLASS_OPTIONS = [
 
 export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSelected = () => {
+    toast({
+      className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
+      description: (
+        <div className="flex items-center gap-2">
+          <Check className="h-4 w-4 text-green-500" />
+          <span className="text-sm">Class selected</span>
+        </div>
+      ),
+      duration: 2000,
+    });
+    navigate("/");
+  };
 
   const classOptionsWithInfo = CLASS_OPTIONS.map(option => ({
     ...option,
@@ -57,7 +74,7 @@ export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => 
       title="Choose Class"
       options={classOptionsWithInfo}
       characterId={characterId}
-      onSelected={() => navigate("/")}
+      onSelected={handleSelected}
       onBack={onBack}
       updateField="class"
       nextStatus="questioning"
