@@ -15,34 +15,34 @@ const CreateCharacter = () => {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchCharacterData = async () => {
+    if (!characterId) return;
+
+    try {
+      const { data: character, error } = await supabase
+        .from('characters')
+        .select('status, race, animal_type, class')
+        .eq('id', characterId)
+        .single();
+
+      if (error) throw error;
+      
+      setStatus(character?.status);
+      setSelectedRace(character?.race);
+      setSelectedAnimalType(character?.animal_type);
+      setSelectedClass(character?.class);
+    } catch (error) {
+      console.error('Error fetching character data:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to load character data. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCharacterData = async () => {
-      if (!characterId) return;
-
-      try {
-        const { data: character, error } = await supabase
-          .from('characters')
-          .select('status, race, animal_type, class')
-          .eq('id', characterId)
-          .single();
-
-        if (error) throw error;
-        
-        setStatus(character?.status);
-        setSelectedRace(character?.race);
-        setSelectedAnimalType(character?.animal_type);
-        setSelectedClass(character?.class);
-      } catch (error) {
-        console.error('Error fetching character data:', error);
-        toast({
-          variant: "destructive",
-          description: "Failed to load character data. Please try again.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchCharacterData();
   }, [characterId, toast]);
 
