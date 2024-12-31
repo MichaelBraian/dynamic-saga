@@ -1,13 +1,7 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { MoralityQuestion as MoralityQuestionComponent } from "./morality/MoralityQuestion";
-import { 
-  MoralityQuestion,
-  fetchMoralityQuestion,
-  saveMoralityResponse,
-  updateCharacterStatus
-} from "@/utils/moralityQuestions";
+import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
+import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -17,43 +11,18 @@ interface MoralityQuestionsProps {
 export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentQuestion, setCurrentQuestion] = useState<MoralityQuestion | null>(null);
-  const [questionNumber, setQuestionNumber] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    loadQuestion();
-  }, []);
-
-  const loadQuestion = async (previousQuestionId?: string) => {
-    try {
-      const question = await fetchMoralityQuestion(previousQuestionId);
-      setCurrentQuestion(question);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading question:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to load question. Please try again.",
-      });
-    }
-  };
+  const {
+    currentQuestion,
+    questionNumber,
+    totalQuestions,
+    isLoading,
+    saveResponse,
+  } = useMoralityQuestions(characterId);
 
   const handleAnswerSelected = async (answer: string) => {
-    if (!currentQuestion) return;
-
     try {
-      await saveMoralityResponse(characterId, currentQuestion.id, answer);
-      
-      // Load next question
-      const nextQuestion = await fetchMoralityQuestion(currentQuestion.id);
-      
-      if (nextQuestion) {
-        setQuestionNumber(prev => prev + 1);
-        setCurrentQuestion(nextQuestion);
-      } else {
-        // No more questions, update status and navigate
-        await updateCharacterStatus(characterId, 'questioning');
+      const isComplete = await saveResponse(answer);
+      if (isComplete) {
         navigate("/");
       }
     } catch (error) {
@@ -65,28 +34,34 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
     }
   };
 
-  const handleBack = () => {
-    if (questionNumber === 1) {
-      onBack();
-    } else {
-      setQuestionNumber(prev => prev - 1);
-      loadQuestion();
-    }
-  };
-
   if (isLoading) {
-    return <div className="text-white">Loading questions...</div>;
+    return (
+      <div className="pt-16">
+        <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+          <p className="text-white text-center">Loading questions...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!currentQuestion) return null;
+  if (!currentQuestion) {
+    return (
+      <div className="pt-16">
+        <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+          <p className="text-white text-center">No questions available.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-16">
-      <MoralityQuestionComponent
+      <MoralityQuestionCard
         question={currentQuestion}
         questionNumber={questionNumber}
+        totalQuestions={totalQuestions}
         onAnswerSelected={handleAnswerSelected}
-        onBack={handleBack}
+        onBack={onBack}
       />
     </div>
   );
