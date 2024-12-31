@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CharacterStatus } from "@/types/character";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
 
-export const CreateCharacter = () => {
+const CreateCharacter = () => {
   const { characterId } = useParams();
   const [status, setStatus] = useState<CharacterStatus>();
   const [isLoading, setIsLoading] = useState(true);
@@ -40,5 +40,20 @@ export const CreateCharacter = () => {
     return <div>Character not found</div>;
   }
 
-  return <CharacterCreationSteps characterId={characterId} initialStatus={status} />;
+  return <CharacterCreationSteps 
+    currentStep={status}
+    characterId={characterId}
+    selectedRace={null}
+    selectedAnimalType={null}
+    selectedClass={null}
+    onNameSelected={() => {}}
+    onGenderSelected={() => {}}
+    onRaceSelected={async () => {}}
+    onAnimalTypeSelected={() => {}}
+    onClassSelected={() => {}}
+    onClothingSelected={() => {}}
+    onBack={() => {}}
+  />;
 };
+
+export default CreateCharacter;

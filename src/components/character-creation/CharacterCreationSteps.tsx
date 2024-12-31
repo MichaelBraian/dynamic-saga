@@ -10,7 +10,7 @@ import { MoralityContainer } from "../morality/MoralityContainer";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
-  characterId: string | null;
+  characterId: string;
   selectedRace: string | null;
   selectedAnimalType: string | null;
   selectedClass: string | null;
@@ -44,7 +44,7 @@ export const CharacterCreationSteps = ({
       case "gender":
         return (
           <GenderSelection 
-            characterId={characterId!} 
+            characterId={characterId} 
             onGenderSelected={onGenderSelected}
             onBack={onBack}
           />
@@ -52,7 +52,7 @@ export const CharacterCreationSteps = ({
       case "race":
         return (
           <RaceSelection 
-            characterId={characterId!} 
+            characterId={characterId} 
             onRaceSelected={onRaceSelected}
             onBack={onBack}
           />
@@ -60,7 +60,7 @@ export const CharacterCreationSteps = ({
       case "animal_type":
         return (
           <AnimalTypeSelection 
-            characterId={characterId!}
+            characterId={characterId}
             onBack={onBack}
             onAnimalTypeSelected={onAnimalTypeSelected}
           />
@@ -68,7 +68,7 @@ export const CharacterCreationSteps = ({
       case "class":
         return (
           <ClassSelection 
-            characterId={characterId!}
+            characterId={characterId}
             onBack={onBack}
             onClassSelected={onClassSelected}
           />
@@ -76,7 +76,7 @@ export const CharacterCreationSteps = ({
       case "clothing":
         return (
           <ClothingSelection
-            characterId={characterId!}
+            characterId={characterId}
             characterClass={selectedClass!}
             onBack={onBack}
             onClothingSelected={onClothingSelected}
@@ -85,7 +85,7 @@ export const CharacterCreationSteps = ({
       case "armor":
         return (
           <ArmorSelection
-            characterId={characterId!}
+            characterId={characterId}
             characterClass={selectedClass!}
             onBack={onBack}
           />
@@ -93,7 +93,7 @@ export const CharacterCreationSteps = ({
       case "morality":
         return (
           <MoralityContainer
-            characterId={characterId!}
+            characterId={characterId}
             onBack={onBack}
           />
         );
