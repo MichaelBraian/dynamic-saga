@@ -19,9 +19,9 @@ export const RaceSelection = ({ characterId }: RaceSelectionProps) => {
       title="Choose Race"
       options={RACE_OPTIONS}
       characterId={characterId}
-      onSelected={() => navigate("/")}
+      onSelected={() => setCurrentStep("class")}
       updateField="race"
-      nextStatus="attributes"
+      nextStatus="class"
     />
   );
 };

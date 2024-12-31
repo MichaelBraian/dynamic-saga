@@ -2,6 +2,7 @@ import { useState } from "react";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { GenderSelection } from "@/components/GenderSelection";
 import { RaceSelection } from "@/components/RaceSelection";
+import { ClassSelection } from "@/components/ClassSelection";
 import { NameSelection } from "@/components/NameSelection";
 import { CharacterStatus } from "@/types/character";
 
@@ -16,6 +17,10 @@ const CreateCharacter = () => {
 
   const handleGenderSelected = () => {
     setCurrentStep("race");
+  };
+
+  const handleRaceSelected = () => {
+    setCurrentStep("class");
   };
 
   return (
@@ -34,7 +39,10 @@ const CreateCharacter = () => {
           <GenderSelection characterId={characterId} onGenderSelected={handleGenderSelected} />
         )}
         {currentStep === "race" && characterId && (
-          <RaceSelection characterId={characterId} />
+          <RaceSelection characterId={characterId} onRaceSelected={handleRaceSelected} />
+        )}
+        {currentStep === "class" && characterId && (
+          <ClassSelection characterId={characterId} />
         )}
       </div>
     </div>

@@ -216,6 +216,7 @@ export type Database = {
       }
       characters: {
         Row: {
+          class: string | null
           created_at: string
           gender: string | null
           id: string
@@ -226,6 +227,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          class?: string | null
           created_at?: string
           gender?: string | null
           id?: string
@@ -236,6 +238,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          class?: string | null
           created_at?: string
           gender?: string | null
           id?: string
@@ -285,6 +288,7 @@ export type Database = {
         | "attributes"
         | "generated"
         | "completed"
+        | "class"
       question_category: "personality" | "background" | "morality"
     }
     CompositeTypes: {
