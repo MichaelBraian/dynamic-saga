@@ -16,7 +16,7 @@ const Index = () => {
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
       <div className="text-center">
-        <h1 className="text-2xl font-medium text-white bg-black/50 px-4 py-2 rounded">Welcome</h1>
+        <h1 className="text-2xl font-medium text-white bg-black/50 px-4 py-2 rounded font-['Cinzel']">Welcome</h1>
       </div>
     </div>
   );
