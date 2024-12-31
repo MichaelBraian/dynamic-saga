@@ -5,7 +5,6 @@ import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 import { ARMOR_OPTIONS } from "@/data/armorOptions";
 import { InfoTooltip } from "./shared/InfoTooltip";
-import { useNavigate } from "react-router-dom";
 
 interface ArmorSelectionProps {
   characterId: string;
@@ -15,7 +14,6 @@ interface ArmorSelectionProps {
 
 export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSelectionProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleArmorSelected = async (value: string) => {
@@ -32,9 +30,6 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
       if (updateError) throw updateError;
 
       showSuccessToast(toast, "Armor selected");
-      
-      // Force navigation to trigger re-render of character creation steps
-      navigate('/create-character', { replace: true });
     } catch (error) {
       console.error('Error saving armor selection:', error);
       toast({
