@@ -49,25 +49,7 @@ export const useMoralityQuestions = (characterId: string) => {
       100
     );
 
-    const { error: mortalityError } = await supabase
-      .from('character_morality')
-      .insert({
-        character_id: characterId,
-        good_evil_scale: goodEvilScore,
-        lawful_chaotic_scale: lawfulChaoticScore,
-        alignment_score: alignmentScore
-      });
-
-    if (mortalityError) {
-      console.error('Error saving morality scores:', mortalityError);
-      toast({
-        variant: "destructive",
-        description: "Failed to save morality scores. Please try again.",
-      });
-      throw mortalityError;
-    }
-
-    return alignmentScore;
+    return { goodEvilScore, lawfulChaoticScore, alignmentScore };
   };
 
   const saveResponse = async (answer: string) => {
@@ -75,7 +57,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
     try {
       // Save the current response
-      const { error: responseError } = await supabase
+      const responseResult = await supabase
         .from('character_responses')
         .insert({
           character_id: characterId,
@@ -83,44 +65,51 @@ export const useMoralityQuestions = (characterId: string) => {
           answer: answer
         });
 
-      if (responseError) {
-        console.error('Error saving response:', responseError);
-        toast({
-          variant: "destructive",
-          description: "Failed to save your response. Please try again.",
-        });
-        throw responseError;
+      if (responseResult.error) {
+        throw responseResult.error;
       }
 
       // If this was the last question
       if (currentQuestionIndex === questions.length - 1) {
-        // Fetch all responses in a single query
-        const { data: responses, error: fetchError } = await supabase
+        // Fetch all responses
+        const responsesResult = await supabase
           .from('character_responses')
           .select('question_id, answer')
           .eq('character_id', characterId);
 
-        if (fetchError) {
-          console.error('Error fetching responses:', fetchError);
-          throw fetchError;
+        if (responsesResult.error) {
+          throw responsesResult.error;
         }
 
-        if (!responses || responses.length === 0) {
+        if (!responsesResult.data || responsesResult.data.length === 0) {
           throw new Error('No responses found');
         }
 
-        // Calculate and save morality scores
-        await calculateMoralityScores(responses);
+        // Calculate scores
+        const scores = await calculateMoralityScores(responsesResult.data);
+
+        // Save morality scores
+        const moralityResult = await supabase
+          .from('character_morality')
+          .insert({
+            character_id: characterId,
+            good_evil_scale: scores.goodEvilScore,
+            lawful_chaotic_scale: scores.lawfulChaoticScore,
+            alignment_score: scores.alignmentScore
+          });
+
+        if (moralityResult.error) {
+          throw moralityResult.error;
+        }
 
         // Update character status
-        const { error: statusError } = await supabase
+        const statusResult = await supabase
           .from('characters')
           .update({ status: 'questioning' as CharacterStatus })
           .eq('id', characterId);
 
-        if (statusError) {
-          console.error('Error updating character status:', statusError);
-          throw statusError;
+        if (statusResult.error) {
+          throw statusResult.error;
         }
 
         return true; // Indicates completion
@@ -130,6 +119,10 @@ export const useMoralityQuestions = (characterId: string) => {
       return false; // Indicates more questions remain
     } catch (error) {
       console.error('Error in saveResponse:', error);
+      toast({
+        variant: "destructive",
+        description: "An error occurred while saving your response. Please try again.",
+      });
       throw error;
     }
   };
