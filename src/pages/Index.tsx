@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Play, UserPlus2, Users2 } from "lucide-react";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface MenuButton {
   icon: React.ReactNode;
@@ -15,6 +16,7 @@ interface MenuButton {
 const Index = () => {
   const [hasCharacter, setHasCharacter] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const imageUrl = supabase.storage
     .from('landing')
@@ -38,7 +40,7 @@ const Index = () => {
     {
       icon: <UserPlus2 className="h-5 w-5" />,
       label: "Create Character",
-      action: () => console.log("Create Character clicked")
+      action: () => navigate('/create-character')
     },
     {
       icon: <Play className="h-5 w-5" />,
