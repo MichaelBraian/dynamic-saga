@@ -41,34 +41,33 @@ export const useMoralityQuestions = (characterId: string) => {
       }
     }
 
-    const alignmentScore = Math.floor(
-      ((goodEvilScore + lawfulChaoticScore) / 2 + 50) * 100
+    const alignmentScore = Math.min(
+      Math.max(
+        Math.floor(((goodEvilScore + lawfulChaoticScore) / 2 + 50) * 100),
+        0
+      ),
+      100
     );
 
-    try {
-      const { error: mortalityError } = await supabase
-        .from('character_morality')
-        .insert({
-          character_id: characterId,
-          good_evil_scale: goodEvilScore,
-          lawful_chaotic_scale: lawfulChaoticScore,
-          alignment_score: Math.min(Math.max(alignmentScore, 0), 100) // Ensure score is between 0 and 100
-        });
+    const { error: mortalityError } = await supabase
+      .from('character_morality')
+      .insert({
+        character_id: characterId,
+        good_evil_scale: goodEvilScore,
+        lawful_chaotic_scale: lawfulChaoticScore,
+        alignment_score: alignmentScore
+      });
 
-      if (mortalityError) {
-        console.error('Error saving morality scores:', mortalityError);
-        toast({
-          variant: "destructive",
-          description: "Failed to save morality scores. Please try again.",
-        });
-        throw mortalityError;
-      }
-
-      return { goodEvilScore, lawfulChaoticScore, alignmentScore };
-    } catch (error) {
-      console.error('Error in calculateMoralityScores:', error);
-      throw error;
+    if (mortalityError) {
+      console.error('Error saving morality scores:', mortalityError);
+      toast({
+        variant: "destructive",
+        description: "Failed to save morality scores. Please try again.",
+      });
+      throw mortalityError;
     }
+
+    return alignmentScore;
   };
 
   const saveResponse = async (answer: string) => {
@@ -95,7 +94,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
       // If this was the last question
       if (currentQuestionIndex === questions.length - 1) {
-        // Fetch all responses for this character
+        // Fetch all responses in a single query
         const { data: responses, error: fetchError } = await supabase
           .from('character_responses')
           .select('question_id, answer')
@@ -106,7 +105,7 @@ export const useMoralityQuestions = (characterId: string) => {
           throw fetchError;
         }
 
-        if (!responses) {
+        if (!responses || responses.length === 0) {
           throw new Error('No responses found');
         }
 
