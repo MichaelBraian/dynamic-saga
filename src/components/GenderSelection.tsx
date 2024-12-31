@@ -38,11 +38,11 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
   };
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-4xl font-bold text-center font-['Cinzel']">Choose Gender</h1>
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-center font-['Cinzel'] text-white">Choose Gender</h1>
       
       <RadioGroup
-        className="grid grid-cols-2 gap-4"
+        className="grid grid-cols-2 gap-4 max-w-[400px] mx-auto"
         onValueChange={handleGenderSubmit}
       >
         <div>
@@ -53,7 +53,7 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
           />
           <Label
             htmlFor="male"
-            className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-xl font-semibold"
+            className="flex items-center justify-center rounded-lg border-2 border-muted bg-white/90 p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-lg font-medium"
           >
             Male
           </Label>
@@ -67,7 +67,7 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
           />
           <Label
             htmlFor="female"
-            className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-xl font-semibold"
+            className="flex items-center justify-center rounded-lg border-2 border-muted bg-white/90 p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-lg font-medium"
           >
             Female
           </Label>
