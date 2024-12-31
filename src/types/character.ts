@@ -1,4 +1,4 @@
-export type CharacterStatus = 'naming' | 'gender' | 'race' | 'questioning' | 'attributes';
+export type CharacterStatus = 'naming' | 'gender' | 'race' | 'questioning' | 'attributes' | 'generated' | 'completed';
 export type Gender = 'male' | 'female';
 export type Race = 'Human' | 'Dwarf' | 'Animal';
 
