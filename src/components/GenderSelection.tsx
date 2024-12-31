@@ -1,4 +1,3 @@
-import { Mars, Venus } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -54,10 +53,9 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
           />
           <Label
             htmlFor="male"
-            className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+            className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-xl font-semibold"
           >
-            <Mars className="h-12 w-12" />
-            <span className="font-semibold">Male</span>
+            Male
           </Label>
         </div>
 
@@ -69,10 +67,9 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
           />
           <Label
             htmlFor="female"
-            className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+            className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-xl font-semibold"
           >
-            <Venus className="h-12 w-12" />
-            <span className="font-semibold">Female</span>
+            Female
           </Label>
         </div>
       </RadioGroup>
