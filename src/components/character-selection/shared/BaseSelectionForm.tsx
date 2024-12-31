@@ -39,6 +39,8 @@ export const BaseSelectionForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (value: string) => {
+    if (isSubmitting) return;
+    
     setIsSubmitting(true);
     try {
       if (customSubmitHandler) {
@@ -47,7 +49,9 @@ export const BaseSelectionForm = ({
         const { error } = await supabase
           .from('characters')
           .update({ [updateField]: value, status: nextStatus })
-          .eq('id', characterId);
+          .eq('id', characterId)
+          .select()
+          .single();
 
         if (error) throw error;
       }
@@ -63,6 +67,7 @@ export const BaseSelectionForm = ({
         duration: 2000,
       });
 
+      // Add a small delay to ensure the database update is complete
       setTimeout(() => {
         setIsSubmitting(false);
         onSelected(value);
