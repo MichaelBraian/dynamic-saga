@@ -23,7 +23,7 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
     try {
       const { error: statusError } = await supabase
         .from('characters')
-        .update({ status: 'questioning', armor_type: value })
+        .update({ status: 'morality', armor_type: value })
         .eq('id', characterId);
 
       if (statusError) throw statusError;
@@ -62,7 +62,7 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
         onSelected={handleArmorSelected}
         onBack={onBack}
         updateField="armor_type"
-        nextStatus="questioning"
+        nextStatus="morality"
       />
     </div>
   );

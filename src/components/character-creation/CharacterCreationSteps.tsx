@@ -6,6 +6,7 @@ import { AnimalTypeSelection } from "../AnimalTypeSelection";
 import { ClassSelection } from "../ClassSelection";
 import { ClothingSelection } from "../ClothingSelection";
 import { ArmorSelection } from "../ArmorSelection";
+import { MoralityQuestions } from "../MoralityQuestions";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -100,6 +101,15 @@ export const CharacterCreationSteps = ({
           <ArmorSelection
             characterId={characterId!}
             characterClass={selectedClass!}
+            onBack={onBack}
+          />
+        </div>
+      );
+    case "morality":
+      return (
+        <div className="animate-fade-in">
+          <MoralityQuestions
+            characterId={characterId!}
             onBack={onBack}
           />
         </div>
