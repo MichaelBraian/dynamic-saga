@@ -22,12 +22,12 @@ export const useMoralityQuestions = (characterId: string) => {
     },
   });
 
-  const calculateMoralityScores = async (responses: { questionId: string, answer: string }[]) => {
+  const calculateMoralityScores = async (responses: { question_id: string, answer: string }[]) => {
     let goodEvilScore = 0;
     let lawfulChaoticScore = 0;
 
     for (const response of responses) {
-      const question = questions?.find(q => q.id === response.questionId);
+      const question = questions?.find(q => q.id === response.question_id);
       if (!question) continue;
 
       // Extract the choice number from the response (e.g., "1. Good choice" -> 1)

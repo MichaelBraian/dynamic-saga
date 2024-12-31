@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
+import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -11,6 +13,7 @@ interface MoralityQuestionsProps {
 export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isComplete, setIsComplete] = useState(false);
   const {
     currentQuestion,
     questionNumber,
@@ -21,9 +24,12 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
 
   const handleAnswerSelected = async (answer: string) => {
     try {
-      const isComplete = await saveResponse(answer);
-      if (isComplete) {
-        navigate("/");
+      const complete = await saveResponse(answer);
+      if (complete) {
+        setIsComplete(true);
+        setTimeout(() => {
+          navigate("/");
+        }, 5000); // Navigate after 5 seconds
       }
     } catch (error) {
       console.error('Error handling answer:', error);
@@ -44,12 +50,20 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
     );
   }
 
-  if (!currentQuestion) {
+  if (!currentQuestion && !isComplete) {
     return (
       <div className="pt-16">
         <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
           <p className="text-white text-center">No questions available.</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isComplete) {
+    return (
+      <div className="pt-16 animate-fade-in">
+        <MoralityScoreDisplay characterId={characterId} />
       </div>
     );
   }
