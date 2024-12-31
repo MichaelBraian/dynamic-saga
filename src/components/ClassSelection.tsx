@@ -70,14 +70,16 @@ export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => 
   }));
 
   return (
-    <CharacterSelectionScreen
-      title="Choose Class"
-      options={classOptionsWithInfo}
-      characterId={characterId}
-      onSelected={handleSelected}
-      onBack={onBack}
-      updateField="class"
-      nextStatus="questioning"
-    />
+    <div className="pt-16"> {/* Added padding-top here */}
+      <CharacterSelectionScreen
+        title="Choose Class"
+        options={classOptionsWithInfo}
+        characterId={characterId}
+        onSelected={handleSelected}
+        onBack={onBack}
+        updateField="class"
+        nextStatus="questioning"
+      />
+    </div>
   );
 };
