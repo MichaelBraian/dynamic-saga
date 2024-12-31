@@ -291,6 +291,7 @@ export type Database = {
         | "class"
         | "gender"
         | "race"
+        | "animal_type"
       question_category: "personality" | "background" | "morality"
     }
     CompositeTypes: {
