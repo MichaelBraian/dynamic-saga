@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { GameController, UserPlus, Users, Settings } from "lucide-react";
+import { Gamepad, UserPlus, Users, Settings } from "lucide-react";
 
 const Index = () => {
   const imageUrl = supabase.storage
@@ -28,7 +28,7 @@ const Index = () => {
           className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
           variant="outline"
         >
-          <GameController className="h-5 w-5" />
+          <Gamepad className="h-5 w-5" />
           Play
         </Button>
         
