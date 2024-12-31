@@ -1,8 +1,8 @@
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import { useNavigate } from "react-router-dom";
 
 interface RaceSelectionProps {
   characterId: string;
+  onRaceSelected: () => void;
 }
 
 const RACE_OPTIONS = [
@@ -11,15 +11,13 @@ const RACE_OPTIONS = [
   { value: 'Animal', label: 'Animal' }
 ];
 
-export const RaceSelection = ({ characterId }: RaceSelectionProps) => {
-  const navigate = useNavigate();
-
+export const RaceSelection = ({ characterId, onRaceSelected }: RaceSelectionProps) => {
   return (
     <CharacterSelectionScreen
       title="Choose Race"
       options={RACE_OPTIONS}
       characterId={characterId}
-      onSelected={() => setCurrentStep("class")}
+      onSelected={onRaceSelected}
       updateField="race"
       nextStatus="class"
     />
