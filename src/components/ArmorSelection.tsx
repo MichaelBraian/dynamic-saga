@@ -1,52 +1,47 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
-import { CLOTHING_OPTIONS } from "@/data/clothingOptions";
+import { ARMOR_OPTIONS } from "@/data/armorOptions";
 import { InfoTooltip } from "./shared/InfoTooltip";
 
-interface ClothingSelectionProps {
+interface ArmorSelectionProps {
   characterId: string;
   characterClass: string;
   onBack: () => void;
-  onClothingSelected: () => void;
 }
 
-export const ClothingSelection = ({ characterId, characterClass, onBack, onClothingSelected }: ClothingSelectionProps) => {
+export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSelectionProps) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleClothingSelected = async (value: string) => {
+  const handleArmorSelected = async (value: string) => {
     setIsSubmitting(true);
     try {
       const { error: statusError } = await supabase
         .from('characters')
-        .update({ status: 'armor' })
+        .update({ status: 'questioning', armor_type: value })
         .eq('id', characterId);
 
       if (statusError) throw statusError;
 
-      const { error: clothingError } = await supabase
-        .from('character_clothing')
-        .insert({ character_id: characterId, clothing_type: value });
-
-      if (clothingError) throw clothingError;
-
-      showSuccessToast(toast, "Clothing selected");
-      onClothingSelected();
+      showSuccessToast(toast, "Armor selected");
+      navigate("/");
     } catch (error) {
-      console.error('Error saving clothing selection:', error);
+      console.error('Error saving armor selection:', error);
       toast({
         variant: "destructive",
-        description: "Failed to save clothing selection. Please try again.",
+        description: "Failed to save armor selection. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const options = CLOTHING_OPTIONS[characterClass] || [];
+  const options = ARMOR_OPTIONS[characterClass] || [];
   const optionsWithInfo = options.map(option => ({
     value: option.value,
     label: option.value,
@@ -61,13 +56,13 @@ export const ClothingSelection = ({ characterId, characterClass, onBack, onCloth
   return (
     <div className="pt-16">
       <CharacterSelectionScreen
-        title="Choose Clothing"
+        title="Choose Armor"
         options={optionsWithInfo}
         characterId={characterId}
-        onSelected={handleClothingSelected}
+        onSelected={handleArmorSelected}
         onBack={onBack}
-        updateField="clothing_type"
-        nextStatus="armor"
+        updateField="armor_type"
+        nextStatus="questioning"
       />
     </div>
   );

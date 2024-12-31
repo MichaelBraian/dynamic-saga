@@ -246,6 +246,7 @@ export type Database = {
       characters: {
         Row: {
           animal_type: string | null
+          armor_type: string | null
           class: string | null
           created_at: string
           gender: string | null
@@ -258,6 +259,7 @@ export type Database = {
         }
         Insert: {
           animal_type?: string | null
+          armor_type?: string | null
           class?: string | null
           created_at?: string
           gender?: string | null
@@ -270,6 +272,7 @@ export type Database = {
         }
         Update: {
           animal_type?: string | null
+          armor_type?: string | null
           class?: string | null
           created_at?: string
           gender?: string | null
@@ -325,6 +328,7 @@ export type Database = {
         | "race"
         | "animal_type"
         | "clothing"
+        | "armor"
       question_category: "personality" | "background" | "morality"
     }
     CompositeTypes: {

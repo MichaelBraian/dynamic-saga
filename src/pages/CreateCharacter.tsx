@@ -43,6 +43,10 @@ const CreateCharacter = () => {
     setCurrentStep("clothing");
   };
 
+  const handleClothingSelected = () => {
+    setCurrentStep("armor");
+  };
+
   const handleBack = () => {
     switch (currentStep) {
       case "gender":
@@ -68,6 +72,9 @@ const CreateCharacter = () => {
         setCurrentStep("class");
         setSelectedClass(null);
         break;
+      case "armor":
+        setCurrentStep("clothing");
+        break;
       default:
         break;
     }
@@ -86,6 +93,7 @@ const CreateCharacter = () => {
       case "class":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
       case "clothing":
+      case "armor":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
       default:
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
@@ -112,6 +120,7 @@ const CreateCharacter = () => {
           onRaceSelected={handleRaceSelected}
           onAnimalTypeSelected={handleAnimalTypeSelected}
           onClassSelected={handleClassSelected}
+          onClothingSelected={handleClothingSelected}
           onBack={handleBack}
         />
       </div>

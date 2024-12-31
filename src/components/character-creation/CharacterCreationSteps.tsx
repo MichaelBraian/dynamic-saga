@@ -5,6 +5,7 @@ import { RaceSelection } from "../RaceSelection";
 import { AnimalTypeSelection } from "../AnimalTypeSelection";
 import { ClassSelection } from "../ClassSelection";
 import { ClothingSelection } from "../ClothingSelection";
+import { ArmorSelection } from "../ArmorSelection";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -17,6 +18,7 @@ interface CharacterCreationStepsProps {
   onRaceSelected: () => Promise<void>;
   onAnimalTypeSelected: (animalType: string) => void;
   onClassSelected: (characterClass: string) => void;
+  onClothingSelected: () => void;
   onBack: () => void;
 }
 
@@ -31,6 +33,7 @@ export const CharacterCreationSteps = ({
   onRaceSelected,
   onAnimalTypeSelected,
   onClassSelected,
+  onClothingSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
   switch (currentStep) {
@@ -84,6 +87,17 @@ export const CharacterCreationSteps = ({
       return (
         <div className="animate-fade-in">
           <ClothingSelection
+            characterId={characterId!}
+            characterClass={selectedClass!}
+            onBack={onBack}
+            onClothingSelected={onClothingSelected}
+          />
+        </div>
+      );
+    case "armor":
+      return (
+        <div className="animate-fade-in">
+          <ArmorSelection
             characterId={characterId!}
             characterClass={selectedClass!}
             onBack={onBack}
