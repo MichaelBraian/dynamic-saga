@@ -60,13 +60,25 @@ const CreateCharacter = () => {
         return;
       }
 
-      // Check for duplicate names
-      const { data: existingCharacter } = await supabase
+      // Check for duplicate names using maybeSingle() instead of single()
+      const { data: existingCharacter, error: checkError } = await supabase
         .from('characters')
         .select('id')
         .eq('user_id', user.id)
         .eq('name', characterName.trim())
-        .single();
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking for duplicate names:', checkError);
+        toast({
+          title: "Error",
+          description: "There was a problem checking the character name. Please try again.",
+          variant: "destructive",
+          className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
       if (existingCharacter) {
         toast({
