@@ -58,7 +58,7 @@ export const CharacterSelectionScreen = ({
         duration: 2000,
       });
 
-      onSelected();
+      onSelected(value);
     } catch (error) {
       console.error(`Error updating ${updateField}:`, error);
       toast({
@@ -85,7 +85,6 @@ export const CharacterSelectionScreen = ({
           </Button>
         )}
         <h1 className="text-3xl font-['Cinzel'] text-center flex-1 text-white">{title}</h1>
-        {/* Empty div to maintain centering when back button is present */}
         {showBackButton && onBack && <div className="w-10" />}
       </div>
       

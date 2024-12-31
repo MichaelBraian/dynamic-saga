@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface AnimalTypeSelectionProps {
   characterId: string;
@@ -24,6 +25,7 @@ const ANIMAL_TYPES = [
 
 export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected }: AnimalTypeSelectionProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSelected = (value: string) => {
     toast({
@@ -37,6 +39,7 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
       duration: 2000,
     });
     onAnimalTypeSelected(value);
+    navigate("/");
   };
 
   const animalTypesWithInfo = ANIMAL_TYPES.map(option => ({
