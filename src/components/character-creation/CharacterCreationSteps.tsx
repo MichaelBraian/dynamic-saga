@@ -1,11 +1,11 @@
 import { CharacterStatus } from "@/types/character";
 import { NameSelection } from "../NameSelection";
-import { GenderSelection } from "../GenderSelection";
-import { RaceSelection } from "../RaceSelection";
-import { AnimalTypeSelection } from "../AnimalTypeSelection";
-import { ClassSelection } from "../ClassSelection";
-import { ClothingSelection } from "../ClothingSelection";
-import { ArmorSelection } from "../ArmorSelection";
+import { GenderSelection } from "../character-selection/GenderSelection";
+import { RaceSelection } from "../character-selection/RaceSelection";
+import { AnimalTypeSelection } from "../character-selection/AnimalTypeSelection";
+import { ClassSelection } from "../character-selection/ClassSelection";
+import { ClothingSelection } from "../character-selection/ClothingSelection";
+import { ArmorSelection } from "../character-selection/ArmorSelection";
 import { MoralityQuestions } from "../MoralityQuestions";
 
 interface CharacterCreationStepsProps {
