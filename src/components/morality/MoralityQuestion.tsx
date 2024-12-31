@@ -1,5 +1,6 @@
 import { CharacterSelectionScreen } from "../CharacterSelectionScreen";
-import { MoralityQuestion as MoralityQuestionType } from "@/utils/moralityQuestions";
+import { MoralityQuestion as MoralityQuestionType } from "@/types/morality";
+import { getMoralityQuestionOptions } from "@/utils/moralityQuestions";
 
 interface MoralityQuestionProps {
   question: MoralityQuestionType;
@@ -15,15 +16,7 @@ export const MoralityQuestion = ({
   onBack,
 }: MoralityQuestionProps) => {
   const scenarioText = question.question_text.split('\n')[0];
-  const options = question.question_text
-    .split('\n')
-    .slice(1)
-    .map(option => option.trim())
-    .filter(option => option.match(/^\d\./))
-    .map(option => ({
-      value: option,
-      label: option
-    }));
+  const options = getMoralityQuestionOptions(question.question_text);
 
   return (
     <CharacterSelectionScreen
