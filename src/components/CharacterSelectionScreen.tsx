@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CharacterStatus } from "@/types/character";
 
 interface SelectionOption {
   value: string;
@@ -15,7 +16,7 @@ interface CharacterSelectionScreenProps {
   characterId: string;
   onSelected: () => void;
   updateField: string;
-  nextStatus: string;
+  nextStatus: CharacterStatus;
 }
 
 export const CharacterSelectionScreen = ({
