@@ -49,17 +49,21 @@ export const useMoralityQuestions = (characterId: string) => {
       ((goodEvilScore + lawfulChaoticScore) / 2 + 50) * 100
     );
 
-    // Save the morality scores
-    const { error } = await supabase
-      .from('character_morality')
-      .insert({
-        character_id: characterId,
-        good_evil_scale: goodEvilScore,
-        lawful_chaotic_scale: lawfulChaoticScore,
-        alignment_score: alignmentScore
-      });
+    try {
+      // Save the morality scores
+      const { error: mortalityError } = await supabase
+        .from('character_morality')
+        .insert({
+          character_id: characterId,
+          good_evil_scale: goodEvilScore,
+          lawful_chaotic_scale: lawfulChaoticScore,
+          alignment_score: alignmentScore
+        });
 
-    if (error) {
+      if (mortalityError) throw mortalityError;
+
+      return { goodEvilScore, lawfulChaoticScore, alignmentScore };
+    } catch (error) {
       console.error('Error saving morality scores:', error);
       toast({
         variant: "destructive",
@@ -67,8 +71,6 @@ export const useMoralityQuestions = (characterId: string) => {
       });
       throw error;
     }
-
-    return { goodEvilScore, lawfulChaoticScore, alignmentScore };
   };
 
   const saveResponse = async (answer: string) => {
