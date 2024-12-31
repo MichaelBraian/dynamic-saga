@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
@@ -12,6 +13,7 @@ interface MoralityScoreDisplayProps {
 
 export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
@@ -46,6 +48,56 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     },
   });
 
+  const handleContinue = async () => {
+    try {
+      console.log('Attempting to update character status to attributes');
+      const { error } = await supabase
+        .from('characters')
+        .update({ status: 'attributes' })
+        .eq('id', characterId);
+
+      if (error) {
+        console.error('Error updating character status:', error);
+        toast({
+          variant: "destructive",
+          description: "Failed to proceed to attributes. Please try again.",
+        });
+        return;
+      }
+
+      console.log('Successfully updated character status to attributes');
+      // Force a page reload to ensure the new status is picked up
+      window.location.reload();
+    } catch (error) {
+      console.error('Error in handleContinue:', error);
+      toast({
+        variant: "destructive",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
+  };
+
+  const getAlignmentDescription = (score: number) => {
+    if (score >= 75) return "Angelic - You embody virtue and righteousness";
+    if (score >= 50) return "Noble - You tend towards good and order";
+    if (score >= 25) return "Moderate - You balance between light and dark";
+    return "Devilish - You embrace darkness and chaos";
+  };
+
+  const getScaleDescription = (value: number, type: 'goodEvil' | 'lawfulChaotic') => {
+    if (type === 'goodEvil') {
+      if (value > 50) return "Strongly Good - You prioritize helping others";
+      if (value > 0) return "Somewhat Good - You tend to do the right thing";
+      if (value > -50) return "Somewhat Evil - You're willing to harm others for gain";
+      return "Strongly Evil - You actively pursue destructive goals";
+    } else {
+      if (value > 50) return "Highly Lawful - You strictly follow rules and tradition";
+      if (value > 0) return "Somewhat Lawful - You respect order but can be flexible";
+      if (value > -50) return "Somewhat Chaotic - You follow your own path";
+      return "Highly Chaotic - You reject all constraints and order";
+    }
+  };
+
   if (error) {
     return (
       <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
@@ -70,27 +122,6 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       </div>
     );
   }
-
-  const getAlignmentDescription = (score: number) => {
-    if (score >= 75) return "Angelic - You embody virtue and righteousness";
-    if (score >= 50) return "Noble - You tend towards good and order";
-    if (score >= 25) return "Moderate - You balance between light and dark";
-    return "Devilish - You embrace darkness and chaos";
-  };
-
-  const getScaleDescription = (value: number, type: 'goodEvil' | 'lawfulChaotic') => {
-    if (type === 'goodEvil') {
-      if (value > 50) return "Strongly Good - You prioritize helping others";
-      if (value > 0) return "Somewhat Good - You tend to do the right thing";
-      if (value > -50) return "Somewhat Evil - You're willing to harm others for gain";
-      return "Strongly Evil - You actively pursue destructive goals";
-    } else {
-      if (value > 50) return "Highly Lawful - You strictly follow rules and tradition";
-      if (value > 0) return "Somewhat Lawful - You respect order but can be flexible";
-      if (value > -50) return "Somewhat Chaotic - You follow your own path";
-      return "Highly Chaotic - You reject all constraints and order";
-    }
-  };
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
@@ -155,7 +186,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
 
       <div className="flex justify-center mt-6">
         <Button
-          onClick={onContinue}
+          onClick={handleContinue}
           className="bg-white/10 text-white hover:bg-white/20"
         >
           Continue to Attributes <ArrowRight className="ml-2" />
