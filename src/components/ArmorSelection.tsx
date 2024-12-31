@@ -19,22 +19,16 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
   const handleArmorSelected = async (value: string) => {
     setIsSubmitting(true);
     try {
-      const { error: statusError } = await supabase
+      // First update the character's armor and status
+      const { error: updateError } = await supabase
         .from('characters')
         .update({ 
-          status: 'morality', 
-          armor_type: value 
+          armor_type: value,
+          status: 'morality'
         })
         .eq('id', characterId);
 
-      if (statusError) throw statusError;
-
-      // Fetch the updated character to trigger a re-render of the parent component
-      const { data: updatedCharacter } = await supabase
-        .from('characters')
-        .select('status')
-        .eq('id', characterId)
-        .single();
+      if (updateError) throw updateError;
 
       showSuccessToast(toast, "Armor selected");
     } catch (error) {
