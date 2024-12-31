@@ -1,0 +1,21 @@
+code_structure:
+  - All code must be clean, well-documented, and easily modifiable
+  - Follow a consistent naming convention
+  - Create small, focused components (50 lines or less when possible)
+  - Use TypeScript interfaces and types for better code clarity
+  - Implement proper error handling and loading states
+  - Add meaningful comments for complex logic
+  - Use proper code formatting and indentation
+
+fonts:
+  - Cinzel (Google Fonts):
+    - A decorative serif font inspired by classical Roman inscriptions
+    - Ideal for headings, titles, and creating an elegant, timeless design
+    - Supports multiple font weights (400, 500, 600, 700)
+    - Imported via Google Fonts link in index.html
+    - Applied using Tailwind's font-family utility class: `font-['Cinzel']`
+    - Best used for creating a sophisticated, historical, or mythical aesthetic
+    - Recommended for large text elements like headers and titles
+    - Ensure good readability by using appropriate font sizes and weights
+
+# ... keep existing code (rest of the custom instructions)
