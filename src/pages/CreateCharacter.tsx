@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,24 @@ const CreateCharacter = () => {
   const [characterId, setCharacterId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      const { data: characters, error } = await supabase
+        .from('characters')
+        .select('name, created_at, status, gender')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching characters:', error);
+        return;
+      }
+
+      console.log('Your characters:', characters);
+    };
+
+    fetchCharacters();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
