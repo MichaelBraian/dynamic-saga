@@ -26,7 +26,7 @@ export const useCharacterCreation = () => {
           (payload: any) => {
             console.log('Character status updated:', payload.new.status);
             if (payload.new && payload.new.status) {
-              setCurrentStep(payload.new.status);
+              setCurrentStep(payload.new.status as CharacterStatus);
             }
           }
         )
@@ -126,6 +126,9 @@ export const useCharacterCreation = () => {
         break;
       case "morality":
         setCurrentStep("armor");
+        break;
+      case "attributes":
+        setCurrentStep("morality");
         break;
       default:
         break;
