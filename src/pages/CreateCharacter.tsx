@@ -2,6 +2,9 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
 import { CharacterCreationBackground } from "@/components/character-creation/CharacterCreationBackground";
 import { useCharacterCreation } from "@/hooks/useCharacterCreation";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { CharacterStatus } from "@/types/character";
 
 const CreateCharacter = () => {
   const {
@@ -19,6 +22,41 @@ const CreateCharacter = () => {
     handleArmorSelected,
     handleBack,
   } = useCharacterCreation();
+
+  // Add real-time subscription for character status updates
+  useEffect(() => {
+    if (!characterId) return;
+
+    console.log('Setting up character status subscription for:', characterId);
+    
+    const channel = supabase
+      .channel(`character_status_${characterId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'characters',
+          filter: `id=eq.${characterId}`,
+        },
+        (payload: any) => {
+          console.log('Character status changed:', payload.new.status);
+          const newStatus = payload.new.status as CharacterStatus;
+          
+          // Verify the status transition
+          if (newStatus === 'attributes' && currentStep === 'morality') {
+            console.log('Transitioning from morality to attributes step');
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('Cleaning up character status subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [characterId, currentStep]);
 
   return (
     <CharacterCreationBackground currentStep={currentStep}>
