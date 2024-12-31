@@ -1,4 +1,4 @@
-import { Male, Female } from "lucide-react";
+import { Mars, Venus } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
             htmlFor="male"
             className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
           >
-            <Male className="h-12 w-12" />
+            <Mars className="h-12 w-12" />
             <span className="font-semibold">Male</span>
           </Label>
         </div>
@@ -71,7 +71,7 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
             htmlFor="female"
             className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
           >
-            <Female className="h-12 w-12" />
+            <Venus className="h-12 w-12" />
             <span className="font-semibold">Female</span>
           </Label>
         </div>
