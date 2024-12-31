@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Swords, ScrollText, Shield, Compass } from "lucide-react";
+import { Play, UserPlus, Users, Settings } from "lucide-react";
 
 const Index = () => {
   const imageUrl = supabase.storage
@@ -28,7 +28,7 @@ const Index = () => {
           className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
           variant="outline"
         >
-          <Swords className="h-5 w-5" />
+          <Play className="h-5 w-5" />
           Play
         </Button>
         
@@ -36,7 +36,7 @@ const Index = () => {
           className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
           variant="outline"
         >
-          <ScrollText className="h-5 w-5" />
+          <UserPlus className="h-5 w-5" />
           Create Character
         </Button>
         
@@ -44,7 +44,7 @@ const Index = () => {
           className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
           variant="outline"
         >
-          <Shield className="h-5 w-5" />
+          <Users className="h-5 w-5" />
           Character List
         </Button>
         
@@ -52,7 +52,7 @@ const Index = () => {
           className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
           variant="outline"
         >
-          <Compass className="h-5 w-5" />
+          <Settings className="h-5 w-5" />
           Settings
         </Button>
       </div>
