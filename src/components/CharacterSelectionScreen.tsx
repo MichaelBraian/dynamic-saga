@@ -40,12 +40,29 @@ export const CharacterSelectionScreen = ({
     setIsSubmitting(true);
     try {
       if (updateField === 'clothing_type') {
-        // Insert into character_clothing table
-        const { error: clothingError } = await supabase
+        // First check if clothing record exists
+        const { data: existingClothing } = await supabase
           .from('character_clothing')
-          .insert({ character_id: characterId, clothing_type: value });
+          .select()
+          .eq('character_id', characterId)
+          .single();
 
-        if (clothingError) throw clothingError;
+        if (existingClothing) {
+          // Update existing record
+          const { error: clothingError } = await supabase
+            .from('character_clothing')
+            .update({ clothing_type: value })
+            .eq('character_id', characterId);
+
+          if (clothingError) throw clothingError;
+        } else {
+          // Insert new record
+          const { error: clothingError } = await supabase
+            .from('character_clothing')
+            .insert({ character_id: characterId, clothing_type: value });
+
+          if (clothingError) throw clothingError;
+        }
 
         // Update character status
         const { error: statusError } = await supabase
