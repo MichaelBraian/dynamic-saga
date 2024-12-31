@@ -1,26 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
+import { CharacterStatus } from "@/types/character";
+import { MoralityQuestion } from "@/types/morality";
 
-export interface MoralityQuestion {
-  id: string;
-  question_text: string;
-  morality_weight: number;
-  category: string;
-}
-
-export const fetchMoralityQuestion = async (questionId?: string) => {
-  const query = supabase
+export const fetchMoralityQuestions = async () => {
+  const { data, error } = await supabase
     .from('questions')
     .select('*')
     .eq('category', 'morality');
 
-  if (questionId) {
-    query.neq('id', questionId); // Exclude current question
-  }
-
-  const { data, error } = await query.limit(1).single();
-
   if (error) throw error;
-  return data;
+  return data as MoralityQuestion[];
 };
 
 export const saveMoralityResponse = async (characterId: string, questionId: string, answer: string) => {
@@ -35,17 +24,16 @@ export const saveMoralityResponse = async (characterId: string, questionId: stri
   if (error) throw error;
 };
 
-export const updateCharacterStatus = async (characterId: string, status: string) => {
+export const updateCharacterStatus = async (characterId: string, status: CharacterStatus) => {
   const { error } = await supabase
     .from('characters')
     .update({ status })
-    .eq('id', characterId)
-    .select();
+    .eq('id', characterId);
 
   if (error) throw error;
 };
 
-export const formatQuestionOptions = (questionText: string) => {
+export const getMoralityQuestionOptions = (questionText: string) => {
   const options = questionText
     .split('\n')
     .slice(1)

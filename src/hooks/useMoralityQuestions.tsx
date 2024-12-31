@@ -21,7 +21,7 @@ export const useMoralityQuestions = (characterId: string) => {
   });
 
   const saveResponse = async (answer: string) => {
-    if (!questions?.[currentQuestionIndex]) return;
+    if (!questions?.[currentQuestionIndex]) return false;
 
     const { error: responseError } = await supabase
       .from('character_responses')
@@ -48,13 +48,10 @@ export const useMoralityQuestions = (characterId: string) => {
     return false; // Indicates more questions remain
   };
 
-  const currentQuestion = questions?.[currentQuestionIndex];
-  const totalQuestions = questions?.length || 0;
-
   return {
-    currentQuestion,
+    currentQuestion: questions?.[currentQuestionIndex],
     questionNumber: currentQuestionIndex + 1,
-    totalQuestions,
+    totalQuestions: questions?.length || 0,
     isLoading,
     saveResponse,
   };
