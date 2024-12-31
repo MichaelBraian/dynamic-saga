@@ -3,11 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MoralityQuestion } from "@/types/morality";
 import { CharacterStatus } from "@/types/character";
-import { useToast } from "@/hooks/use-toast";
 
 export const useMoralityQuestions = (characterId: string) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const { toast } = useToast();
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ['morality-questions'],
@@ -25,6 +23,7 @@ export const useMoralityQuestions = (characterId: string) => {
   const calculateMoralityScores = async (responses: { question_id: string, answer: string }[]) => {
     let goodEvilScore = 0;
     let lawfulChaoticScore = 0;
+    const maxPossibleScore = questions?.reduce((acc, q) => acc + q.morality_weight, 0) || 0;
 
     for (const response of responses) {
       const question = questions?.find(q => q.id === response.question_id);
@@ -32,6 +31,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       
+      // Normalize the contribution based on choice
       if (choiceNumber <= 2) {
         goodEvilScore += question.morality_weight;
         lawfulChaoticScore += question.morality_weight;
@@ -41,15 +41,28 @@ export const useMoralityQuestions = (characterId: string) => {
       }
     }
 
+    // Normalize scores to be between -100 and 100
+    const normalizeScore = (score: number) => {
+      return Math.round((score / maxPossibleScore) * 100);
+    };
+
+    const normalizedGoodEvil = normalizeScore(goodEvilScore);
+    const normalizedLawfulChaotic = normalizeScore(lawfulChaoticScore);
+
+    // Calculate alignment score (0-100)
     const alignmentScore = Math.min(
       Math.max(
-        Math.floor(((goodEvilScore + lawfulChaoticScore) / 2 + 50) * 100),
+        Math.round(((normalizedGoodEvil + normalizedLawfulChaotic) / 2 + 100) / 2),
         0
       ),
       100
     );
 
-    return { goodEvilScore, lawfulChaoticScore, alignmentScore };
+    return {
+      goodEvilScore: normalizedGoodEvil,
+      lawfulChaoticScore: normalizedLawfulChaotic,
+      alignmentScore,
+    };
   };
 
   const saveResponse = async (answer: string) => {
