@@ -20,43 +20,34 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
     console.log('Handling armor selection:', value);
     setIsSubmitting(true);
     try {
-      // First update the armor type
-      const { error: armorError } = await supabase
+      // Update both armor_type and status in a single operation
+      const { error: updateError } = await supabase
         .from('characters')
-        .update({ armor_type: value })
+        .update({ 
+          armor_type: value,
+          status: 'morality'
+        })
         .eq('id', characterId);
 
-      if (armorError) {
-        console.error('Error updating armor:', armorError);
-        throw armorError;
+      if (updateError) {
+        console.error('Error updating character:', updateError);
+        throw updateError;
       }
 
-      // Then in a separate update, change the status
-      const { error: statusError } = await supabase
-        .from('characters')
-        .update({ status: 'morality' })
-        .eq('id', characterId);
-
-      if (statusError) {
-        console.error('Error updating status:', statusError);
-        throw statusError;
-      }
-
-      showSuccessToast(toast, "Armor selected");
-      
       // Verify the update was successful
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('status')
+        .select('status, armor_type')
         .eq('id', characterId)
         .single();
 
       if (verifyError) {
-        console.error('Error verifying character update:', verifyError);
+        console.error('Error verifying update:', verifyError);
         throw verifyError;
       }
 
-      console.log('Character status after update:', character?.status);
+      console.log('Character updated:', character);
+      showSuccessToast(toast, "Armor selected");
 
       // Force a small delay to ensure the database update is complete
       setTimeout(() => {
@@ -64,7 +55,7 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
       }, 500);
 
     } catch (error) {
-      console.error('Error saving armor selection:', error);
+      console.error('Error in armor selection:', error);
       toast({
         variant: "destructive",
         description: "Failed to save armor selection. Please try again.",
