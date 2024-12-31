@@ -27,17 +27,12 @@ const CreateCharacter = () => {
     if (characterId) {
       const { data } = await supabase
         .from('characters')
-        .select('race')
+        .select('race, status')
         .eq('id', characterId)
         .single();
       
       setSelectedRace(data?.race || null);
-      
-      if (data?.race === 'Animal') {
-        setCurrentStep("animal_type");
-      } else {
-        setCurrentStep("class");
-      }
+      setCurrentStep(data?.status || 'class');
     }
   };
 
