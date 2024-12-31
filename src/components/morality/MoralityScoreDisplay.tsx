@@ -66,8 +66,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       }
 
       console.log('Successfully updated character status to attributes');
-      // Force a page reload to ensure the new status is picked up
-      window.location.reload();
+      // Instead of reloading, call onContinue to trigger the parent component's state update
+      onContinue();
     } catch (error) {
       console.error('Error in handleContinue:', error);
       toast({
