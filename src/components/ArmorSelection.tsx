@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 import { ARMOR_OPTIONS } from "@/data/armorOptions";
 import { InfoTooltip } from "./shared/InfoTooltip";
+import { useNavigate } from "react-router-dom";
 
 interface ArmorSelectionProps {
   characterId: string;
@@ -14,9 +15,11 @@ interface ArmorSelectionProps {
 
 export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSelectionProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleArmorSelected = async (value: string) => {
+    console.log('Handling armor selection:', value);
     setIsSubmitting(true);
     try {
       const { error: updateError } = await supabase
@@ -33,13 +36,32 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
       }
 
       showSuccessToast(toast, "Armor selected");
+      
+      // Verify the update was successful
+      const { data: character, error: verifyError } = await supabase
+        .from('characters')
+        .select('status')
+        .eq('id', characterId)
+        .single();
+
+      if (verifyError) {
+        console.error('Error verifying character update:', verifyError);
+        throw verifyError;
+      }
+
+      console.log('Character status after update:', character?.status);
+
+      // Force a small delay to ensure the database update is complete
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 500);
+
     } catch (error) {
       console.error('Error saving armor selection:', error);
       toast({
         variant: "destructive",
         description: "Failed to save armor selection. Please try again.",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
