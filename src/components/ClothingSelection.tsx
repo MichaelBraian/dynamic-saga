@@ -20,7 +20,6 @@ export const ClothingSelection = ({ characterId, characterClass, onBack }: Cloth
   const handleClothingSelected = async (value: string) => {
     setIsSubmitting(true);
     try {
-      // Update character status
       const { error: statusError } = await supabase
         .from('characters')
         .update({ status: 'questioning' })
@@ -28,7 +27,6 @@ export const ClothingSelection = ({ characterId, characterClass, onBack }: Cloth
 
       if (statusError) throw statusError;
 
-      // Save clothing selection
       const { error: clothingError } = await supabase
         .from('character_clothing')
         .insert({ character_id: characterId, clothing_type: value });

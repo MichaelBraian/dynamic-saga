@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
-import { GenderSelection } from "@/components/GenderSelection";
-import { RaceSelection } from "@/components/RaceSelection";
-import { ClassSelection } from "@/components/ClassSelection";
-import { AnimalTypeSelection } from "@/components/AnimalTypeSelection";
-import { ClothingSelection } from "@/components/ClothingSelection";
-import { NameSelection } from "@/components/NameSelection";
+import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
 import { CharacterStatus } from "@/types/character";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -97,69 +92,6 @@ const CreateCharacter = () => {
     }
   };
 
-  const renderCurrentStep = () => {
-    switch (currentStep) {
-      case "naming":
-        return (
-          <div className="animate-fade-in">
-            <NameSelection onNameSelected={handleNameSelected} />
-          </div>
-        );
-      case "gender":
-        return (
-          <div className="animate-fade-in">
-            <GenderSelection 
-              characterId={characterId!} 
-              onGenderSelected={handleGenderSelected}
-              onBack={handleBack}
-            />
-          </div>
-        );
-      case "race":
-        return (
-          <div className="animate-fade-in">
-            <RaceSelection 
-              characterId={characterId!} 
-              onRaceSelected={handleRaceSelected}
-              onBack={handleBack}
-            />
-          </div>
-        );
-      case "animal_type":
-        return (
-          <div className="animate-fade-in">
-            <AnimalTypeSelection 
-              characterId={characterId!}
-              onBack={handleBack}
-              onAnimalTypeSelected={handleAnimalTypeSelected}
-            />
-          </div>
-        );
-      case "class":
-        return (
-          <div className="animate-fade-in">
-            <ClassSelection 
-              characterId={characterId!}
-              onBack={handleBack}
-              onClassSelected={handleClassSelected}
-            />
-          </div>
-        );
-      case "clothing":
-        return (
-          <div className="animate-fade-in">
-            <ClothingSelection
-              characterId={characterId!}
-              characterClass={selectedClass!}
-              onBack={handleBack}
-            />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <div 
       className="min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-500"
@@ -169,7 +101,19 @@ const CreateCharacter = () => {
     >
       <HamburgerMenu />
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
-        {renderCurrentStep()}
+        <CharacterCreationSteps
+          currentStep={currentStep}
+          characterId={characterId}
+          selectedRace={selectedRace}
+          selectedAnimalType={selectedAnimalType}
+          selectedClass={selectedClass}
+          onNameSelected={handleNameSelected}
+          onGenderSelected={handleGenderSelected}
+          onRaceSelected={handleRaceSelected}
+          onAnimalTypeSelected={handleAnimalTypeSelected}
+          onClassSelected={handleClassSelected}
+          onBack={handleBack}
+        />
       </div>
     </div>
   );
