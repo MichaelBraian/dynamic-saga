@@ -14,8 +14,8 @@ const CreateCharacter = () => {
       }}
     >
       <HamburgerMenu />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6 mt-20">
+      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
+        <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
           <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">Name Your Character</h1>
           
           <div className="space-y-4">
