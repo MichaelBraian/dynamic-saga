@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
+import { MoralityQuestion as MoralityQuestionComponent } from "./morality/MoralityQuestion";
+import { 
+  MoralityQuestion,
+  fetchMoralityQuestion,
+  saveMoralityResponse,
+  updateCharacterStatus
+} from "@/utils/moralityQuestions";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -12,64 +17,47 @@ interface MoralityQuestionsProps {
 export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState<MoralityQuestion | null>(null);
+  const [questionNumber, setQuestionNumber] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [questions, setQuestions] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      const { data, error } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('category', 'morality');
+    loadQuestion();
+  }, []);
 
-      if (error) {
-        console.error('Error fetching questions:', error);
-        toast({
-          variant: "destructive",
-          description: "Failed to load questions. Please try again.",
-        });
-        return;
-      }
-
-      setQuestions(data);
-      setIsLoading(false);
-    };
-
-    fetchQuestions();
-  }, [toast]);
-
-  const handleOptionSelected = async (answer: string) => {
+  const loadQuestion = async (previousQuestionId?: string) => {
     try {
-      const currentQuestionData = questions[currentQuestion];
+      const question = await fetchMoralityQuestion(previousQuestionId);
+      setCurrentQuestion(question);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading question:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to load question. Please try again.",
+      });
+    }
+  };
+
+  const handleAnswerSelected = async (answer: string) => {
+    if (!currentQuestion) return;
+
+    try {
+      await saveMoralityResponse(characterId, currentQuestion.id, answer);
       
-      // Save the response
-      const { error: responseError } = await supabase
-        .from('character_responses')
-        .insert({
-          character_id: characterId,
-          question_id: currentQuestionData.id,
-          answer: answer
-        });
-
-      if (responseError) throw responseError;
-
-      // If there are more questions, move to the next one
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      // Load next question
+      const nextQuestion = await fetchMoralityQuestion(currentQuestion.id);
+      
+      if (nextQuestion) {
+        setQuestionNumber(prev => prev + 1);
+        setCurrentQuestion(nextQuestion);
       } else {
-        // Update character status to questioning when all questions are answered
-        const { error: statusError } = await supabase
-          .from('characters')
-          .update({ status: 'questioning' })
-          .eq('id', characterId);
-
-        if (statusError) throw statusError;
-
+        // No more questions, update status and navigate
+        await updateCharacterStatus(characterId, 'questioning');
         navigate("/");
       }
     } catch (error) {
-      console.error('Error saving response:', error);
+      console.error('Error handling answer:', error);
       toast({
         variant: "destructive",
         description: "Failed to save your response. Please try again.",
@@ -77,35 +65,28 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
     }
   };
 
+  const handleBack = () => {
+    if (questionNumber === 1) {
+      onBack();
+    } else {
+      setQuestionNumber(prev => prev - 1);
+      loadQuestion();
+    }
+  };
+
   if (isLoading) {
     return <div className="text-white">Loading questions...</div>;
   }
 
-  const currentQuestionData = questions[currentQuestion];
-  if (!currentQuestionData) return null;
-
-  // Get the scenario text (first line) and options
-  const scenarioText = currentQuestionData.question_text.split('\n')[0];
-  const options = currentQuestionData.question_text
-    .split('\n')
-    .slice(1)
-    .map(option => option.trim())
-    .filter(option => option.match(/^\d\./))
-    .map(option => ({
-      value: option,
-      label: option
-    }));
+  if (!currentQuestion) return null;
 
   return (
     <div className="pt-16">
-      <CharacterSelectionScreen
-        title={`Scenario ${currentQuestion + 1}: ${scenarioText}`}
-        options={options}
-        characterId={characterId}
-        onSelected={handleOptionSelected}
-        onBack={currentQuestion === 0 ? onBack : () => setCurrentQuestion(prev => prev - 1)}
-        updateField="morality_response"
-        nextStatus="questioning"
+      <MoralityQuestionComponent
+        question={currentQuestion}
+        questionNumber={questionNumber}
+        onAnswerSelected={handleAnswerSelected}
+        onBack={handleBack}
       />
     </div>
   );
