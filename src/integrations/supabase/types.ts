@@ -73,6 +73,35 @@ export type Database = {
           },
         ]
       }
+      character_clothing: {
+        Row: {
+          character_id: string | null
+          clothing_type: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          character_id?: string | null
+          clothing_type: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          character_id?: string | null
+          clothing_type?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_clothing_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       character_images: {
         Row: {
           character_id: string | null
@@ -295,6 +324,7 @@ export type Database = {
         | "gender"
         | "race"
         | "animal_type"
+        | "clothing"
       question_category: "personality" | "background" | "morality"
     }
     CompositeTypes: {

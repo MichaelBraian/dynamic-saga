@@ -4,6 +4,7 @@ import { GenderSelection } from "@/components/GenderSelection";
 import { RaceSelection } from "@/components/RaceSelection";
 import { ClassSelection } from "@/components/ClassSelection";
 import { AnimalTypeSelection } from "@/components/AnimalTypeSelection";
+import { ClothingSelection } from "@/components/ClothingSelection";
 import { NameSelection } from "@/components/NameSelection";
 import { CharacterStatus } from "@/types/character";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +14,7 @@ const CreateCharacter = () => {
   const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
   const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
   const handleNameSelected = (newCharacterId: string) => {
     setCharacterId(newCharacterId);
@@ -41,6 +43,11 @@ const CreateCharacter = () => {
     setCurrentStep("class");
   };
 
+  const handleClassSelected = async (characterClass: string) => {
+    setSelectedClass(characterClass);
+    setCurrentStep("clothing");
+  };
+
   const handleBack = () => {
     switch (currentStep) {
       case "gender":
@@ -62,6 +69,10 @@ const CreateCharacter = () => {
           setSelectedRace(null);
         }
         break;
+      case "clothing":
+        setCurrentStep("class");
+        setSelectedClass(null);
+        break;
       default:
         break;
     }
@@ -78,6 +89,8 @@ const CreateCharacter = () => {
       case "animal_type":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/animal.webp";
       case "class":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
+      case "clothing":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
       default:
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
@@ -127,6 +140,17 @@ const CreateCharacter = () => {
           <div className="animate-fade-in">
             <ClassSelection 
               characterId={characterId!}
+              onBack={handleBack}
+              onClassSelected={handleClassSelected}
+            />
+          </div>
+        );
+      case "clothing":
+        return (
+          <div className="animate-fade-in">
+            <ClothingSelection
+              characterId={characterId!}
+              characterClass={selectedClass!}
               onBack={handleBack}
             />
           </div>

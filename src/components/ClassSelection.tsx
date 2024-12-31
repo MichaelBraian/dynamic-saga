@@ -1,6 +1,5 @@
 import { Info } from "lucide-react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import { useNavigate } from "react-router-dom";
 import {
   Tooltip,
   TooltipContent,
@@ -12,6 +11,7 @@ import { showSuccessToast } from "@/utils/toast";
 interface ClassSelectionProps {
   characterId: string;
   onBack: () => void;
+  onClassSelected: (characterClass: string) => void;
 }
 
 const CLASS_OPTIONS = [
@@ -34,13 +34,12 @@ const CLASS_OPTIONS = [
   { value: 'Politician', label: 'Politician', description: 'A master of persuasion and influence, adept at navigating complex social dynamics. They manipulate events, forge alliances, and use their charisma to control outcomes both on and off the battlefield.' },
 ];
 
-export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => {
-  const navigate = useNavigate();
+export const ClassSelection = ({ characterId, onBack, onClassSelected }: ClassSelectionProps) => {
   const { toast } = useToast();
 
-  const handleSelected = () => {
+  const handleSelected = (value: string) => {
     showSuccessToast(toast, "Class selected");
-    navigate("/");
+    onClassSelected(value);
   };
 
   const classOptionsWithInfo = CLASS_OPTIONS.map(option => ({
@@ -71,7 +70,7 @@ export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => 
         onSelected={handleSelected}
         onBack={onBack}
         updateField="class"
-        nextStatus="questioning"
+        nextStatus="clothing"
       />
     </div>
   );
