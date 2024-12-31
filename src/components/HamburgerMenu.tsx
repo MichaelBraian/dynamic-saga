@@ -1,4 +1,4 @@
-import { Menu, LogOut } from "lucide-react"
+import { Menu, LogOut, House, Settings2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,12 +6,13 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { Settings2 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/components/ui/use-toast"
+import { useNavigate } from "react-router-dom"
 
 export const HamburgerMenu = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -35,6 +36,10 @@ export const HamburgerMenu = () => {
         <Menu className="h-6 w-6 text-white hover:text-gray-300" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => navigate('/')}>
+          <House className="mr-2 h-4 w-4" />
+          <span>Home</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => console.log("Settings clicked")}>
           <Settings2 className="mr-2 h-4 w-4" />
           <span>Settings</span>
