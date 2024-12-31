@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
 import { DiceRoll } from "@/components/shared/DiceRoll";
-import { Sword, Move, Heart, Brain, Eye, User, ArrowLeft } from "lucide-react";
+import { Sword, Move, Heart, Brain, Eye, User, ArrowLeft, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -91,6 +91,64 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     }));
   };
 
+  const handleContinue = async () => {
+    try {
+      // Save attributes to database
+      const attributePromises = Object.entries(attributeRolls).map(([name, value]) => {
+        return supabase
+          .from('character_attributes')
+          .insert({
+            character_id: characterId,
+            attribute_name: name,
+            value: value
+          });
+      });
+
+      const results = await Promise.all(attributePromises);
+      const errors = results.filter(result => result.error);
+
+      if (errors.length > 0) {
+        console.error('Errors saving attributes:', errors);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save attributes. Please try again.",
+        });
+        return;
+      }
+
+      // Update character status
+      const { error: statusError } = await supabase
+        .from('characters')
+        .update({ status: 'completed' })
+        .eq('id', characterId);
+
+      if (statusError) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update character status. Please try again.",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Character attributes saved successfully!",
+      });
+
+    } catch (error) {
+      console.error('Error in handleContinue:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
+  };
+
+  const allAttributesRolled = attributes.every(attr => attributeRolls[attr.name] !== undefined);
+
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
       <div className="flex items-center mb-6">
@@ -124,6 +182,17 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
           </div>
         ))}
       </div>
+
+      {allAttributesRolled && (
+        <div className="flex justify-center mt-6">
+          <Button
+            onClick={handleContinue}
+            className="bg-white/10 text-white hover:bg-white/20"
+          >
+            Continue <ArrowRight className="ml-2" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
