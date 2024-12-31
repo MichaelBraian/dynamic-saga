@@ -12,6 +12,7 @@ export const useMoralityQuestions = (characterId: string) => {
   const { data: questions, isLoading } = useQuery({
     queryKey: ['morality-questions'],
     queryFn: async () => {
+      console.log('Fetching morality questions');
       const { data, error } = await supabase
         .from('questions')
         .select('*')
@@ -66,10 +67,9 @@ export const useMoralityQuestions = (characterId: string) => {
     const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / maxPossibleScore) * 100);
 
     // Calculate overall alignment score (0-100)
-    // Convert from -100 to 100 scale to 0 to 100 scale
     const alignmentScore = Math.round(((normalizedGoodEvil + 100) / 2 + (normalizedLawfulChaotic + 100) / 2) / 2);
 
-    console.log('Morality Scores:', {
+    console.log('Calculated Morality Scores:', {
       goodEvilScore: normalizedGoodEvil,
       lawfulChaoticScore: normalizedLawfulChaotic,
       alignmentScore,
@@ -94,6 +94,12 @@ export const useMoralityQuestions = (characterId: string) => {
     }
 
     try {
+      console.log('Saving response:', {
+        characterId,
+        questionId: questions[currentQuestionIndex].id,
+        answer
+      });
+
       // Save the current response
       const { error: responseError } = await supabase
         .from('character_responses')
@@ -118,11 +124,15 @@ export const useMoralityQuestions = (characterId: string) => {
           throw new Error('No responses found');
         }
 
+        console.log('Retrieved responses:', responses);
+
         // Calculate scores
         const scores = await calculateMoralityScores(responses);
         if (!scores) {
           throw new Error('Failed to calculate morality scores');
         }
+
+        console.log('Saving morality scores:', scores);
 
         // Save morality scores
         const { error: moralityError } = await supabase
@@ -135,6 +145,8 @@ export const useMoralityQuestions = (characterId: string) => {
           });
 
         if (moralityError) throw moralityError;
+
+        console.log('Updating character status to attributes');
 
         // Update character status
         const { error: statusError } = await supabase

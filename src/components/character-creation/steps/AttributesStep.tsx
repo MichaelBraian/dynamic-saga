@@ -17,6 +17,7 @@ interface AttributeRolls {
 
 export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => {
   const [attributeRolls, setAttributeRolls] = useState<AttributeRolls>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const attributes = [
     {
@@ -59,12 +60,14 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
 
   const handleBack = async () => {
     try {
+      console.log('Going back to morality step');
       const { error } = await supabase
         .from('characters')
         .update({ status: 'morality' })
         .eq('id', characterId);
 
       if (error) {
+        console.error('Error updating character status:', error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -85,6 +88,7 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
   };
 
   const handleRollComplete = (attributeName: string, total: number) => {
+    console.log('Roll completed for:', attributeName, 'with total:', total);
     setAttributeRolls(prev => ({
       ...prev,
       [attributeName]: total
@@ -92,7 +96,12 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
   };
 
   const handleContinue = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
+      console.log('Saving attributes:', attributeRolls);
+      
       // Save attributes to database
       const attributePromises = Object.entries(attributeRolls).map(([name, value]) => {
         return supabase
@@ -117,6 +126,8 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
         return;
       }
 
+      console.log('Attributes saved successfully, updating character status');
+
       // Update character status
       const { error: statusError } = await supabase
         .from('characters')
@@ -124,6 +135,7 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
         .eq('id', characterId);
 
       if (statusError) {
+        console.error('Error updating character status:', statusError);
         toast({
           variant: "destructive",
           title: "Error",
@@ -144,6 +156,8 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -187,9 +201,10 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
         <div className="flex justify-center mt-6">
           <Button
             onClick={handleContinue}
+            disabled={isSaving}
             className="bg-white/10 text-white hover:bg-white/20"
           >
-            Continue <ArrowRight className="ml-2" />
+            {isSaving ? 'Saving...' : 'Continue'} <ArrowRight className="ml-2" />
           </Button>
         </div>
       )}
