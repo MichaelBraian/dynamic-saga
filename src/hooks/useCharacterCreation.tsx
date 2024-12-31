@@ -11,6 +11,8 @@ export const useCharacterCreation = () => {
 
   useEffect(() => {
     if (characterId) {
+      console.log('Setting up real-time subscription for character:', characterId);
+      
       const channel = supabase
         .channel('character_status')
         .on(
