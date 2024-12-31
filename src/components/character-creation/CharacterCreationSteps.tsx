@@ -1,12 +1,12 @@
 import { CharacterStatus } from "@/types/character";
-import { NameSelection } from "../NameSelection";
-import { GenderSelection } from "../GenderSelection";
-import { RaceSelection } from "../RaceSelection";
-import { AnimalTypeSelection } from "../AnimalTypeSelection";
-import { ClassSelection } from "../ClassSelection";
-import { ClothingSelection } from "../ClothingSelection";
-import { ArmorSelection } from "../ArmorSelection";
-import { MoralityQuestions } from "../MoralityQuestions";
+import { NameStep } from "./steps/NameStep";
+import { GenderStep } from "./steps/GenderStep";
+import { RaceStep } from "./steps/RaceStep";
+import { AnimalTypeStep } from "./steps/AnimalTypeStep";
+import { ClassStep } from "./steps/ClassStep";
+import { ClothingStep } from "./steps/ClothingStep";
+import { ArmorStep } from "./steps/ArmorStep";
+import { MoralityStep } from "./steps/MoralityStep";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -41,81 +41,63 @@ export const CharacterCreationSteps = ({
 }: CharacterCreationStepsProps) => {
   switch (currentStep) {
     case "naming":
-      return (
-        <div className="animate-fade-in">
-          <NameSelection onNameSelected={onNameSelected} />
-        </div>
-      );
+      return <NameStep onNameSelected={onNameSelected} />;
     case "gender":
       return (
-        <div className="animate-fade-in">
-          <GenderSelection 
-            characterId={characterId!} 
-            onGenderSelected={onGenderSelected}
-            onBack={onBack}
-          />
-        </div>
+        <GenderStep 
+          characterId={characterId!} 
+          onGenderSelected={onGenderSelected}
+          onBack={onBack}
+        />
       );
     case "race":
       return (
-        <div className="animate-fade-in">
-          <RaceSelection 
-            characterId={characterId!} 
-            onRaceSelected={onRaceSelected}
-            onBack={onBack}
-          />
-        </div>
+        <RaceStep 
+          characterId={characterId!} 
+          onRaceSelected={onRaceSelected}
+          onBack={onBack}
+        />
       );
     case "animal_type":
       return (
-        <div className="animate-fade-in">
-          <AnimalTypeSelection 
-            characterId={characterId!}
-            onBack={onBack}
-            onAnimalTypeSelected={onAnimalTypeSelected}
-          />
-        </div>
+        <AnimalTypeStep 
+          characterId={characterId!}
+          onBack={onBack}
+          onAnimalTypeSelected={onAnimalTypeSelected}
+        />
       );
     case "class":
       return (
-        <div className="animate-fade-in">
-          <ClassSelection 
-            characterId={characterId!}
-            onBack={onBack}
-            onClassSelected={onClassSelected}
-          />
-        </div>
+        <ClassStep 
+          characterId={characterId!}
+          onBack={onBack}
+          onClassSelected={onClassSelected}
+        />
       );
     case "clothing":
       return (
-        <div className="animate-fade-in">
-          <ClothingSelection
-            characterId={characterId!}
-            characterClass={selectedClass!}
-            onBack={onBack}
-            onClothingSelected={onClothingSelected}
-          />
-        </div>
+        <ClothingStep
+          characterId={characterId!}
+          selectedClass={selectedClass!}
+          onBack={onBack}
+          onClothingSelected={onClothingSelected}
+        />
       );
     case "armor":
       return (
-        <div className="animate-fade-in">
-          <ArmorSelection
-            characterId={characterId!}
-            characterClass={selectedClass!}
-            onBack={onBack}
-            onArmorSelected={onArmorSelected}
-          />
-        </div>
+        <ArmorStep
+          characterId={characterId!}
+          selectedClass={selectedClass!}
+          onBack={onBack}
+          onArmorSelected={onArmorSelected}
+        />
       );
     case "morality":
       return (
-        <div className="animate-fade-in">
-          <MoralityQuestions
-            characterId={characterId!}
-            onBack={onBack}
-          />
-        </div>
+        <MoralityStep
+          characterId={characterId!}
+          onBack={onBack}
+        />
       );
     default:
       return null;
