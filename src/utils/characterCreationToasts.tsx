@@ -1,5 +1,8 @@
+import React from "react";
 import { Check } from "lucide-react";
-import { ToastOptions } from "@/components/ui/use-toast";
+import { ToastProps } from "@/components/ui/toast";
+
+type ToastOptions = Partial<ToastProps>;
 
 export const createSuccessToast = (message: string): ToastOptions => ({
   className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
