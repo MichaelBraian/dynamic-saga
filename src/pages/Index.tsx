@@ -2,7 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, UserPlus2, Users2 } from "lucide-react";
-import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -61,8 +60,6 @@ const Index = () => {
       className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat bg-gray-100 gap-8"
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
-      <HamburgerMenu />
-      
       <div className="text-center">
         <h1 className="text-2xl font-medium text-white bg-black/50 px-4 py-2 rounded font-['Cinzel']">
           Welcome To Dynamic Saga
