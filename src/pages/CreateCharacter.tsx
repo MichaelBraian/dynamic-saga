@@ -11,7 +11,6 @@ const CreateCharacter = () => {
   const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
-  // Add effect to watch for character status changes
   useEffect(() => {
     if (characterId) {
       const channel = supabase
@@ -91,6 +90,10 @@ const CreateCharacter = () => {
 
   const handleClothingSelected = () => {
     setCurrentStep("armor");
+  };
+
+  const handleArmorSelected = () => {
+    setCurrentStep("morality");
   };
 
   const handleBack = () => {
