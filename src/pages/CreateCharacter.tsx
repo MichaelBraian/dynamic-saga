@@ -60,6 +60,25 @@ const CreateCharacter = () => {
         return;
       }
 
+      // Check for duplicate names
+      const { data: existingCharacter } = await supabase
+        .from('characters')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('name', characterName.trim())
+        .single();
+
+      if (existingCharacter) {
+        toast({
+          title: "Name already exists",
+          description: "Please choose a different name for your character",
+          variant: "destructive",
+          className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('characters')
         .insert([
@@ -130,9 +149,7 @@ const CreateCharacter = () => {
             </div>
           </form>
         ) : (
-          <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
-            <GenderSelection characterId={characterId} />
-          </div>
+          <GenderSelection characterId={characterId} />
         )}
       </div>
     </div>

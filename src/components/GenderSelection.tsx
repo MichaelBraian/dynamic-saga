@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface GenderSelectionProps {
   characterId: string;
@@ -15,8 +16,10 @@ const GENDER_OPTIONS: Gender[] = ["male", "female"];
 export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleGenderSubmit = async (gender: string) => {
+    setIsSubmitting(true);
     try {
       const { error } = await supabase
         .from('characters')
@@ -36,29 +39,30 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
         variant: "destructive",
         description: "Failed to save gender selection. Please try again.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const genderButtonClass = "flex items-center justify-center rounded-lg border-2 border-muted bg-white/90 p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-2xl font-['Cinzel']";
-
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-center font-['Cinzel'] text-white">Choose Gender</h1>
+    <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+      <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">Choose Gender</h1>
       
       <RadioGroup
-        className="grid grid-cols-2 gap-4 max-w-[400px] mx-auto"
+        className="space-y-4"
         onValueChange={handleGenderSubmit}
       >
         {GENDER_OPTIONS.map((gender) => (
-          <div key={gender}>
+          <div key={gender} className="w-full">
             <RadioGroupItem
               value={gender}
               id={gender}
               className="peer sr-only"
+              disabled={isSubmitting}
             />
             <Label
               htmlFor={gender}
-              className={genderButtonClass}
+              className="flex w-full items-center justify-center rounded-lg border-2 border-white/20 bg-white/20 p-4 hover:bg-white/30 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/30 cursor-pointer text-2xl font-['Cinzel'] text-white"
             >
               {gender.charAt(0).toUpperCase() + gender.slice(1)}
             </Label>
