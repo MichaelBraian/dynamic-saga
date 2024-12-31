@@ -21,13 +21,15 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
     try {
       const { error: statusError } = await supabase
         .from('characters')
-        .update({ status: 'morality', armor_type: value })
+        .update({ 
+          status: 'morality', 
+          armor_type: value 
+        })
         .eq('id', characterId);
 
       if (statusError) throw statusError;
 
       showSuccessToast(toast, "Armor selected");
-      // Removed the navigate("/") call to stay on the current page
     } catch (error) {
       console.error('Error saving armor selection:', error);
       toast({
