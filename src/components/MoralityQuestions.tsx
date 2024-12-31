@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
@@ -11,7 +10,6 @@ interface MoralityQuestionsProps {
 }
 
 export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [isComplete, setIsComplete] = useState(false);
   const {
@@ -27,9 +25,6 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
       const complete = await saveResponse(answer);
       if (complete) {
         setIsComplete(true);
-        setTimeout(() => {
-          navigate("/");
-        }, 5000); // Navigate after 5 seconds
       }
     } catch (error) {
       console.error('Error handling answer:', error);
