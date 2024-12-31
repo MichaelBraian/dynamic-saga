@@ -71,21 +71,73 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     );
   }
 
+  const getAlignmentDescription = (score: number) => {
+    if (score >= 75) return "Angelic - You embody virtue and righteousness";
+    if (score >= 50) return "Noble - You tend towards good and order";
+    if (score >= 25) return "Moderate - You balance between light and dark";
+    return "Devilish - You embrace darkness and chaos";
+  };
+
+  const getScaleDescription = (value: number, type: 'goodEvil' | 'lawfulChaotic') => {
+    if (type === 'goodEvil') {
+      if (value > 50) return "Strongly Good - You prioritize helping others";
+      if (value > 0) return "Somewhat Good - You tend to do the right thing";
+      if (value > -50) return "Somewhat Evil - You're willing to harm others for gain";
+      return "Strongly Evil - You actively pursue destructive goals";
+    } else {
+      if (value > 50) return "Highly Lawful - You strictly follow rules and tradition";
+      if (value > 0) return "Somewhat Lawful - You respect order but can be flexible";
+      if (value > -50) return "Somewhat Chaotic - You follow your own path";
+      return "Highly Chaotic - You reject all constraints and order";
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
       <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Your Morality Score</h2>
-      <div className="relative mb-6">
-        <Progress value={morality.alignment_score} className="h-8" />
-        <div className="flex justify-between mt-2 text-white font-['Cinzel']">
-          <span>Angel</span>
-          <span>Devil</span>
+      
+      <div className="space-y-6 text-white">
+        <div>
+          <div className="relative mb-2">
+            <Progress value={morality.alignment_score} className="h-8" />
+            <div className="flex justify-between mt-2 text-sm font-['Cinzel']">
+              <span>Devil</span>
+              <span>Angel</span>
+            </div>
+          </div>
+          <p className="text-lg font-semibold">Overall Alignment</p>
+          <p className="text-sm opacity-80">{getAlignmentDescription(morality.alignment_score)}</p>
+        </div>
+
+        <div>
+          <div className="relative mb-2">
+            <Progress 
+              value={(morality.good_evil_scale + 100) / 2} 
+              className="h-6" 
+            />
+            <div className="flex justify-between mt-1 text-sm">
+              <span>Evil</span>
+              <span>Good</span>
+            </div>
+          </div>
+          <p className="text-sm opacity-80">{getScaleDescription(morality.good_evil_scale, 'goodEvil')}</p>
+        </div>
+
+        <div>
+          <div className="relative mb-2">
+            <Progress 
+              value={(morality.lawful_chaotic_scale + 100) / 2} 
+              className="h-6" 
+            />
+            <div className="flex justify-between mt-1 text-sm">
+              <span>Chaotic</span>
+              <span>Lawful</span>
+            </div>
+          </div>
+          <p className="text-sm opacity-80">{getScaleDescription(morality.lawful_chaotic_scale, 'lawfulChaotic')}</p>
         </div>
       </div>
-      <div className="space-y-4 text-white text-center">
-        <p className="text-lg">Alignment Score: {morality.alignment_score}</p>
-        <p>Good/Evil Scale: {morality.good_evil_scale}</p>
-        <p>Lawful/Chaotic Scale: {morality.lawful_chaotic_scale}</p>
-      </div>
+
       <div className="flex justify-center mt-6">
         <Button
           onClick={onContinue}
