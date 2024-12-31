@@ -2,13 +2,14 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
+  onContinue: () => void;
 }
 
-export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps) => {
+export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
   const { data: morality, isLoading } = useQuery({
     queryKey: ['morality-score', characterId],
     queryFn: async () => {
@@ -53,6 +54,14 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
         <p className="text-lg">Alignment Score: {morality.alignment_score}</p>
         <p>Good/Evil Scale: {morality.good_evil_scale}</p>
         <p>Lawful/Chaotic Scale: {morality.lawful_chaotic_scale}</p>
+      </div>
+      <div className="flex justify-center mt-6">
+        <Button
+          onClick={onContinue}
+          className="bg-white/10 text-white hover:bg-white/20"
+        >
+          Continue to Attributes <ArrowRight className="ml-2" />
+        </Button>
       </div>
     </div>
   );

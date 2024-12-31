@@ -7,9 +7,10 @@ import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
 interface MoralityQuestionsProps {
   characterId: string;
   onBack: () => void;
+  onContinue: () => void;
 }
 
-export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProps) => {
+export const MoralityQuestions = ({ characterId, onBack, onContinue }: MoralityQuestionsProps) => {
   const { toast } = useToast();
   const [isComplete, setIsComplete] = useState(false);
   const {
@@ -58,7 +59,10 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
   if (isComplete) {
     return (
       <div className="pt-16 animate-fade-in">
-        <MoralityScoreDisplay characterId={characterId} />
+        <MoralityScoreDisplay 
+          characterId={characterId}
+          onContinue={onContinue}
+        />
       </div>
     );
   }

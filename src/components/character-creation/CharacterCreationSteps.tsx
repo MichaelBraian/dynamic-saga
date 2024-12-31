@@ -7,6 +7,7 @@ import { ClassStep } from "./steps/ClassStep";
 import { ClothingStep } from "./steps/ClothingStep";
 import { ArmorStep } from "./steps/ArmorStep";
 import { MoralityStep } from "./steps/MoralityStep";
+import { AttributesStep } from "./steps/AttributesStep";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -95,6 +96,13 @@ export const CharacterCreationSteps = ({
     case "morality":
       return (
         <MoralityStep
+          characterId={characterId!}
+          onBack={onBack}
+        />
+      );
+    case "attributes":
+      return (
+        <AttributesStep
           characterId={characterId!}
           onBack={onBack}
         />
