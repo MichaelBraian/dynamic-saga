@@ -57,7 +57,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
     try {
       // Save the current response
-      const responseResult = await supabase
+      const { error: responseError } = await supabase
         .from('character_responses')
         .insert({
           character_id: characterId,
@@ -65,31 +65,26 @@ export const useMoralityQuestions = (characterId: string) => {
           answer: answer
         });
 
-      if (responseResult.error) {
-        throw responseResult.error;
-      }
+      if (responseError) throw responseError;
 
       // If this was the last question
       if (currentQuestionIndex === questions.length - 1) {
         // Fetch all responses
-        const responsesResult = await supabase
+        const { data: responses, error: responsesError } = await supabase
           .from('character_responses')
           .select('question_id, answer')
           .eq('character_id', characterId);
 
-        if (responsesResult.error) {
-          throw responsesResult.error;
-        }
-
-        if (!responsesResult.data || responsesResult.data.length === 0) {
+        if (responsesError) throw responsesError;
+        if (!responses || responses.length === 0) {
           throw new Error('No responses found');
         }
 
         // Calculate scores
-        const scores = await calculateMoralityScores(responsesResult.data);
+        const scores = await calculateMoralityScores(responses);
 
         // Save morality scores
-        const moralityResult = await supabase
+        const { error: moralityError } = await supabase
           .from('character_morality')
           .insert({
             character_id: characterId,
@@ -98,19 +93,15 @@ export const useMoralityQuestions = (characterId: string) => {
             alignment_score: scores.alignmentScore
           });
 
-        if (moralityResult.error) {
-          throw moralityResult.error;
-        }
+        if (moralityError) throw moralityError;
 
         // Update character status
-        const statusResult = await supabase
+        const { error: statusError } = await supabase
           .from('characters')
           .update({ status: 'questioning' as CharacterStatus })
           .eq('id', characterId);
 
-        if (statusResult.error) {
-          throw statusResult.error;
-        }
+        if (statusError) throw statusError;
 
         return true; // Indicates completion
       }
@@ -119,10 +110,6 @@ export const useMoralityQuestions = (characterId: string) => {
       return false; // Indicates more questions remain
     } catch (error) {
       console.error('Error in saveResponse:', error);
-      toast({
-        variant: "destructive",
-        description: "An error occurred while saving your response. Please try again.",
-      });
       throw error;
     }
   };
