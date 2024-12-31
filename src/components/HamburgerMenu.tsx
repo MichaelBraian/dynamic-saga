@@ -32,8 +32,8 @@ export const HamburgerMenu = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="fixed top-4 left-4 z-[9999] bg-black/40 backdrop-blur-md p-2.5 rounded-lg hover:bg-black/50 transition-colors shadow-lg">
-        <Menu className="h-6 w-6 text-white hover:text-gray-300" />
+      <DropdownMenuTrigger className="fixed top-4 left-4 z-[99999] bg-black/60 backdrop-blur-md p-3 rounded-lg hover:bg-black/70 transition-colors shadow-xl ring-1 ring-white/20">
+        <Menu className="h-6 w-6 text-white" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => navigate('/')}>
