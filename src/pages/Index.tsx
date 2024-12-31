@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, UserPlus2, Users2, Settings2 } from "lucide-react";
+import { Play, UserPlus2, Users2, Settings2 } from "lucide-react";
 
 interface MenuButton {
   icon: React.ReactNode;
@@ -20,7 +20,7 @@ const Index = () => {
 
   const menuButtons: MenuButton[] = [
     {
-      icon: <Gamepad2 className="h-5 w-5" />,
+      icon: <Play className="h-5 w-5" />,
       label: "Play",
       action: () => console.log("Play clicked")
     },
