@@ -8,6 +8,7 @@ import { CharacterStatus } from "@/types/character";
 interface SelectionOption {
   value: string;
   label: string;
+  labelComponent?: React.ReactNode;
 }
 
 interface CharacterSelectionScreenProps {
@@ -76,7 +77,7 @@ export const CharacterSelectionScreen = ({
               htmlFor={option.value}
               className="flex w-full items-center justify-center rounded-lg border-2 border-white/20 bg-white/20 p-4 hover:bg-white/30 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/30 cursor-pointer text-2xl font-['Cinzel'] text-white"
             >
-              {option.label}
+              {option.labelComponent || option.label}
             </Label>
           </div>
         ))}
