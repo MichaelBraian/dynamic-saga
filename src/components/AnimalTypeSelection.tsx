@@ -37,7 +37,9 @@ export const AnimalTypeSelection = ({ characterId, onBack }: AnimalTypeSelection
       ),
       duration: 2000,
     });
-    navigate("/");
+    // Instead of navigating to home, we'll set the status to "class"
+    // The parent component will handle showing the class selection screen
+    navigate("/create-character");
   };
 
   const animalTypesWithInfo = ANIMAL_TYPES.map(option => ({
