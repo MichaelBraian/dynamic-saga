@@ -101,8 +101,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
           <div className="relative mb-2">
             <Progress value={morality.alignment_score} className="h-8" />
             <div className="flex justify-between mt-2 text-sm font-['Cinzel']">
-              <span className="text-red-400">Devil</span>
-              <span className="text-blue-400">Angel</span>
+              <span className="text-white">Devil</span>
+              <span className="text-white">Angel</span>
             </div>
           </div>
           <p className="text-lg font-semibold">Overall Alignment</p>
@@ -116,8 +116,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
               className="h-6" 
             />
             <div className="flex justify-between mt-1 text-sm">
-              <span className="text-red-400">Evil</span>
-              <span className="text-blue-400">Good</span>
+              <span className="text-white">Evil</span>
+              <span className="text-white">Good</span>
             </div>
           </div>
           <p className="text-sm opacity-80">{getScaleDescription(morality.good_evil_scale, 'goodEvil')}</p>
@@ -130,8 +130,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
               className="h-6" 
             />
             <div className="flex justify-between mt-1 text-sm">
-              <span className="text-red-400">Chaotic</span>
-              <span className="text-blue-400">Lawful</span>
+              <span className="text-white">Chaotic</span>
+              <span className="text-white">Lawful</span>
             </div>
           </div>
           <p className="text-sm opacity-80">{getScaleDescription(morality.lawful_chaotic_scale, 'lawfulChaotic')}</p>
