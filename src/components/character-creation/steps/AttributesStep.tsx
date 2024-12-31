@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
-import { Activity, Run, Heart, Brain, Eye, User } from "lucide-react";
+import { Activity, Move, Heart, Brain, Eye, User } from "lucide-react";
 
 interface AttributesStepProps {
   characterId: string;
@@ -19,7 +19,7 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     {
       name: "DEX",
       label: "Dexterity",
-      icon: <Run className="h-5 w-5" />,
+      icon: <Move className="h-5 w-5" />,
       description: "Reflects agility, speed, and precision. Influences: Dodging, accuracy with ranged weapons, stealth, and lock-picking.",
     },
     {
