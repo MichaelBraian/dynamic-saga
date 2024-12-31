@@ -32,6 +32,7 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
           variant: "destructive",
           className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -51,6 +52,7 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
           variant: "destructive",
           className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -59,7 +61,7 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
         .insert([{
           name: characterName.trim(),
           user_id: user.id,
-          status: 'naming'
+          status: 'gender'
         }])
         .select()
         .single();
@@ -71,13 +73,15 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
         description: (
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
-            <span className="text-sm">Character saved</span>
+            <span className="text-sm">Character created successfully</span>
           </div>
         ),
         duration: 2000,
       });
 
-      onNameSelected(data.id);
+      if (data) {
+        onNameSelected(data.id);
+      }
     } catch (error) {
       console.error('Error creating character:', error);
       toast({

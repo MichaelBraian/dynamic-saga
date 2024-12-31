@@ -24,11 +24,14 @@ export const NameSelection = ({ onNameSelected }: NameSelectionProps) => {
           onChange={(e) => setCharacterName(e.target.value)}
           className="font-['Cinzel'] text-lg placeholder:text-gray-400 bg-white/20 text-white border-white/20"
           disabled={isSubmitting}
+          required
+          minLength={2}
+          maxLength={50}
         />
         <Button 
           type="submit"
           className="w-full bg-white/20 hover:bg-white/30 text-white font-['Cinzel']"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !characterName.trim()}
         >
           {isSubmitting ? "Creating..." : "Create Character"}
         </Button>
