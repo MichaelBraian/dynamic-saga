@@ -63,7 +63,7 @@ export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => 
               <Info className="h-4 w-4 text-white/60 hover:text-white/80" />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right" className="max-w-[300px] bg-black/90 text-white border-white/20">
+          <TooltipContent side="bottom" className="max-w-[300px] bg-black/90 text-white border-white/20">
             <p>{option.description}</p>
           </TooltipContent>
         </Tooltip>
