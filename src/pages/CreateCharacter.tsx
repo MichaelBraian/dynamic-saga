@@ -3,12 +3,15 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { GenderSelection } from "@/components/GenderSelection";
 import { RaceSelection } from "@/components/RaceSelection";
 import { ClassSelection } from "@/components/ClassSelection";
+import { AnimalTypeSelection } from "@/components/AnimalTypeSelection";
 import { NameSelection } from "@/components/NameSelection";
 import { CharacterStatus } from "@/types/character";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreateCharacter = () => {
   const [characterId, setCharacterId] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
+  const [selectedRace, setSelectedRace] = useState<string | null>(null);
 
   const handleNameSelected = (newCharacterId: string) => {
     setCharacterId(newCharacterId);
@@ -19,8 +22,17 @@ const CreateCharacter = () => {
     setCurrentStep("race");
   };
 
-  const handleRaceSelected = () => {
-    setCurrentStep("class");
+  const handleRaceSelected = async () => {
+    if (characterId) {
+      const { data } = await supabase
+        .from('characters')
+        .select('race')
+        .eq('id', characterId)
+        .single();
+      
+      setSelectedRace(data?.race || null);
+      setCurrentStep("class");
+    }
   };
 
   const handleBack = () => {
@@ -34,6 +46,7 @@ const CreateCharacter = () => {
         break;
       case "class":
         setCurrentStep("race");
+        setSelectedRace(null);
         break;
       default:
         break;
@@ -86,10 +99,17 @@ const CreateCharacter = () => {
       case "class":
         return (
           <div className="animate-fade-in">
-            <ClassSelection 
-              characterId={characterId!}
-              onBack={handleBack}
-            />
+            {selectedRace === 'Animal' ? (
+              <AnimalTypeSelection 
+                characterId={characterId!}
+                onBack={handleBack}
+              />
+            ) : (
+              <ClassSelection 
+                characterId={characterId!}
+                onBack={handleBack}
+              />
+            )}
           </div>
         );
       default:
