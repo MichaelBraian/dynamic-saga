@@ -53,7 +53,7 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
           />
           <Label
             htmlFor="male"
-            className="flex items-center justify-center rounded-lg border-2 border-muted bg-white/90 p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-lg font-medium"
+            className="flex items-center justify-center rounded-lg border-2 border-muted bg-white/90 p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-2xl font-['Cinzel']"
           >
             Male
           </Label>
@@ -67,7 +67,7 @@ export const GenderSelection = ({ characterId }: GenderSelectionProps) => {
           />
           <Label
             htmlFor="female"
-            className="flex items-center justify-center rounded-lg border-2 border-muted bg-white/90 p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-lg font-medium"
+            className="flex items-center justify-center rounded-lg border-2 border-muted bg-white/90 p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-2xl font-['Cinzel']"
           >
             Female
           </Label>
