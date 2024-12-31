@@ -41,9 +41,13 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
   }, [characterId]);
 
   const handleAnswerSelected = async (answer: string) => {
+    console.log('Handling answer selection:', answer);
     try {
       const isComplete = await saveResponse(answer);
+      console.log('Save response complete:', isComplete);
+      
       if (isComplete) {
+        console.log('All questions completed, navigating to home');
         navigate("/");
       }
     } catch (error) {

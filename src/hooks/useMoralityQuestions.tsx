@@ -10,20 +10,34 @@ export const useMoralityQuestions = (characterId: string) => {
   const { data: questions, isLoading } = useQuery({
     queryKey: ['morality-questions'],
     queryFn: async () => {
+      console.log('Fetching morality questions');
       const { data, error } = await supabase
         .from('questions')
         .select('*')
         .eq('category', 'morality');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching questions:', error);
+        throw error;
+      }
+      console.log('Fetched questions:', data);
       return data as MoralityQuestion[];
     },
   });
 
   const saveResponse = async (answer: string) => {
-    if (!questions?.[currentQuestionIndex]) return false;
+    if (!questions?.[currentQuestionIndex]) {
+      console.error('No current question available');
+      return false;
+    }
 
     try {
+      console.log('Saving response:', {
+        characterId,
+        questionId: questions[currentQuestionIndex].id,
+        answer
+      });
+
       const { error: responseError } = await supabase
         .from('character_responses')
         .insert({
@@ -32,23 +46,30 @@ export const useMoralityQuestions = (characterId: string) => {
           answer: answer
         });
 
-      if (responseError) throw responseError;
+      if (responseError) {
+        console.error('Error saving response:', responseError);
+        throw responseError;
+      }
 
       // If this was the last question, update character status
       if (currentQuestionIndex === (questions?.length || 0) - 1) {
+        console.log('Last question completed, updating character status');
         const { error: statusError } = await supabase
           .from('characters')
           .update({ status: 'questioning' as CharacterStatus })
           .eq('id', characterId);
 
-        if (statusError) throw statusError;
+        if (statusError) {
+          console.error('Error updating character status:', statusError);
+          throw statusError;
+        }
         return true; // Indicates completion
       }
 
       setCurrentQuestionIndex(prev => prev + 1);
       return false; // Indicates more questions remain
     } catch (error) {
-      console.error('Error saving response:', error);
+      console.error('Error in saveResponse:', error);
       throw error;
     }
   };
