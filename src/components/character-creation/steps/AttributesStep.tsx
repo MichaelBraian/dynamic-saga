@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
+import { DiceRoll } from "@/components/shared/DiceRoll";
 import { Sword, Move, Heart, Brain, Eye, User, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -10,7 +11,13 @@ interface AttributesStepProps {
   onBack: () => void;
 }
 
+interface AttributeRolls {
+  [key: string]: number | null;
+}
+
 export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => {
+  const [attributeRolls, setAttributeRolls] = useState<AttributeRolls>({});
+
   const attributes = [
     {
       name: "STR",
@@ -77,6 +84,13 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     }
   };
 
+  const handleRollComplete = (attributeName: string, total: number) => {
+    setAttributeRolls(prev => ({
+      ...prev,
+      [attributeName]: total
+    }));
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
       <div className="flex items-center mb-6">
@@ -93,12 +107,20 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
       <div className="space-y-4">
         {attributes.map((attr) => (
           <div key={attr.name} className="flex items-center gap-4 text-white p-4 rounded-lg bg-black/30">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1">
               {attr.icon}
               <span className="font-['Cinzel'] text-lg">{attr.label}</span>
               <span className="text-sm opacity-70">({attr.name})</span>
             </div>
-            <InfoTooltip content={attr.description} />
+            <div className="flex items-center gap-2">
+              {attributeRolls[attr.name] === undefined && (
+                <DiceRoll onRollComplete={(total) => handleRollComplete(attr.name, total)} />
+              )}
+              <InfoTooltip content={attr.description} />
+              {attributeRolls[attr.name] !== undefined && (
+                <span className="font-bold min-w-[2ch] text-center">{attributeRolls[attr.name]}</span>
+              )}
+            </div>
           </div>
         ))}
       </div>
