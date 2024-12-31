@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
@@ -13,7 +12,6 @@ interface MoralityScoreDisplayProps {
 
 export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
@@ -27,19 +25,11 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
 
       if (error) {
         console.error('Error fetching morality score:', error);
-        toast({
-          variant: "destructive",
-          description: "Failed to load morality score. Please try again.",
-        });
         throw error;
       }
 
       if (!data) {
         console.error('No morality score found for character:', characterId);
-        toast({
-          variant: "destructive",
-          description: "No morality score found. Please try again.",
-        });
         throw new Error('No morality score found');
       }
 
@@ -66,7 +56,6 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       }
 
       console.log('Successfully updated character status to attributes');
-      // Instead of reloading, call onContinue to trigger the parent component's state update
       onContinue();
     } catch (error) {
       console.error('Error in handleContinue:', error);

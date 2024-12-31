@@ -27,8 +27,6 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
         return;
       }
 
-      // If successful, the character's status update will trigger a re-render
-      // through the Supabase real-time subscription in useCharacterCreation
       console.log('Successfully updated character status to attributes');
     } catch (error) {
       console.error('Error in handleContinue:', error);
