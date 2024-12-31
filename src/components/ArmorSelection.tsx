@@ -25,7 +25,8 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
           armor_type: value,
           status: 'morality'
         })
-        .eq('id', characterId);
+        .eq('id', characterId)
+        .select();
 
       if (updateError) {
         console.error('Error updating armor:', updateError);
