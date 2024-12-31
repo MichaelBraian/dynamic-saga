@@ -27,7 +27,10 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
         })
         .eq('id', characterId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating armor:', updateError);
+        throw updateError;
+      }
 
       showSuccessToast(toast, "Armor selected");
     } catch (error) {
