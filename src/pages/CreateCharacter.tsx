@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
+import { GenderSelection } from "@/components/GenderSelection";
 
 const CreateCharacter = () => {
   const [characterName, setCharacterName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [characterId, setCharacterId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -65,8 +67,7 @@ const CreateCharacter = () => {
         duration: 2000,
       });
 
-      // TODO: Navigate to the next step (questions) once implemented
-      console.log("Character created:", data);
+      setCharacterId(data.id);
       
     } catch (error) {
       console.error('Error creating character:', error);
@@ -90,25 +91,31 @@ const CreateCharacter = () => {
     >
       <HamburgerMenu />
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
-        <form onSubmit={handleSubmit} className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
-          <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">Name Your Character</h1>
-          <div className="space-y-4">
-            <Input
-              placeholder="Enter character name"
-              value={characterName}
-              onChange={(e) => setCharacterName(e.target.value)}
-              className="font-['Cinzel'] text-lg placeholder:text-gray-400 bg-white/20 text-white border-white/20"
-              disabled={isSubmitting}
-            />
-            <Button 
-              type="submit"
-              className="w-full bg-white/20 hover:bg-white/30 text-white font-['Cinzel']"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating..." : "Create Character"}
-            </Button>
+        {!characterId ? (
+          <form onSubmit={handleSubmit} className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+            <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">Name Your Character</h1>
+            <div className="space-y-4">
+              <Input
+                placeholder="Enter character name"
+                value={characterName}
+                onChange={(e) => setCharacterName(e.target.value)}
+                className="font-['Cinzel'] text-lg placeholder:text-gray-400 bg-white/20 text-white border-white/20"
+                disabled={isSubmitting}
+              />
+              <Button 
+                type="submit"
+                className="w-full bg-white/20 hover:bg-white/30 text-white font-['Cinzel']"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating..." : "Create Character"}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+            <GenderSelection characterId={characterId} />
           </div>
-        </form>
+        )}
       </div>
     </div>
   );

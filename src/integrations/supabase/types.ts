@@ -217,6 +217,7 @@ export type Database = {
       characters: {
         Row: {
           created_at: string
+          gender: string | null
           id: string
           name: string
           status: Database["public"]["Enums"]["character_status"] | null
@@ -225,6 +226,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          gender?: string | null
           id?: string
           name: string
           status?: Database["public"]["Enums"]["character_status"] | null
@@ -233,6 +235,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          gender?: string | null
           id?: string
           name?: string
           status?: Database["public"]["Enums"]["character_status"] | null
