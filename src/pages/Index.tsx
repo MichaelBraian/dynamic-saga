@@ -4,7 +4,7 @@ import { useEffect } from "react";
 const Index = () => {
   const imageUrl = supabase.storage
     .from('landing')
-    .getPublicUrl('landing_V1.webp').data.publicUrl;
+    .getPublicUrl('Landing_V1.webp').data.publicUrl;
 
   useEffect(() => {
     console.log("Background image URL:", imageUrl);
