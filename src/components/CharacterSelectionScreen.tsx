@@ -17,7 +17,7 @@ interface CharacterSelectionScreenProps {
   title: string;
   options: SelectionOption[];
   characterId: string;
-  onSelected: () => void;
+  onSelected: (value: string) => void;
   onBack?: () => void;
   updateField: string;
   nextStatus: CharacterStatus;

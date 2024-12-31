@@ -25,7 +25,6 @@ const ANIMAL_TYPES = [
 
 export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected }: AnimalTypeSelectionProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleSelected = (value: string) => {
     toast({
@@ -39,7 +38,6 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
       duration: 2000,
     });
     onAnimalTypeSelected(value);
-    navigate("/");
   };
 
   const animalTypesWithInfo = ANIMAL_TYPES.map(option => ({
@@ -70,7 +68,7 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
         onSelected={handleSelected}
         onBack={onBack}
         updateField="class"
-        nextStatus="questioning"
+        nextStatus="class"
       />
     </div>
   );
