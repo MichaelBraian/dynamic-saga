@@ -1,94 +1,44 @@
-import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { CharacterStatus } from "@/types/character";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
-import { CharacterBackground } from "@/components/character-creation/CharacterBackground";
-import { useCharacterCreation } from "@/hooks/useCharacterCreation";
-import { useCharacterNavigation } from "@/hooks/useCharacterNavigation";
 
-const CreateCharacter = () => {
-  const {
-    characterId,
-    setCharacterId,
-    currentStep,
-    setCurrentStep,
-    selectedRace,
-    setSelectedRace,
-    selectedAnimalType,
-    setSelectedAnimalType,
-    selectedClass,
-    setSelectedClass,
-  } = useCharacterCreation();
+export const CreateCharacter = () => {
+  const { characterId } = useParams();
+  const [status, setStatus] = useState<CharacterStatus>();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { handleBack } = useCharacterNavigation();
+  useEffect(() => {
+    const fetchCharacterStatus = async () => {
+      if (!characterId) return;
 
-  const handleNameSelected = (newCharacterId: string) => {
-    setCharacterId(newCharacterId);
-    setCurrentStep("gender");
-  };
+      try {
+        const { data: character, error } = await supabase
+          .from('characters')
+          .select('status')
+          .eq('id', characterId)
+          .single();
 
-  const handleGenderSelected = () => {
-    setCurrentStep("race");
-  };
+        if (error) throw error;
+        setStatus(character?.status);
+      } catch (error) {
+        console.error('Error fetching character status:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleRaceSelected = async () => {
-    if (characterId) {
-      const { data } = await supabase
-        .from('characters')
-        .select('race, status')
-        .eq('id', characterId)
-        .single();
-      
-      setSelectedRace(data?.race || null);
-      setCurrentStep(data?.status || 'class');
-    }
-  };
+    fetchCharacterStatus();
+  }, [characterId]);
 
-  const handleAnimalTypeSelected = (animalType: string) => {
-    setSelectedAnimalType(animalType);
-    setCurrentStep("class");
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  const handleClassSelected = (characterClass: string) => {
-    setSelectedClass(characterClass);
-    setCurrentStep("clothing");
-  };
+  if (!characterId || !status) {
+    return <div>Character not found</div>;
+  }
 
-  const handleClothingSelected = () => {
-    setCurrentStep("armor");
-  };
-
-  const handleNavigateBack = () => {
-    handleBack(
-      currentStep,
-      setCurrentStep,
-      setCharacterId,
-      setSelectedRace,
-      setSelectedAnimalType,
-      setSelectedClass
-    );
-  };
-
-  return (
-    <>
-      <CharacterBackground currentStep={currentStep} />
-      <HamburgerMenu />
-      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
-        <CharacterCreationSteps
-          currentStep={currentStep}
-          characterId={characterId}
-          selectedRace={selectedRace}
-          selectedAnimalType={selectedAnimalType}
-          selectedClass={selectedClass}
-          onNameSelected={handleNameSelected}
-          onGenderSelected={handleGenderSelected}
-          onRaceSelected={handleRaceSelected}
-          onAnimalTypeSelected={handleAnimalTypeSelected}
-          onClassSelected={handleClassSelected}
-          onClothingSelected={handleClothingSelected}
-          onBack={handleNavigateBack}
-        />
-      </div>
-    </>
-  );
+  return <CharacterCreationSteps characterId={characterId} initialStatus={status} />;
 };
-
-export default CreateCharacter;

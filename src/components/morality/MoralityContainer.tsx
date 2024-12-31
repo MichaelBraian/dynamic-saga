@@ -1,4 +1,4 @@
-import { MoralityQuestions } from "./MoralityQuestions";
+import { MoralityQuestions } from "@/components/MoralityQuestions";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 
 interface MoralityContainerProps {
@@ -18,11 +18,7 @@ export const MoralityContainer = ({ characterId, onBack }: MoralityContainerProp
   return (
     <div className="pt-16">
       <MoralityQuestions
-        question={currentQuestion}
-        questionNumber={questionNumber}
-        totalQuestions={totalQuestions}
-        isLoading={isLoading}
-        onAnswerSelected={saveResponse}
+        characterId={characterId}
         onBack={onBack}
       />
     </div>
