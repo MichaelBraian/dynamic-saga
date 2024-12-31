@@ -1,0 +1,21 @@
+code_structure:
+  - All code must be clean, well-documented, and easily modifiable
+  - Follow a consistent naming convention
+  - Create small, focused components (50 lines or less when possible)
+  - Use TypeScript interfaces and types for better code clarity
+  - Implement proper error handling and loading states
+  - Add meaningful comments for complex logic
+  - Use proper code formatting and indentation
+
+fonts:
+  - IM Fell English (Google Fonts):
+    - A classic, historical serif font inspired by traditional English typography
+    - Ideal for creating a vintage, literary, or historical aesthetic
+    - Supports multiple font weights (400, 700)
+    - Imported via Google Fonts link in index.html
+    - Applied using Tailwind's font-family utility class: `font-['IM_Fell_English']`
+    - Best used for creating an authentic, timeless design
+    - Recommended for large text elements like headers and titles
+    - Ensure good readability by using appropriate font sizes and weights
+
+# ... keep existing code (rest of the custom instructions)
