@@ -1,39 +1,33 @@
 import { useState } from "react";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const CreateCharacter = () => {
-  const { toast } = useToast();
-
-  const handleCharacterCreation = async () => {
-    try {
-      // Logic for character creation will go here
-      toast({
-        title: "Success",
-        description: "Character created successfully!",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  const [characterName, setCharacterName] = useState("");
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `url('https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp')`
+      }}
+    >
       <HamburgerMenu />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-['Cinzel'] text-center mb-8">Create Your Character</h1>
-        
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6 mt-20">
+          <h1 className="text-3xl font-['Cinzel'] text-center mb-8">Name Your Character</h1>
+          
           <div className="space-y-4">
-            <Button onClick={handleCharacterCreation} className="w-full">
-              Create Character
-            </Button>
+            <div className="space-y-2">
+              <Label htmlFor="characterName">Character Name</Label>
+              <Input
+                id="characterName"
+                placeholder="Enter character name"
+                value={characterName}
+                onChange={(e) => setCharacterName(e.target.value)}
+              />
+            </div>
           </div>
         </div>
       </div>
