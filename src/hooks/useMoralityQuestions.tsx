@@ -23,40 +23,33 @@ export const useMoralityQuestions = (characterId: string) => {
   const calculateMoralityScores = async (responses: { question_id: string, answer: string }[]) => {
     let goodEvilScore = 0;
     let lawfulChaoticScore = 0;
-    const maxPossibleScore = questions?.reduce((acc, q) => acc + q.morality_weight, 0) || 0;
+    
+    // Calculate total possible weight for normalization
+    const totalWeight = questions?.reduce((acc, q) => acc + Math.abs(q.morality_weight), 0) || 1;
 
-    for (const response of responses) {
+    responses.forEach(response => {
       const question = questions?.find(q => q.id === response.question_id);
-      if (!question) continue;
+      if (!question) return;
 
+      // Parse the choice number from the answer (e.g., "1. Some answer" -> 1)
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       
-      // Normalize the contribution based on choice
-      if (choiceNumber <= 2) {
-        goodEvilScore += question.morality_weight;
-        lawfulChaoticScore += question.morality_weight;
-      } else {
-        goodEvilScore -= question.morality_weight;
-        lawfulChaoticScore -= question.morality_weight;
-      }
-    }
+      // Calculate score contribution based on choice
+      // Choices 1-2 are good/lawful, 3-4 are evil/chaotic
+      const scoreMultiplier = choiceNumber <= 2 ? 1 : -1;
+      const weightedScore = question.morality_weight * scoreMultiplier;
+      
+      goodEvilScore += weightedScore;
+      lawfulChaoticScore += weightedScore;
+    });
 
     // Normalize scores to be between -100 and 100
-    const normalizeScore = (score: number) => {
-      return Math.round((score / maxPossibleScore) * 100);
-    };
-
-    const normalizedGoodEvil = normalizeScore(goodEvilScore);
-    const normalizedLawfulChaotic = normalizeScore(lawfulChaoticScore);
+    const normalizedGoodEvil = Math.round((goodEvilScore / totalWeight) * 100);
+    const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / totalWeight) * 100);
 
     // Calculate alignment score (0-100)
-    const alignmentScore = Math.min(
-      Math.max(
-        Math.round(((normalizedGoodEvil + normalizedLawfulChaotic) / 2 + 100) / 2),
-        0
-      ),
-      100
-    );
+    // Convert from -100 to 100 scale to 0 to 100 scale
+    const alignmentScore = Math.round(((normalizedGoodEvil + 100) / 2 + (normalizedLawfulChaotic + 100) / 2) / 2);
 
     return {
       goodEvilScore: normalizedGoodEvil,
@@ -89,9 +82,7 @@ export const useMoralityQuestions = (characterId: string) => {
           .eq('character_id', characterId);
 
         if (responsesError) throw responsesError;
-        if (!responses || responses.length === 0) {
-          throw new Error('No responses found');
-        }
+        if (!responses) throw new Error('No responses found');
 
         // Calculate scores
         const scores = await calculateMoralityScores(responses);
