@@ -7,11 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import { GenderSelection } from "@/components/GenderSelection";
+import { RaceSelection } from "@/components/RaceSelection";
 
 const CreateCharacter = () => {
   const [characterName, setCharacterName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [characterId, setCharacterId] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<"name" | "gender" | "race">("name");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -60,7 +62,6 @@ const CreateCharacter = () => {
         return;
       }
 
-      // Check for duplicate names using maybeSingle() instead of single()
       const { data: existingCharacter, error: checkError } = await supabase
         .from('characters')
         .select('id')
@@ -117,6 +118,7 @@ const CreateCharacter = () => {
       });
 
       setCharacterId(data.id);
+      setCurrentStep("gender");
       
     } catch (error) {
       console.error('Error creating character:', error);
@@ -131,6 +133,10 @@ const CreateCharacter = () => {
     }
   };
 
+  const handleGenderSelected = () => {
+    setCurrentStep("race");
+  };
+
   return (
     <div 
       className="min-h-screen bg-cover bg-center bg-no-repeat"
@@ -140,7 +146,7 @@ const CreateCharacter = () => {
     >
       <HamburgerMenu />
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
-        {!characterId ? (
+        {currentStep === "name" && (
           <form onSubmit={handleSubmit} className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
             <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">Name Your Character</h1>
             <div className="space-y-4">
@@ -160,8 +166,12 @@ const CreateCharacter = () => {
               </Button>
             </div>
           </form>
-        ) : (
-          <GenderSelection characterId={characterId} />
+        )}
+        {currentStep === "gender" && characterId && (
+          <GenderSelection characterId={characterId} onGenderSelected={handleGenderSelected} />
+        )}
+        {currentStep === "race" && characterId && (
+          <RaceSelection characterId={characterId} />
         )}
       </div>
     </div>

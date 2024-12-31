@@ -220,6 +220,7 @@ export type Database = {
           gender: string | null
           id: string
           name: string
+          race: string | null
           status: Database["public"]["Enums"]["character_status"] | null
           updated_at: string
           user_id: string
@@ -229,6 +230,7 @@ export type Database = {
           gender?: string | null
           id?: string
           name: string
+          race?: string | null
           status?: Database["public"]["Enums"]["character_status"] | null
           updated_at?: string
           user_id: string
@@ -238,6 +240,7 @@ export type Database = {
           gender?: string | null
           id?: string
           name?: string
+          race?: string | null
           status?: Database["public"]["Enums"]["character_status"] | null
           updated_at?: string
           user_id?: string
