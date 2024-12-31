@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
-import { Activity, Move, Heart, Brain, Eye, User } from "lucide-react";
+import { Sword, Move, Heart, Brain, Eye, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface AttributesStepProps {
   characterId: string;
@@ -13,7 +15,7 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     {
       name: "STR",
       label: "Strength",
-      icon: <Activity className="h-5 w-5" />,
+      icon: <Sword className="h-5 w-5" />,
       description: "Determines physical power and melee combat effectiveness. Influences: Carrying capacity, damage dealt with heavy weapons, breaking objects.",
     },
     {
@@ -48,6 +50,33 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     },
   ];
 
+  const handleBack = async () => {
+    try {
+      const { error } = await supabase
+        .from('characters')
+        .update({ status: 'morality' })
+        .eq('id', characterId);
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to go back. Please try again.",
+        });
+        return;
+      }
+
+      onBack();
+    } catch (error) {
+      console.error('Error in handleBack:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
       <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Character Attributes</h2>
@@ -66,7 +95,7 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
       <div className="flex justify-between mt-6">
         <Button
           variant="outline"
-          onClick={onBack}
+          onClick={handleBack}
           className="text-white border-white/20 hover:bg-white/10"
         >
           Back
