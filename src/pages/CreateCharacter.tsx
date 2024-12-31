@@ -20,7 +20,6 @@ const CreateCharacter = () => {
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="characterName" className="font-['Cinzel'] text-lg text-white">Character Name</Label>
               <Input
                 id="characterName"
                 placeholder="Enter character name"
