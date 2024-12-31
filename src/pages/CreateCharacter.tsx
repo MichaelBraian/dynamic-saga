@@ -55,38 +55,58 @@ const CreateCharacter = () => {
     }
   };
 
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case "naming":
+        return (
+          <div className="animate-fade-in">
+            <NameSelection onNameSelected={handleNameSelected} />
+          </div>
+        );
+      case "gender":
+        return (
+          <div className="animate-fade-in">
+            <GenderSelection 
+              characterId={characterId!} 
+              onGenderSelected={handleGenderSelected}
+              onBack={handleBack}
+            />
+          </div>
+        );
+      case "race":
+        return (
+          <div className="animate-fade-in">
+            <RaceSelection 
+              characterId={characterId!} 
+              onRaceSelected={handleRaceSelected}
+              onBack={handleBack}
+            />
+          </div>
+        );
+      case "class":
+        return (
+          <div className="animate-fade-in">
+            <ClassSelection 
+              characterId={characterId!}
+              onBack={handleBack}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      className="min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-500"
       style={{
         backgroundImage: `url('${getBackgroundImage()}')`
       }}
     >
       <HamburgerMenu />
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
-        {currentStep === "naming" && (
-          <NameSelection onNameSelected={handleNameSelected} />
-        )}
-        {currentStep === "gender" && characterId && (
-          <GenderSelection 
-            characterId={characterId} 
-            onGenderSelected={handleGenderSelected}
-            onBack={handleBack}
-          />
-        )}
-        {currentStep === "race" && characterId && (
-          <RaceSelection 
-            characterId={characterId} 
-            onRaceSelected={handleRaceSelected}
-            onBack={handleBack}
-          />
-        )}
-        {currentStep === "class" && characterId && (
-          <ClassSelection 
-            characterId={characterId}
-            onBack={handleBack}
-          />
-        )}
+        {renderCurrentStep()}
       </div>
     </div>
   );
