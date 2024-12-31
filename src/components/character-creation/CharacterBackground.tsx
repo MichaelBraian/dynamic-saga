@@ -26,7 +26,7 @@ export const CharacterBackground = ({ currentStep }: CharacterBackgroundProps) =
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-500"
+      className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-all duration-500 -z-10"
       style={{
         backgroundImage: `url('${getBackgroundImage()}')`
       }}
