@@ -47,7 +47,7 @@ const CreateCharacter = () => {
       case "gender":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Choose_Gender.webp";
       case "race":
-        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Race_Character.webp";
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Chose_Race.webp";
       case "class":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class_Character.webp";
       default:
