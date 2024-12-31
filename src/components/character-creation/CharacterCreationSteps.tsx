@@ -20,6 +20,7 @@ interface CharacterCreationStepsProps {
   onAnimalTypeSelected: (animalType: string) => void;
   onClassSelected: (characterClass: string) => void;
   onClothingSelected: () => void;
+  onArmorSelected: () => void;
   onBack: () => void;
 }
 
@@ -35,6 +36,7 @@ export const CharacterCreationSteps = ({
   onAnimalTypeSelected,
   onClassSelected,
   onClothingSelected,
+  onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
   switch (currentStep) {
@@ -102,6 +104,7 @@ export const CharacterCreationSteps = ({
             characterId={characterId!}
             characterClass={selectedClass!}
             onBack={onBack}
+            onArmorSelected={onArmorSelected}
           />
         </div>
       );

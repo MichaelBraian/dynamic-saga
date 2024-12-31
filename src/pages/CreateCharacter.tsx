@@ -93,6 +93,7 @@ const CreateCharacter = () => {
   };
 
   const handleArmorSelected = () => {
+    console.log("Armor selected, transitioning to morality");
     setCurrentStep("morality");
   };
 
@@ -174,6 +175,7 @@ const CreateCharacter = () => {
           onAnimalTypeSelected={handleAnimalTypeSelected}
           onClassSelected={handleClassSelected}
           onClothingSelected={handleClothingSelected}
+          onArmorSelected={handleArmorSelected}
           onBack={handleBack}
         />
       </div>

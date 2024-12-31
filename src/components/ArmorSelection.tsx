@@ -10,9 +10,15 @@ interface ArmorSelectionProps {
   characterId: string;
   characterClass: string;
   onBack: () => void;
+  onArmorSelected?: () => void;
 }
 
-export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSelectionProps) => {
+export const ArmorSelection = ({ 
+  characterId, 
+  characterClass, 
+  onBack,
+  onArmorSelected 
+}: ArmorSelectionProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,6 +39,9 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
       }
 
       showSuccessToast(toast, "Armor selected");
+      if (onArmorSelected) {
+        onArmorSelected();
+      }
     } catch (error) {
       console.error('Error saving armor selection:', error);
       toast({
