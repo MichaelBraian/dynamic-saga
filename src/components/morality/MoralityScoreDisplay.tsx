@@ -2,7 +2,7 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface MoralityScoreDisplayProps {
@@ -100,6 +100,11 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
         <div>
           <div className="relative mb-2">
             <Progress value={morality.alignment_score} className="h-8" />
+            <div className="absolute top-[-24px] left-0 right-0">
+              <div style={{ marginLeft: `${morality.alignment_score}%` }} className="relative flex justify-center transform -translate-x-1/2">
+                <ArrowDown className="text-white" />
+              </div>
+            </div>
             <div className="flex justify-between mt-2 text-sm font-['Cinzel']">
               <span className="text-white">Devil</span>
               <span className="text-white">Angel</span>
@@ -115,6 +120,11 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
               value={(morality.good_evil_scale + 100) / 2} 
               className="h-6" 
             />
+            <div className="absolute top-[-24px] left-0 right-0">
+              <div style={{ marginLeft: `${(morality.good_evil_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
+                <ArrowDown className="text-white" />
+              </div>
+            </div>
             <div className="flex justify-between mt-1 text-sm">
               <span className="text-white">Evil</span>
               <span className="text-white">Good</span>
@@ -129,6 +139,11 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
               value={(morality.lawful_chaotic_scale + 100) / 2} 
               className="h-6" 
             />
+            <div className="absolute top-[-24px] left-0 right-0">
+              <div style={{ marginLeft: `${(morality.lawful_chaotic_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
+                <ArrowDown className="text-white" />
+              </div>
+            </div>
             <div className="flex justify-between mt-1 text-sm">
               <span className="text-white">Chaotic</span>
               <span className="text-white">Lawful</span>
