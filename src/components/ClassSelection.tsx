@@ -9,6 +9,7 @@ import {
 
 interface ClassSelectionProps {
   characterId: string;
+  onBack: () => void;
 }
 
 const CLASS_OPTIONS = [
@@ -31,7 +32,7 @@ const CLASS_OPTIONS = [
   { value: 'Politician', label: 'Politician', description: 'A master of persuasion and influence, adept at navigating complex social dynamics. They manipulate events, forge alliances, and use their charisma to control outcomes both on and off the battlefield.' },
 ];
 
-export const ClassSelection = ({ characterId }: ClassSelectionProps) => {
+export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => {
   const navigate = useNavigate();
 
   const classOptionsWithInfo = CLASS_OPTIONS.map(option => ({
@@ -57,6 +58,7 @@ export const ClassSelection = ({ characterId }: ClassSelectionProps) => {
       options={classOptionsWithInfo}
       characterId={characterId}
       onSelected={() => navigate("/")}
+      onBack={onBack}
       updateField="class"
       nextStatus="questioning"
     />

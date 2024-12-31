@@ -1,5 +1,7 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,8 +18,10 @@ interface CharacterSelectionScreenProps {
   options: SelectionOption[];
   characterId: string;
   onSelected: () => void;
+  onBack?: () => void;
   updateField: string;
   nextStatus: CharacterStatus;
+  showBackButton?: boolean;
 }
 
 export const CharacterSelectionScreen = ({
@@ -25,8 +29,10 @@ export const CharacterSelectionScreen = ({
   options,
   characterId,
   onSelected,
+  onBack,
   updateField,
   nextStatus,
+  showBackButton = true,
 }: CharacterSelectionScreenProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,7 +65,21 @@ export const CharacterSelectionScreen = ({
 
   return (
     <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
-      <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">{title}</h1>
+      <div className="flex items-center justify-between mb-8">
+        {showBackButton && onBack && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+        )}
+        <h1 className="text-3xl font-['Cinzel'] text-center flex-1 text-white">{title}</h1>
+        {/* Empty div to maintain centering when back button is present */}
+        {showBackButton && onBack && <div className="w-10" />}
+      </div>
       
       <RadioGroup
         className="space-y-4"

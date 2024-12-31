@@ -23,6 +23,23 @@ const CreateCharacter = () => {
     setCurrentStep("class");
   };
 
+  const handleBack = () => {
+    switch (currentStep) {
+      case "gender":
+        setCurrentStep("naming");
+        setCharacterId(null);
+        break;
+      case "race":
+        setCurrentStep("gender");
+        break;
+      case "class":
+        setCurrentStep("race");
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div 
       className="min-h-screen bg-cover bg-center bg-no-repeat"
@@ -36,13 +53,24 @@ const CreateCharacter = () => {
           <NameSelection onNameSelected={handleNameSelected} />
         )}
         {currentStep === "gender" && characterId && (
-          <GenderSelection characterId={characterId} onGenderSelected={handleGenderSelected} />
+          <GenderSelection 
+            characterId={characterId} 
+            onGenderSelected={handleGenderSelected}
+            onBack={handleBack}
+          />
         )}
         {currentStep === "race" && characterId && (
-          <RaceSelection characterId={characterId} onRaceSelected={handleRaceSelected} />
+          <RaceSelection 
+            characterId={characterId} 
+            onRaceSelected={handleRaceSelected}
+            onBack={handleBack}
+          />
         )}
         {currentStep === "class" && characterId && (
-          <ClassSelection characterId={characterId} />
+          <ClassSelection 
+            characterId={characterId}
+            onBack={handleBack}
+          />
         )}
       </div>
     </div>
