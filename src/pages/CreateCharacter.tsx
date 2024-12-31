@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 const CreateCharacter = () => {
   const [characterName, setCharacterName] = useState("");
@@ -17,18 +16,12 @@ const CreateCharacter = () => {
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
         <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
           <h1 className="text-3xl font-['Cinzel'] text-center mb-8 text-white">Name Your Character</h1>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                id="characterName"
-                placeholder="Enter character name"
-                value={characterName}
-                onChange={(e) => setCharacterName(e.target.value)}
-                className="font-['Cinzel'] text-lg placeholder:text-gray-400 bg-white/20 text-white border-white/20"
-              />
-            </div>
-          </div>
+          <Input
+            placeholder="Enter character name"
+            value={characterName}
+            onChange={(e) => setCharacterName(e.target.value)}
+            className="font-['Cinzel'] text-lg placeholder:text-gray-400 bg-white/20 text-white border-white/20"
+          />
         </div>
       </div>
     </div>
