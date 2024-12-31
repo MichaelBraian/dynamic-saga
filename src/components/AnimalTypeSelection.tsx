@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface AnimalTypeSelectionProps {
   characterId: string;
@@ -67,7 +66,7 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
         characterId={characterId}
         onSelected={handleSelected}
         onBack={onBack}
-        updateField="class"
+        updateField="animal_type"
         nextStatus="class"
       />
     </div>

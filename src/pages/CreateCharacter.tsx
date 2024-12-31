@@ -32,22 +32,18 @@ const CreateCharacter = () => {
         .single();
       
       setSelectedRace(data?.race || null);
-      setCurrentStep("class");
-    }
-  };
-
-  const handleAnimalTypeSelected = async (animalType: string) => {
-    if (characterId) {
-      const { error } = await supabase
-        .from('characters')
-        .update({ class: animalType })
-        .eq('id', characterId);
-
-      if (!error) {
-        setSelectedAnimalType(animalType);
+      
+      if (data?.race === 'Animal') {
+        setCurrentStep("animal_type");
+      } else {
         setCurrentStep("class");
       }
     }
+  };
+
+  const handleAnimalTypeSelected = (animalType: string) => {
+    setSelectedAnimalType(animalType);
+    setCurrentStep("class");
   };
 
   const handleBack = () => {
@@ -59,10 +55,13 @@ const CreateCharacter = () => {
       case "race":
         setCurrentStep("gender");
         break;
+      case "animal_type":
+        setCurrentStep("race");
+        setSelectedAnimalType(null);
+        break;
       case "class":
         if (selectedRace === 'Animal') {
-          setCurrentStep("race");
-          setSelectedAnimalType(null);
+          setCurrentStep("animal_type");
         } else {
           setCurrentStep("race");
           setSelectedRace(null);
@@ -81,10 +80,10 @@ const CreateCharacter = () => {
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Choose_Gender.webp";
       case "race":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Race.webp";
+      case "animal_type":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/animal.webp";
       case "class":
-        return currentStep === "class" && selectedRace === 'Animal' 
-          ? "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/animal.webp"
-          : "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
       default:
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
     }
@@ -118,21 +117,23 @@ const CreateCharacter = () => {
             />
           </div>
         );
+      case "animal_type":
+        return (
+          <div className="animate-fade-in">
+            <AnimalTypeSelection 
+              characterId={characterId!}
+              onBack={handleBack}
+              onAnimalTypeSelected={handleAnimalTypeSelected}
+            />
+          </div>
+        );
       case "class":
         return (
           <div className="animate-fade-in">
-            {selectedRace === 'Animal' ? (
-              <AnimalTypeSelection 
-                characterId={characterId!}
-                onBack={handleBack}
-                onAnimalTypeSelected={handleAnimalTypeSelected}
-              />
-            ) : (
-              <ClassSelection 
-                characterId={characterId!}
-                onBack={handleBack}
-              />
-            )}
+            <ClassSelection 
+              characterId={characterId!}
+              onBack={handleBack}
+            />
           </div>
         );
       default:
