@@ -4,7 +4,7 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 
 const CreateCharacter = () => {
@@ -21,7 +21,7 @@ const CreateCharacter = () => {
         title: "Name required",
         description: "Please enter a name for your character",
         variant: "destructive",
-        className: "bg-destructive text-destructive-foreground inline-flex max-w-fit",
+        className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
       });
       return;
     }
@@ -35,7 +35,7 @@ const CreateCharacter = () => {
           title: "Error",
           description: "You must be logged in to create a character",
           variant: "destructive",
-          className: "bg-destructive text-destructive-foreground inline-flex max-w-fit",
+          className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
         });
         return;
       }
@@ -55,7 +55,7 @@ const CreateCharacter = () => {
       if (error) throw error;
 
       toast({
-        className: "bg-background/50 backdrop-blur-sm border-green-500 inline-flex max-w-fit",
+        className: "inline-flex max-w-fit items-center gap-2 rounded-md bg-background/60 px-3 py-2 backdrop-blur-sm",
         description: (
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
@@ -74,7 +74,7 @@ const CreateCharacter = () => {
         title: "Error",
         description: "There was a problem creating your character. Please try again.",
         variant: "destructive",
-        className: "bg-destructive text-destructive-foreground inline-flex max-w-fit",
+        className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
       });
     } finally {
       setIsSubmitting(false);
