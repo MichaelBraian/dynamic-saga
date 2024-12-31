@@ -2,6 +2,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { CharacterStatus } from "@/types/character";
 import { MoralityQuestion } from "@/types/morality";
 
+export const getMoralityQuestionOptions = (questionText: string) => {
+  const options = questionText
+    .split('\n')
+    .slice(1)
+    .map(option => option.trim())
+    .filter(option => option.match(/^\d\./))
+    .map(option => ({
+      value: option,
+      label: option
+    }));
+
+  return options;
+};
+
 export const fetchMoralityQuestions = async () => {
   const { data, error } = await supabase
     .from('questions')
@@ -31,18 +45,4 @@ export const updateCharacterStatus = async (characterId: string, status: Charact
     .eq('id', characterId);
 
   if (error) throw error;
-};
-
-export const getMoralityQuestionOptions = (questionText: string) => {
-  const options = questionText
-    .split('\n')
-    .slice(1)
-    .map(option => option.trim())
-    .filter(option => option.match(/^\d\./))
-    .map(option => ({
-      value: option,
-      label: option
-    }));
-
-  return options;
 };
