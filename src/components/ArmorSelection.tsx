@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +13,6 @@ interface ArmorSelectionProps {
 }
 
 export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSelectionProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,7 +27,7 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
       if (statusError) throw statusError;
 
       showSuccessToast(toast, "Armor selected");
-      navigate("/");
+      // Removed the navigate("/") call to stay on the current page
     } catch (error) {
       console.error('Error saving armor selection:', error);
       toast({
