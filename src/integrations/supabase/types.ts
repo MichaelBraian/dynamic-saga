@@ -9,7 +9,262 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      character_analysis: {
+        Row: {
+          character_id: string | null
+          created_at: string
+          id: string
+          personality_text: string
+          traits_json: Json
+        }
+        Insert: {
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          personality_text: string
+          traits_json: Json
+        }
+        Update: {
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          personality_text?: string
+          traits_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_analysis_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_attributes: {
+        Row: {
+          attribute_name: string
+          character_id: string | null
+          created_at: string
+          id: string
+          value: number
+        }
+        Insert: {
+          attribute_name: string
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          value: number
+        }
+        Update: {
+          attribute_name?: string
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_attributes_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_images: {
+        Row: {
+          character_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_selected: boolean | null
+          prompt_used: string
+        }
+        Insert: {
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_selected?: boolean | null
+          prompt_used: string
+        }
+        Update: {
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_selected?: boolean | null
+          prompt_used?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_images_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_morality: {
+        Row: {
+          alignment_score: number
+          character_id: string | null
+          created_at: string
+          good_evil_scale: number
+          id: string
+          lawful_chaotic_scale: number
+        }
+        Insert: {
+          alignment_score: number
+          character_id?: string | null
+          created_at?: string
+          good_evil_scale: number
+          id?: string
+          lawful_chaotic_scale: number
+        }
+        Update: {
+          alignment_score?: number
+          character_id?: string | null
+          created_at?: string
+          good_evil_scale?: number
+          id?: string
+          lawful_chaotic_scale?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_morality_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_prompts: {
+        Row: {
+          character_id: string | null
+          created_at: string
+          dalle_prompt: string
+          id: string
+          personality_prompt: string
+        }
+        Insert: {
+          character_id?: string | null
+          created_at?: string
+          dalle_prompt: string
+          id?: string
+          personality_prompt: string
+        }
+        Update: {
+          character_id?: string | null
+          created_at?: string
+          dalle_prompt?: string
+          id?: string
+          personality_prompt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_prompts_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_responses: {
+        Row: {
+          answer: string
+          character_id: string | null
+          created_at: string
+          id: string
+          question_id: string | null
+        }
+        Insert: {
+          answer: string
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string | null
+        }
+        Update: {
+          answer?: string
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_responses_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      characters: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["character_status"] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["character_status"] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["character_status"] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at: string
+          id: string
+          morality_weight: number
+          question_text: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          morality_weight: number
+          question_text: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          morality_weight?: number
+          question_text?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +273,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      character_status:
+        | "naming"
+        | "questioning"
+        | "attributes"
+        | "generated"
+        | "completed"
+      question_category: "personality" | "background" | "morality"
     }
     CompositeTypes: {
       [_ in never]: never
