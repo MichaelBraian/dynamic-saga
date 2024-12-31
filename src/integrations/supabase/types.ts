@@ -329,6 +329,7 @@ export type Database = {
         | "animal_type"
         | "clothing"
         | "armor"
+        | "morality"
       question_category: "personality" | "background" | "morality"
     }
     CompositeTypes: {
