@@ -32,7 +32,7 @@ export const HamburgerMenu = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="fixed top-4 left-4 z-[9999]">
+      <DropdownMenuTrigger className="fixed top-4 left-4 z-[9999] bg-black/20 backdrop-blur-sm p-2 rounded-lg hover:bg-black/30 transition-colors">
         <Menu className="h-6 w-6 text-white hover:text-gray-300" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
