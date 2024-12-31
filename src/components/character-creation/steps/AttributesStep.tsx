@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
-import { Sword, Move, Heart, Brain, Eye, User } from "lucide-react";
+import { Sword, Move, Heart, Brain, Eye, User, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -79,7 +79,17 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
 
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
-      <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Character Attributes</h2>
+      <div className="flex items-center mb-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleBack}
+          className="text-white hover:bg-white/20 mr-2"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <h2 className="text-2xl font-['Cinzel'] text-white">Character Attributes</h2>
+      </div>
       <div className="space-y-4">
         {attributes.map((attr) => (
           <div key={attr.name} className="flex items-center gap-4 text-white p-4 rounded-lg bg-black/30">
@@ -91,15 +101,6 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
             <InfoTooltip content={attr.description} />
           </div>
         ))}
-      </div>
-      <div className="flex justify-between mt-6">
-        <Button
-          variant="outline"
-          onClick={handleBack}
-          className="text-white border-white/20 hover:bg-white/10"
-        >
-          Back
-        </Button>
       </div>
     </div>
   );
