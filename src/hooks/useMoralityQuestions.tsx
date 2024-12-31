@@ -30,11 +30,8 @@ export const useMoralityQuestions = (characterId: string) => {
       const question = questions?.find(q => q.id === response.question_id);
       if (!question) continue;
 
-      // Extract the choice number from the response (e.g., "1. Good choice" -> 1)
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       
-      // Calculate scores based on the choice and question weight
-      // Choices 1 and 2 are considered "good/lawful", 3 and 4 are "evil/chaotic"
       if (choiceNumber <= 2) {
         goodEvilScore += question.morality_weight;
         lawfulChaoticScore += question.morality_weight;
@@ -44,31 +41,32 @@ export const useMoralityQuestions = (characterId: string) => {
       }
     }
 
-    // Calculate overall alignment score (0-100 scale)
     const alignmentScore = Math.floor(
       ((goodEvilScore + lawfulChaoticScore) / 2 + 50) * 100
     );
 
     try {
-      // Save the morality scores
       const { error: mortalityError } = await supabase
         .from('character_morality')
         .insert({
           character_id: characterId,
           good_evil_scale: goodEvilScore,
           lawful_chaotic_scale: lawfulChaoticScore,
-          alignment_score: alignmentScore
+          alignment_score: Math.min(Math.max(alignmentScore, 0), 100) // Ensure score is between 0 and 100
         });
 
-      if (mortalityError) throw mortalityError;
+      if (mortalityError) {
+        console.error('Error saving morality scores:', mortalityError);
+        toast({
+          variant: "destructive",
+          description: "Failed to save morality scores. Please try again.",
+        });
+        throw mortalityError;
+      }
 
       return { goodEvilScore, lawfulChaoticScore, alignmentScore };
     } catch (error) {
-      console.error('Error saving morality scores:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save morality scores. Please try again.",
-      });
+      console.error('Error in calculateMoralityScores:', error);
       throw error;
     }
   };
@@ -86,17 +84,31 @@ export const useMoralityQuestions = (characterId: string) => {
           answer: answer
         });
 
-      if (responseError) throw responseError;
+      if (responseError) {
+        console.error('Error saving response:', responseError);
+        toast({
+          variant: "destructive",
+          description: "Failed to save your response. Please try again.",
+        });
+        throw responseError;
+      }
 
       // If this was the last question
-      if (currentQuestionIndex === (questions?.length || 0) - 1) {
+      if (currentQuestionIndex === questions.length - 1) {
         // Fetch all responses for this character
         const { data: responses, error: fetchError } = await supabase
           .from('character_responses')
           .select('question_id, answer')
           .eq('character_id', characterId);
 
-        if (fetchError) throw fetchError;
+        if (fetchError) {
+          console.error('Error fetching responses:', fetchError);
+          throw fetchError;
+        }
+
+        if (!responses) {
+          throw new Error('No responses found');
+        }
 
         // Calculate and save morality scores
         await calculateMoralityScores(responses);
@@ -107,7 +119,10 @@ export const useMoralityQuestions = (characterId: string) => {
           .update({ status: 'questioning' as CharacterStatus })
           .eq('id', characterId);
 
-        if (statusError) throw statusError;
+        if (statusError) {
+          console.error('Error updating character status:', statusError);
+          throw statusError;
+        }
 
         return true; // Indicates completion
       }
@@ -115,11 +130,7 @@ export const useMoralityQuestions = (characterId: string) => {
       setCurrentQuestionIndex(prev => prev + 1);
       return false; // Indicates more questions remain
     } catch (error) {
-      console.error('Error saving response:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save your response. Please try again.",
-      });
+      console.error('Error in saveResponse:', error);
       throw error;
     }
   };
