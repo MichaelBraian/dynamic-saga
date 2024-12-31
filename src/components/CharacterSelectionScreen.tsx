@@ -39,12 +39,30 @@ export const CharacterSelectionScreen = ({
   const handleSubmit = async (value: string) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from('characters')
-        .update({ [updateField]: value, status: nextStatus })
-        .eq('id', characterId);
+      if (updateField === 'clothing_type') {
+        // Insert into character_clothing table
+        const { error: clothingError } = await supabase
+          .from('character_clothing')
+          .insert({ character_id: characterId, clothing_type: value });
 
-      if (error) throw error;
+        if (clothingError) throw clothingError;
+
+        // Update character status
+        const { error: statusError } = await supabase
+          .from('characters')
+          .update({ status: nextStatus })
+          .eq('id', characterId);
+
+        if (statusError) throw statusError;
+      } else {
+        // Handle other updates normally
+        const { error } = await supabase
+          .from('characters')
+          .update({ [updateField]: value, status: nextStatus })
+          .eq('id', characterId);
+
+        if (error) throw error;
+      }
 
       toast({
         className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
