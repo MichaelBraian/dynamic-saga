@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,7 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
   const [isLoading, setIsLoading] = useState(true);
   const [questions, setQuestions] = useState<any[]>([]);
 
-  // Fetch questions when component mounts
-  useState(() => {
+  useEffect(() => {
     const fetchQuestions = async () => {
       const { data, error } = await supabase
         .from('questions')
@@ -38,7 +37,7 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
     };
 
     fetchQuestions();
-  }, []);
+  }, [toast]);
 
   const handleOptionSelected = async (questionId: string, answer: string) => {
     try {
