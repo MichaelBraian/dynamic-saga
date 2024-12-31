@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
 import { CharacterStatus } from "@/types/character";
@@ -10,6 +10,33 @@ const CreateCharacter = () => {
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
   const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
+
+  // Add effect to watch for character status changes
+  useEffect(() => {
+    if (characterId) {
+      const channel = supabase
+        .channel('character_status')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'characters',
+            filter: `id=eq.${characterId}`,
+          },
+          (payload: any) => {
+            if (payload.new && payload.new.status) {
+              setCurrentStep(payload.new.status);
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [characterId]);
 
   const handleNameSelected = (newCharacterId: string) => {
     setCharacterId(newCharacterId);
@@ -94,6 +121,7 @@ const CreateCharacter = () => {
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
       case "clothing":
       case "armor":
+      case "morality":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp";
       default:
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";

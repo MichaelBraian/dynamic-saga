@@ -29,6 +29,13 @@ export const ArmorSelection = ({ characterId, characterClass, onBack }: ArmorSel
 
       if (statusError) throw statusError;
 
+      // Fetch the updated character to trigger a re-render of the parent component
+      const { data: updatedCharacter } = await supabase
+        .from('characters')
+        .select('status')
+        .eq('id', characterId)
+        .single();
+
       showSuccessToast(toast, "Armor selected");
     } catch (error) {
       console.error('Error saving armor selection:', error);
