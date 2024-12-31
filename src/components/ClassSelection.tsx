@@ -57,11 +57,13 @@ export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => 
     labelComponent: (
       <div className="flex items-center gap-2">
         {option.label}
-        <Tooltip>
-          <TooltipTrigger>
-            <Info className="h-4 w-4 text-white/60 hover:text-white/80" />
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button type="button" className="cursor-help">
+              <Info className="h-4 w-4 text-white/60 hover:text-white/80" />
+            </button>
           </TooltipTrigger>
-          <TooltipContent className="max-w-[300px]">
+          <TooltipContent side="right" className="max-w-[300px] bg-black/90 text-white border-white/20">
             <p>{option.description}</p>
           </TooltipContent>
         </Tooltip>
@@ -70,7 +72,7 @@ export const ClassSelection = ({ characterId, onBack }: ClassSelectionProps) => 
   }));
 
   return (
-    <div className="pt-16"> {/* Added padding-top here */}
+    <div className="pt-16">
       <CharacterSelectionScreen
         title="Choose Class"
         options={classOptionsWithInfo}
