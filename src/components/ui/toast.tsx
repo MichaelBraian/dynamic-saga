@@ -13,7 +13,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse items-center justify-center p-2",
+      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse items-center justify-center p-3",
       className
     )}
     {...props}
@@ -22,12 +22,12 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-auto items-center justify-between space-x-1 overflow-hidden rounded-sm border p-1 shadow-sm",
+  "group pointer-events-auto relative flex w-auto items-center justify-between space-x-2 overflow-hidden rounded-md p-2 shadow-lg",
   {
     variants: {
       variant: {
-        default: "bg-black/50 backdrop-blur-sm text-white border-0",
-        destructive: "bg-black/50 backdrop-blur-sm text-white border-0",
+        default: "bg-[#222222]/90 backdrop-blur-sm text-white border-0",
+        destructive: "bg-[#222222]/90 backdrop-blur-sm text-white border-0",
       },
     },
     defaultVariants: {
@@ -52,7 +52,11 @@ const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitives.Title ref={ref} className={cn("text-xs font-medium", className)} {...props} />
+  <ToastPrimitives.Title 
+    ref={ref} 
+    className={cn("text-sm font-semibold", className)} 
+    {...props} 
+  />
 ))
 ToastTitle.displayName = ToastPrimitives.Title.displayName
 
@@ -60,7 +64,11 @@ const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Description>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitives.Description ref={ref} className={cn("text-xs opacity-90", className)} {...props} />
+  <ToastPrimitives.Description 
+    ref={ref} 
+    className={cn("text-sm opacity-90", className)} 
+    {...props} 
+  />
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
