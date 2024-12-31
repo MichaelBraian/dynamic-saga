@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 import { CLOTHING_OPTIONS } from "@/data/clothingOptions";
+import { InfoTooltip } from "./shared/InfoTooltip";
 
 interface ClothingSelectionProps {
   characterId: string;
@@ -47,12 +48,22 @@ export const ClothingSelection = ({ characterId, characterClass, onBack }: Cloth
   };
 
   const options = CLOTHING_OPTIONS[characterClass] || [];
+  const optionsWithInfo = options.map(option => ({
+    value: option.value,
+    label: option.value,
+    labelComponent: (
+      <div className="flex items-center gap-2">
+        {option.value}
+        <InfoTooltip content={option.label} />
+      </div>
+    ),
+  }));
 
   return (
     <div className="pt-16">
       <CharacterSelectionScreen
         title="Choose Clothing"
-        options={options}
+        options={optionsWithInfo}
         characterId={characterId}
         onSelected={handleClothingSelected}
         onBack={onBack}
