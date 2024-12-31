@@ -289,6 +289,8 @@ export type Database = {
         | "generated"
         | "completed"
         | "class"
+        | "gender"
+        | "race"
       question_category: "personality" | "background" | "morality"
     }
     CompositeTypes: {
