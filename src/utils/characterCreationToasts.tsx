@@ -1,10 +1,16 @@
 import React from "react";
 import { Check } from "lucide-react";
-import { ToastProps } from "@/components/ui/toast";
+import { type ToastActionElement } from "@/components/ui/toast";
 
-type ToastOptions = Partial<ToastProps>;
+type ToastProps = {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: ToastActionElement;
+  className?: string;
+  variant?: "default" | "destructive";
+};
 
-export const createSuccessToast = (message: string): ToastOptions => ({
+export const createSuccessToast = (message: string): Partial<ToastProps> => ({
   className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
   description: (
     <div className="flex items-center gap-2">
@@ -15,7 +21,7 @@ export const createSuccessToast = (message: string): ToastOptions => ({
   duration: 2000,
 });
 
-export const createErrorToast = (title: string, description: string): ToastOptions => ({
+export const createErrorToast = (title: string, description: string): Partial<ToastProps> => ({
   title,
   description,
   variant: "destructive",
