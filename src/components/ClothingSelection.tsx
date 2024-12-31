@@ -20,18 +20,40 @@ export const ClothingSelection = ({ characterId, characterClass, onBack, onCloth
   const handleClothingSelected = async (value: string) => {
     setIsSubmitting(true);
     try {
+      // First check if clothing record exists
+      const { data: existingClothing, error: queryError } = await supabase
+        .from('character_clothing')
+        .select()
+        .eq('character_id', characterId)
+        .maybeSingle();
+
+      if (queryError) throw queryError;
+
+      let clothingError;
+      if (existingClothing) {
+        // Update existing record
+        const { error } = await supabase
+          .from('character_clothing')
+          .update({ clothing_type: value })
+          .eq('character_id', characterId);
+        clothingError = error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('character_clothing')
+          .insert({ character_id: characterId, clothing_type: value });
+        clothingError = error;
+      }
+
+      if (clothingError) throw clothingError;
+
+      // Update character status to armor after successful clothing selection
       const { error: statusError } = await supabase
         .from('characters')
         .update({ status: 'armor' })
         .eq('id', characterId);
 
       if (statusError) throw statusError;
-
-      const { error: clothingError } = await supabase
-        .from('character_clothing')
-        .insert({ character_id: characterId, clothing_type: value });
-
-      if (clothingError) throw clothingError;
 
       showSuccessToast(toast, "Clothing selected");
       onClothingSelected();
