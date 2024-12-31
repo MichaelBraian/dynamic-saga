@@ -1,12 +1,7 @@
-import { Info } from "lucide-react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
+import { InfoTooltip } from "./shared/InfoTooltip";
 
 interface AnimalTypeSelectionProps {
   characterId: string;
@@ -31,20 +26,12 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
   };
 
   const animalTypesWithInfo = ANIMAL_TYPES.map(option => ({
-    ...option,
+    value: option.value,
+    label: option.value,
     labelComponent: (
       <div className="flex items-center gap-2">
-        {option.label}
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <button type="button" className="cursor-help">
-              <Info className="h-4 w-4 text-white/60 hover:text-white/80" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="max-w-[300px] bg-black/90 text-white border-white/20">
-            <p>{option.description}</p>
-          </TooltipContent>
-        </Tooltip>
+        {option.value}
+        <InfoTooltip content={option.description} />
       </div>
     ),
   }));

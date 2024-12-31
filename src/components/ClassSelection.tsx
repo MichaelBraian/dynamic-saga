@@ -2,6 +2,7 @@ import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 import { CLASS_OPTIONS } from "@/data/classOptions";
+import { InfoTooltip } from "./shared/InfoTooltip";
 
 interface ClassSelectionProps {
   characterId: string;
@@ -17,16 +18,22 @@ export const ClassSelection = ({ characterId, onBack, onClassSelected }: ClassSe
     onClassSelected(value);
   };
 
-  const classOptionsWithLabels = CLASS_OPTIONS.map(option => ({
+  const classOptionsWithInfo = CLASS_OPTIONS.map(option => ({
     value: option.value,
-    label: `${option.label}: ${option.description}`
+    label: option.value,
+    labelComponent: (
+      <div className="flex items-center gap-2">
+        {option.value}
+        <InfoTooltip content={option.description} />
+      </div>
+    ),
   }));
 
   return (
     <div className="pt-16">
       <CharacterSelectionScreen
         title="Choose Class"
-        options={classOptionsWithLabels}
+        options={classOptionsWithInfo}
         characterId={characterId}
         onSelected={handleSelected}
         onBack={onBack}
