@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -25,6 +24,7 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
         .eq('category', 'morality');
 
       if (error) {
+        console.error('Error fetching questions:', error);
         toast({
           variant: "destructive",
           description: "Failed to load questions. Please try again.",
@@ -39,24 +39,26 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
     fetchQuestions();
   }, [toast]);
 
-  const handleOptionSelected = async (questionId: string, answer: string) => {
+  const handleOptionSelected = async (answer: string) => {
     try {
+      const currentQuestionData = questions[currentQuestion];
+      
       // Save the response
       const { error: responseError } = await supabase
         .from('character_responses')
         .insert({
           character_id: characterId,
-          question_id: questionId,
+          question_id: currentQuestionData.id,
           answer: answer
         });
 
       if (responseError) throw responseError;
 
-      // Move to next question or finish
+      // If there are more questions, move to the next one
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
-        // Update character status to questioning
+        // Update character status to questioning when all questions are answered
         const { error: statusError } = await supabase
           .from('characters')
           .update({ status: 'questioning' })
@@ -76,50 +78,35 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
   };
 
   if (isLoading) {
-    return <div>Loading questions...</div>;
+    return <div className="text-white">Loading questions...</div>;
   }
 
   const currentQuestionData = questions[currentQuestion];
   if (!currentQuestionData) return null;
 
-  // Parse options from question text
+  // Get the scenario text (first line) and options
+  const scenarioText = currentQuestionData.question_text.split('\n')[0];
   const options = currentQuestionData.question_text
     .split('\n')
     .slice(1)
-    .map((option: string) => option.trim())
-    .filter((option: string) => option.match(/^\d\./));
+    .map(option => option.trim())
+    .filter(option => option.match(/^\d\./))
+    .map(option => ({
+      value: option,
+      label: option
+    }));
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Card className="p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-4">Scenario {currentQuestion + 1}</h2>
-          <p className="text-lg mb-4">{currentQuestionData.question_text.split('\n')[0]}</p>
-        </div>
-        
-        <div className="space-y-4">
-          {options.map((option: string, index: number) => (
-            <Button
-              key={index}
-              variant="outline"
-              className="w-full text-left justify-start h-auto py-4 px-6"
-              onClick={() => handleOptionSelected(currentQuestionData.id, option)}
-            >
-              {option}
-            </Button>
-          ))}
-        </div>
-
-        {currentQuestion > 0 && (
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="mt-4"
-          >
-            Back
-          </Button>
-        )}
-      </Card>
+    <div className="pt-16">
+      <CharacterSelectionScreen
+        title={`Scenario ${currentQuestion + 1}: ${scenarioText}`}
+        options={options}
+        characterId={characterId}
+        onSelected={handleOptionSelected}
+        onBack={currentQuestion === 0 ? onBack : () => setCurrentQuestion(prev => prev - 1)}
+        updateField="morality_response"
+        nextStatus="questioning"
+      />
     </div>
   );
 };
