@@ -40,11 +40,26 @@ const CreateCharacter = () => {
     }
   };
 
+  const getBackgroundImage = () => {
+    switch (currentStep) {
+      case "naming":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
+      case "gender":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Gender_Character.webp";
+      case "race":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Race_Character.webp";
+      case "class":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class_Character.webp";
+      default:
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
+    }
+  };
+
   return (
     <div 
       className="min-h-screen bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `url('https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp')`
+        backgroundImage: `url('${getBackgroundImage()}')`
       }}
     >
       <HamburgerMenu />
