@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
-import { cva } from "class-variance-authority"
+import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -26,8 +26,8 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-0 bg-background/60 backdrop-blur-sm text-foreground",
-        destructive: "destructive group border-0 bg-destructive/60 backdrop-blur-sm text-destructive-foreground",
+        default: "bg-black/50 backdrop-blur-sm text-white border-0",
+        destructive: "bg-black/50 backdrop-blur-sm text-white border-0",
       },
     },
     defaultVariants: {
