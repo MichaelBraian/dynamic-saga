@@ -1,7 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, UserPlus, Users, Settings } from "lucide-react";
+import { Swords, ScrollText, Shield, Compass } from "lucide-react";
+
+interface MenuButton {
+  icon: React.ReactNode;
+  label: string;
+  action: () => void;
+}
 
 const Index = () => {
   const imageUrl = supabase.storage
@@ -11,6 +17,29 @@ const Index = () => {
   useEffect(() => {
     console.log("Background image URL:", imageUrl);
   }, [imageUrl]);
+
+  const menuButtons: MenuButton[] = [
+    {
+      icon: <Swords className="h-5 w-5" />,
+      label: "Play",
+      action: () => console.log("Play clicked")
+    },
+    {
+      icon: <ScrollText className="h-5 w-5" />,
+      label: "Create Character",
+      action: () => console.log("Create Character clicked")
+    },
+    {
+      icon: <Shield className="h-5 w-5" />,
+      label: "Character List",
+      action: () => console.log("Character List clicked")
+    },
+    {
+      icon: <Compass className="h-5 w-5" />,
+      label: "Settings",
+      action: () => console.log("Settings clicked")
+    }
+  ];
 
   return (
     <div 
@@ -24,37 +53,17 @@ const Index = () => {
       </div>
       
       <div className="flex flex-col gap-4 w-64 p-4 bg-black/50 rounded-lg">
-        <Button 
-          className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
-          variant="outline"
-        >
-          <Play className="h-5 w-5" />
-          Play
-        </Button>
-        
-        <Button 
-          className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
-          variant="outline"
-        >
-          <UserPlus className="h-5 w-5" />
-          Create Character
-        </Button>
-        
-        <Button 
-          className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
-          variant="outline"
-        >
-          <Users className="h-5 w-5" />
-          Character List
-        </Button>
-        
-        <Button 
-          className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
-          variant="outline"
-        >
-          <Settings className="h-5 w-5" />
-          Settings
-        </Button>
+        {menuButtons.map((button, index) => (
+          <Button 
+            key={index}
+            className="flex items-center gap-2 h-12 text-lg font-['IM_Fell_English']"
+            variant="outline"
+            onClick={button.action}
+          >
+            {button.icon}
+            {button.label}
+          </Button>
+        ))}
       </div>
     </div>
   );
