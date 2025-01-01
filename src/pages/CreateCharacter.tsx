@@ -21,6 +21,7 @@ const CreateCharacter = () => {
     handleClothingSelected,
     handleArmorSelected,
     handleMoralityCompleted,
+    handleAttributesCompleted,
     handleSpecialtySelected,
     handleBack,
     setCurrentStep,
@@ -84,6 +85,7 @@ const CreateCharacter = () => {
           onClothingSelected={handleClothingSelected}
           onArmorSelected={handleArmorSelected}
           onMoralityCompleted={handleMoralityCompleted}
+          onAttributesCompleted={handleAttributesCompleted}
           onSpecialtySelected={handleSpecialtySelected}
           onBack={handleBack}
         />

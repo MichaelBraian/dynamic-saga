@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCharacterStatus } from "./character-creation/useCharacterStatus";
 import { useCharacterType } from "./character-creation/useCharacterType";
 import { useStepNavigation } from "./character-creation/useStepNavigation";
+import { useToast } from "./use-toast";
 
 export const useCharacterCreation = () => {
   const [characterId, setCharacterId] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const { currentStep, setCurrentStep } = useCharacterStatus(characterId);
   
@@ -80,18 +82,54 @@ export const useCharacterCreation = () => {
 
       if (error) {
         console.error('Error updating character status:', error);
+        toast({
+          variant: "destructive",
+          description: "Failed to update character status. Please try again.",
+        });
         return;
       }
       setCurrentStep("attributes");
     }
   };
 
-  const handleAttributesCompleted = () => {
-    setCurrentStep("specialty");
+  const handleAttributesCompleted = async () => {
+    console.log("Attributes completed, transitioning to specialty");
+    if (characterId) {
+      const { error } = await supabase
+        .from('characters')
+        .update({ status: 'specialty' })
+        .eq('id', characterId);
+
+      if (error) {
+        console.error('Error updating character status:', error);
+        toast({
+          variant: "destructive",
+          description: "Failed to update character status. Please try again.",
+        });
+        return;
+      }
+      setCurrentStep("specialty");
+    }
   };
 
-  const handleSpecialtySelected = () => {
-    setCurrentStep("faith_points");
+  const handleSpecialtySelected = async () => {
+    console.log("Specialty selected, transitioning to faith_points");
+    if (characterId) {
+      const { error } = await supabase
+        .from('characters')
+        .update({ status: 'faith_points' })
+        .eq('id', characterId);
+
+      if (error) {
+        console.error('Error updating character status:', error);
+        toast({
+          variant: "destructive",
+          description: "Failed to update character status. Please try again.",
+        });
+        return;
+      }
+      setCurrentStep("faith_points");
+    }
   };
 
   return {

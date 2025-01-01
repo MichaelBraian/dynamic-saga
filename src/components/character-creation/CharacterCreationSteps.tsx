@@ -19,6 +19,7 @@ interface CharacterCreationStepsProps {
   onClothingSelected: () => void;
   onArmorSelected: () => void;
   onMoralityCompleted: () => void;
+  onAttributesCompleted: () => void;
   onSpecialtySelected: () => void;
   onBack: () => void;
 }
@@ -35,10 +36,10 @@ export const CharacterCreationSteps = ({
   onClothingSelected,
   onArmorSelected,
   onMoralityCompleted,
+  onAttributesCompleted,
   onSpecialtySelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  // Handle initial steps (naming doesn't require characterId)
   if (currentStep === "naming" || !characterId) {
     return (
       <InitialSteps
@@ -52,7 +53,6 @@ export const CharacterCreationSteps = ({
     );
   }
 
-  // Render appropriate step group based on current step
   const stepGroups = {
     gender: () => (
       <InitialSteps
@@ -117,6 +117,7 @@ export const CharacterCreationSteps = ({
         currentStep={currentStep}
         characterId={characterId}
         onMoralityCompleted={onMoralityCompleted}
+        onAttributesCompleted={onAttributesCompleted}
         onBack={onBack}
       />
     ),
@@ -125,6 +126,7 @@ export const CharacterCreationSteps = ({
         currentStep={currentStep}
         characterId={characterId}
         onMoralityCompleted={onMoralityCompleted}
+        onAttributesCompleted={onAttributesCompleted}
         onBack={onBack}
       />
     ),
