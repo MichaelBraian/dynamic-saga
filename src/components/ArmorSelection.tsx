@@ -5,6 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 import { ARMOR_OPTIONS } from "@/data/armorOptions";
 import { InfoTooltip } from "./shared/InfoTooltip";
+import { SelectionLoadingState } from "./shared/SelectionLoadingState";
+import { ErrorBoundary } from "./shared/ErrorBoundary";
 
 interface ArmorSelectionProps {
   characterId: string;
@@ -35,7 +37,7 @@ export const ArmorSelection = ({
 
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id, status')
+        .select('user_id, class, status')
         .eq('id', characterId)
         .single();
 
@@ -45,6 +47,11 @@ export const ArmorSelection = ({
 
       if (character.user_id !== user.id) {
         throw new Error("Unauthorized");
+      }
+
+      // Validate armor selection based on class
+      if (!ARMOR_OPTIONS[character.class]?.some(option => option.value === value)) {
+        throw new Error(`Invalid armor selection for ${character.class}. Please choose a valid option.`);
       }
 
       // Update armor selection
@@ -60,7 +67,7 @@ export const ArmorSelection = ({
       if (updateError) throw updateError;
 
       console.log('Armor selection saved successfully');
-      showSuccessToast(toast, "Armor selected");
+      showSuccessToast(toast, "Armor selected successfully");
       
       if (onArmorSelected) {
         onArmorSelected();
@@ -69,12 +76,22 @@ export const ArmorSelection = ({
       console.error('Error saving armor selection:', error);
       toast({
         variant: "destructive",
-        description: "Failed to save armor selection. Please try again.",
+        description: error instanceof Error 
+          ? error.message 
+          : "Failed to save armor selection. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isSubmitting) {
+    return (
+      <div className="pt-16">
+        <SelectionLoadingState message="Saving armor selection..." />
+      </div>
+    );
+  }
 
   const options = ARMOR_OPTIONS[characterClass] || [];
   const optionsWithInfo = options.map(option => ({
@@ -89,18 +106,26 @@ export const ArmorSelection = ({
   }));
 
   return (
-    <div className="pt-16">
-      <CharacterSelectionScreen
-        title="Choose Armor"
-        options={optionsWithInfo}
-        characterId={characterId}
-        onSelected={handleArmorSelected}
-        onBack={onBack}
-        updateField="armor_type"
-        nextStatus="morality"
-        showBackButton={true}
-        isSubmitting={isSubmitting}
-      />
-    </div>
+    <ErrorBoundary
+      fallback={
+        <div className="text-white bg-red-500/20 p-4 rounded-lg">
+          Something went wrong. Please refresh and try again.
+        </div>
+      }
+    >
+      <div className="pt-16">
+        <CharacterSelectionScreen
+          title="Choose Armor"
+          options={optionsWithInfo}
+          characterId={characterId}
+          onSelected={handleArmorSelected}
+          onBack={onBack}
+          updateField="armor_type"
+          nextStatus="morality"
+          showBackButton={true}
+          isSubmitting={isSubmitting}
+        />
+      </div>
+    </ErrorBoundary>
   );
 };
