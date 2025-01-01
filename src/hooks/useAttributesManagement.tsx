@@ -43,28 +43,24 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   const handleContinue = async () => {
     setIsSaving(true);
     try {
-      // Save attributes one by one instead of using Promise.all
-      const errors: PostgrestError[] = [];
-      
+      // Save attributes one by one using upsert
       for (const [name, value] of Object.entries(attributeRolls)) {
         if (value !== undefined) {
           const { error } = await supabase
             .from('character_attributes')
-            .insert({
+            .upsert({
               character_id: characterId,
               attribute_name: name.toLowerCase(),
               value: value
+            }, {
+              onConflict: 'character_id,attribute_name'
             });
           
           if (error) {
-            errors.push(error);
+            console.error(`Error saving ${name}:`, error);
+            throw error;
           }
         }
-      }
-
-      if (errors.length > 0) {
-        console.error('Errors saving attributes:', errors);
-        throw new Error('Failed to save some attributes');
       }
 
       // Update character status
