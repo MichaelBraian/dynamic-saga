@@ -81,8 +81,8 @@ export const useMoralityQuestions = (characterId: string) => {
         throw new Error("Character not found or unauthorized");
       }
 
-      // Save the response using insert instead of upsert
-      const { error: responseError } = await supabase
+      // Try to insert the response first
+      const { error: insertError } = await supabase
         .from('character_responses')
         .insert({
           character_id: characterId,
@@ -90,20 +90,19 @@ export const useMoralityQuestions = (characterId: string) => {
           answer
         });
 
-      if (responseError) {
-        // If insert fails due to duplicate, try update
-        if (responseError.code === '23505') {
-          const { error: updateError } = await supabase
-            .from('character_responses')
-            .update({ answer })
-            .match({ 
-              character_id: characterId, 
-              question_id: questions[currentQuestionIndex].id 
-            });
-          if (updateError) throw updateError;
-        } else {
-          throw responseError;
-        }
+      // If insert fails due to duplicate, update instead
+      if (insertError && insertError.code === '23505') {
+        const { error: updateError } = await supabase
+          .from('character_responses')
+          .update({ answer })
+          .match({ 
+            character_id: characterId, 
+            question_id: questions[currentQuestionIndex].id 
+          });
+
+        if (updateError) throw updateError;
+      } else if (insertError) {
+        throw insertError;
       }
 
       const nextIndex = currentQuestionIndex + 1;
