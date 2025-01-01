@@ -3,12 +3,7 @@ import { CharacterStatus } from "@/types/character";
 import { useCharacterState } from "./character/useCharacterState";
 import { useCharacterDatabase } from "./character/useCharacterDatabase";
 import { useCharacterNavigation } from "./character/useCharacterNavigation";
-import { useCharacterCleanup } from "./character/useCharacterCleanup";
-import { useCharacterLogic } from "./character/useCharacterLogic";
-import { useCharacterValidation } from "./character/useCharacterValidation";
-import { useCharacterRetry } from "./character/useCharacterRetry";
-import { useCharacterTransactions } from "./character/useCharacterTransactions";
-import { useCharacterLoading } from "./character/useCharacterLoading";
+import { useCharacterOperations } from "./character/useCharacterOperations";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useCharacterCreation = () => {
@@ -26,14 +21,7 @@ export const useCharacterCreation = () => {
 
   const { verifyCharacterOwnership } = useCharacterDatabase();
   const { getPreviousStep, handleNavigation } = useCharacterNavigation();
-  const { handleClassSelection } = useCharacterLogic();
-  const { validateNameSelection, validateStatusUpdate } = useCharacterValidation();
-  const { retryOperation, isRetrying } = useCharacterRetry();
-  const { executeTransaction } = useCharacterTransactions();
-  const { setLoading, isLoading } = useCharacterLoading();
-
-  // Initialize cleanup hook
-  useCharacterCleanup(characterId);
+  const { handleClassSelection } = useCharacterOperations();
 
   useEffect(() => {
     if (!characterId) return;
@@ -63,9 +51,8 @@ export const useCharacterCreation = () => {
     };
 
     const initializeCharacter = async () => {
-      setLoading('initialization', true);
       try {
-        const character = await retryOperation(() => verifyCharacterOwnership(characterId));
+        const character = await verifyCharacterOwnership(characterId);
         if (character) {
           updateCharacterState({
             characterId,
@@ -75,8 +62,8 @@ export const useCharacterCreation = () => {
             selectedClass: character.class || null
           });
         }
-      } finally {
-        setLoading('initialization', false);
+      } catch (error) {
+        console.error('Error initializing character:', error);
       }
     };
 
@@ -218,8 +205,6 @@ export const useCharacterCreation = () => {
     selectedAnimalType,
     selectedClass,
     isTransitioning,
-    isRetrying,
-    isLoading,
     handleNameSelected,
     handleGenderSelected,
     handleRaceSelected,
