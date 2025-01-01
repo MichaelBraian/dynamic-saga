@@ -22,11 +22,16 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
         .from('character_morality')
         .select('alignment_score, good_evil_scale, lawful_chaotic_scale')
         .eq('character_id', characterId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching morality score:', error);
         throw error;
+      }
+
+      if (!data) {
+        console.error('No morality score found for character:', characterId);
+        throw new Error('No morality score found');
       }
 
       console.log('Retrieved morality score:', data);
@@ -49,7 +54,7 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
 
   const handleContinue = async () => {
     try {
-      console.log('Transitioning to attributes step');
+      console.log('Attempting to update character status to attributes');
       const { error: updateError } = await supabase
         .from('characters')
         .update({ status: 'attributes' })
