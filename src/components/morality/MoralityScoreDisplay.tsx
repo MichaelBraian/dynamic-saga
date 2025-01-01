@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useCharacterStatusUpdate } from "@/utils/characterStatus";
 import { toast } from "@/components/ui/use-toast";
 import { MoralityLoadingState } from "./score-display/MoralityLoadingState";
 import { ScoresDisplay } from "./score-display/ScoresDisplay";
@@ -12,8 +11,6 @@ interface MoralityScoreDisplayProps {
 }
 
 export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
-  const { updateStatus } = useCharacterStatusUpdate();
-
   const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
     queryFn: async () => {
@@ -42,14 +39,26 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   const handleContinue = async () => {
     try {
       console.log('Updating character status to attributes');
-      await updateStatus(characterId, 'attributes');
+      const { error } = await supabase
+        .from('characters')
+        .update({ status: 'attributes' })
+        .eq('id', characterId);
+
+      if (error) {
+        console.error('Error updating character status:', error);
+        toast({
+          variant: "destructive",
+          description: "Failed to proceed to attributes. Please try again.",
+        });
+        return;
+      }
+
       console.log('Successfully updated status, calling onContinue');
       onContinue();
     } catch (error) {
       console.error('Error in handleContinue:', error);
       toast({
         variant: "destructive",
-        title: "Error",
         description: "An unexpected error occurred. Please try again.",
       });
     }
@@ -69,7 +78,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
-      <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">Your Morality Score</h2>
+      <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Your Morality Score</h2>
       
       <ScoresDisplay 
         alignmentScore={morality.alignment_score}
