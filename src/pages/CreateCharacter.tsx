@@ -23,7 +23,6 @@ const CreateCharacter = () => {
     handleBack,
   } = useCharacterCreation();
 
-  // Add real-time subscription for character status updates
   useEffect(() => {
     if (!characterId) return;
 
@@ -42,16 +41,14 @@ const CreateCharacter = () => {
         (payload: any) => {
           console.log('Character status changed:', payload.new.status);
           const newStatus = payload.new.status as CharacterStatus;
-          
-          // Verify the status transition
           if (newStatus === 'attributes' && currentStep === 'morality') {
             console.log('Transitioning from morality to attributes step');
+            window.location.reload(); // Force a refresh to ensure proper state update
           }
         }
       )
       .subscribe();
 
-    // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up character status subscription');
       supabase.removeChannel(channel);

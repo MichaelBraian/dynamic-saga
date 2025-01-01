@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 interface ContinueButtonProps {
-  onClick: () => void;  // Changed from Promise<void> to void
+  onClick: () => void;
 }
 
 export const ContinueButton = ({ onClick }: ContinueButtonProps) => {
