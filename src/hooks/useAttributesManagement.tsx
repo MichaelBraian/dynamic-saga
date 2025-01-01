@@ -11,24 +11,23 @@ interface AttributeRoll {
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-  const [attributeRolls, setAttributeRolls] = useState<AttributeRoll[]>([
-    { name: "strength", value: null },
-    { name: "dexterity", value: null },
-    { name: "constitution", value: null },
-    { name: "intelligence", value: null },
-    { name: "wisdom", value: null },
-    { name: "charisma", value: null },
-  ]);
+  const [attributeRolls, setAttributeRolls] = useState<Record<string, number | undefined>>({
+    strength: undefined,
+    dexterity: undefined,
+    constitution: undefined,
+    intelligence: undefined,
+    wisdom: undefined,
+    charisma: undefined,
+  });
 
   const handleRollComplete = (attributeName: string, value: number) => {
-    setAttributeRolls(prev =>
-      prev.map(roll =>
-        roll.name === attributeName ? { ...roll, value } : roll
-      )
-    );
+    setAttributeRolls(prev => ({
+      ...prev,
+      [attributeName]: value
+    }));
   };
 
-  const allAttributesRolled = attributeRolls.every(roll => roll.value !== null);
+  const allAttributesRolled = Object.values(attributeRolls).every(value => value !== undefined);
 
   const handleBack = async () => {
     try {
@@ -49,14 +48,14 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
     setIsSaving(true);
     try {
       // Save all attributes
-      const attributePromises = attributeRolls.map(roll => {
-        if (roll.value === null) return Promise.resolve();
+      const attributePromises = Object.entries(attributeRolls).map(([name, value]) => {
+        if (value === undefined) return Promise.resolve();
         return supabase
           .from('character_attributes')
           .insert({
             character_id: characterId,
-            attribute_name: roll.name,
-            value: roll.value
+            attribute_name: name,
+            value: value
           });
       });
 
