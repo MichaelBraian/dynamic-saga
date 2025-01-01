@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 import { showSuccessToast } from "@/utils/toast";
-import { PostgrestError } from "@supabase/supabase-js";
+import { updateCharacterStatus } from "@/utils/characterStatus";
 
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const { toast } = useToast();
@@ -27,12 +27,7 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
 
   const handleBack = async () => {
     try {
-      const { error } = await supabase
-        .from('characters')
-        .update({ status: 'morality' })
-        .eq('id', characterId);
-
-      if (error) throw error;
+      await updateCharacterStatus(characterId, 'morality');
       return true;
     } catch (error) {
       console.error('Error updating character status:', error);
@@ -43,9 +38,10 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   const handleContinue = async () => {
     setIsSaving(true);
     try {
-      // Save attributes one by one using upsert
+      // Save attributes sequentially to avoid response stream issues
       for (const [name, value] of Object.entries(attributeRolls)) {
         if (value !== undefined) {
+          console.log(`Saving ${name} with value ${value}`);
           const { error } = await supabase
             .from('character_attributes')
             .upsert({
@@ -64,13 +60,8 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
       }
 
       // Update character status
-      const { error: statusError } = await supabase
-        .from('characters')
-        .update({ status: 'specialty' })
-        .eq('id', characterId);
-
-      if (statusError) throw statusError;
-
+      await updateCharacterStatus(characterId, 'specialty');
+      
       showSuccessToast(toast, "Attributes saved successfully");
       onComplete();
     } catch (error) {

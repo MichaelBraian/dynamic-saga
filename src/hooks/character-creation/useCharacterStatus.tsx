@@ -8,10 +8,10 @@ export const useCharacterStatus = (characterId: string | null) => {
   useEffect(() => {
     if (!characterId) return;
 
-    console.log('Setting up real-time subscription for character:', characterId);
+    console.log('Setting up character status subscription for:', characterId);
     
     const channel = supabase
-      .channel('character_status')
+      .channel(`character_status_${characterId}`)
       .on(
         'postgres_changes',
         {
@@ -22,14 +22,14 @@ export const useCharacterStatus = (characterId: string | null) => {
         },
         (payload: any) => {
           console.log('Character status updated:', payload.new.status);
-          if (payload.new && payload.new.status) {
+          if (payload.new?.status) {
             setCurrentStep(payload.new.status as CharacterStatus);
           }
         }
       )
       .subscribe();
 
-    const fetchCharacter = async () => {
+    const fetchCharacterStatus = async () => {
       const { data, error } = await supabase
         .from('characters')
         .select('status')
@@ -42,9 +42,10 @@ export const useCharacterStatus = (characterId: string | null) => {
       }
     };
 
-    fetchCharacter();
+    fetchCharacterStatus();
 
     return () => {
+      console.log('Cleaning up character status subscription');
       supabase.removeChannel(channel);
     };
   }, [characterId]);

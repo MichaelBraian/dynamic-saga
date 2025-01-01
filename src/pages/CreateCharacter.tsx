@@ -2,9 +2,6 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
 import { CharacterCreationBackground } from "@/components/character-creation/CharacterCreationBackground";
 import { useCharacterCreation } from "@/hooks/useCharacterCreation";
-import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { CharacterStatus } from "@/types/character";
 
 const CreateCharacter = () => {
   const {
@@ -24,48 +21,7 @@ const CreateCharacter = () => {
     handleAttributesCompleted,
     handleSpecialtySelected,
     handleBack,
-    setCurrentStep,
   } = useCharacterCreation();
-
-  useEffect(() => {
-    if (!characterId) return;
-
-    const channel = supabase
-      .channel(`character_status_${characterId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'characters',
-          filter: `id=eq.${characterId}`,
-        },
-        (payload: any) => {
-          if (payload.new?.status) {
-            setCurrentStep(payload.new.status as CharacterStatus);
-          }
-        }
-      )
-      .subscribe();
-
-    const fetchCharacterStatus = async () => {
-      const { data, error } = await supabase
-        .from('characters')
-        .select('status')
-        .eq('id', characterId)
-        .single();
-
-      if (!error && data) {
-        setCurrentStep(data.status);
-      }
-    };
-
-    fetchCharacterStatus();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [characterId, setCurrentStep]);
 
   return (
     <CharacterCreationBackground currentStep={currentStep}>
