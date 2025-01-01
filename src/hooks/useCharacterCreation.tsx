@@ -40,6 +40,7 @@ export const useCharacterCreation = () => {
           .single();
 
         if (!error && data) {
+          console.log('Fetched character data:', data);
           setCurrentStep(data.status);
           setSelectedRace(data.race);
           setSelectedAnimalType(data.animal_type);

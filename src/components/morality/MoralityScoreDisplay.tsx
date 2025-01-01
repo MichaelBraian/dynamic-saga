@@ -56,9 +56,11 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
         .eq('id', characterId);
 
       if (updateError) {
+        console.error('Error updating character status:', updateError);
         throw updateError;
       }
 
+      console.log('Successfully updated character status to attributes');
       handleArmorSelected();
     } catch (error) {
       console.error('Error transitioning to attributes:', error);
