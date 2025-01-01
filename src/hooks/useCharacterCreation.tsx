@@ -21,13 +21,13 @@ export const useCharacterCreation = () => {
 
   const { handleBack: handleStepBack } = useCharacterSteps();
   const {
-    handleNameSelected,
-    handleGenderSelected,
-    handleRaceSelected,
-    handleAnimalTypeSelected,
-    handleClassSelected,
-    handleClothingSelected,
-    handleArmorSelected
+    handleNameSelected: handleNameSelectedBase,
+    handleGenderSelected: handleGenderSelectedBase,
+    handleRaceSelected: handleRaceSelectedBase,
+    handleAnimalTypeSelected: handleAnimalTypeSelectedBase,
+    handleClassSelected: handleClassSelectedBase,
+    handleClothingSelected: handleClothingSelectedBase,
+    handleArmorSelected: handleArmorSelectedBase
   } = useCharacterSelectionHandlers();
 
   useEffect(() => {
@@ -73,6 +73,7 @@ export const useCharacterCreation = () => {
     }
 
     try {
+      setIsTransitioning(true);
       await handleStepBack(
         isTransitioning,
         characterId,
@@ -87,6 +88,93 @@ export const useCharacterCreation = () => {
         variant: "destructive",
         description: "Failed to go back. Please try again.",
       });
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleNameSelected = async (newCharacterId: string) => {
+    try {
+      setIsTransitioning(true);
+      await handleNameSelectedBase(newCharacterId);
+      updateCharacterState({
+        characterId: newCharacterId,
+        currentStep: 'gender'
+      });
+    } catch (error) {
+      console.error('Error in name selection:', error);
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleGenderSelected = async () => {
+    if (!characterId) return;
+    try {
+      setIsTransitioning(true);
+      await handleGenderSelectedBase(characterId);
+    } catch (error) {
+      console.error('Error in gender selection:', error);
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleRaceSelected = async (characterId: string) => {
+    try {
+      setIsTransitioning(true);
+      await handleRaceSelectedBase(characterId);
+    } catch (error) {
+      console.error('Error in race selection:', error);
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleAnimalTypeSelected = async (animalType: string, characterId: string) => {
+    try {
+      setIsTransitioning(true);
+      await handleAnimalTypeSelectedBase(animalType, characterId);
+      updateCharacterState({ selectedAnimalType: animalType });
+    } catch (error) {
+      console.error('Error in animal type selection:', error);
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleClassSelected = async (characterClass: string) => {
+    if (!characterId || !selectedRace) return;
+    try {
+      setIsTransitioning(true);
+      await handleClassSelectedBase(characterClass, characterId);
+      updateCharacterState({ selectedClass: characterClass });
+    } catch (error) {
+      console.error('Error in class selection:', error);
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleClothingSelected = async (characterId: string) => {
+    try {
+      setIsTransitioning(true);
+      await handleClothingSelectedBase(characterId);
+    } catch (error) {
+      console.error('Error in clothing selection:', error);
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleArmorSelected = async (characterId: string) => {
+    try {
+      setIsTransitioning(true);
+      await handleArmorSelectedBase(characterId);
+    } catch (error) {
+      console.error('Error in armor selection:', error);
+    } finally {
+      setIsTransitioning(false);
     }
   };
 
@@ -99,29 +187,11 @@ export const useCharacterCreation = () => {
     selectedClass,
     isTransitioning,
     // Handlers
-    handleNameSelected: async (newCharacterId: string) => {
-      console.log('Handling name selection with ID:', newCharacterId);
-      updateCharacterState({
-        characterId: newCharacterId,
-        currentStep: 'gender'
-      });
-      await handleNameSelected(newCharacterId);
-    },
-    handleGenderSelected: () => handleGenderSelected(characterId!, isTransitioning),
-    handleRaceSelected: async (characterId: string) => {
-      try {
-        await handleRaceSelected(characterId);
-      } catch (error) {
-        console.error('Error handling race selection:', error);
-        toast({
-          variant: "destructive",
-          description: "Failed to save race selection. Please try again.",
-        });
-      }
-    },
+    handleNameSelected,
+    handleGenderSelected,
+    handleRaceSelected,
     handleAnimalTypeSelected,
-    handleClassSelected: (characterClass: string) => 
-      handleClassSelected(characterClass, characterId!, selectedRace!),
+    handleClassSelected,
     handleClothingSelected,
     handleArmorSelected,
     handleBack,
