@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CharacterStatus } from "@/types/character";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -97,7 +97,7 @@ export const useCharacterCreation = () => {
     setCurrentStep("morality");
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     switch (currentStep) {
       case "gender":
         setCurrentStep("naming");
@@ -134,7 +134,7 @@ export const useCharacterCreation = () => {
       default:
         break;
     }
-  };
+  }, [currentStep, selectedRace]);
 
   return {
     characterId,
@@ -150,5 +150,6 @@ export const useCharacterCreation = () => {
     handleClothingSelected,
     handleArmorSelected,
     handleBack,
+    setCurrentStep, // Expose setCurrentStep
   };
 };

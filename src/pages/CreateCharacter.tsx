@@ -4,6 +4,7 @@ import { CharacterCreationBackground } from "@/components/character-creation/Cha
 import { useCharacterCreation } from "@/hooks/useCharacterCreation";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { CharacterStatus } from "@/types/character";
 
 const CreateCharacter = () => {
   const {
@@ -20,6 +21,7 @@ const CreateCharacter = () => {
     handleClothingSelected,
     handleArmorSelected,
     handleBack,
+    setCurrentStep,
   } = useCharacterCreation();
 
   useEffect(() => {
@@ -39,15 +41,34 @@ const CreateCharacter = () => {
         },
         (payload: any) => {
           console.log('Character status changed:', payload.new.status);
+          if (payload.new && payload.new.status) {
+            setCurrentStep(payload.new.status as CharacterStatus);
+          }
         }
       )
       .subscribe();
+
+    // Initial fetch of character status
+    const fetchCharacterStatus = async () => {
+      const { data, error } = await supabase
+        .from('characters')
+        .select('status')
+        .eq('id', characterId)
+        .single();
+
+      if (!error && data) {
+        console.log('Initial character status:', data.status);
+        setCurrentStep(data.status);
+      }
+    };
+
+    fetchCharacterStatus();
 
     return () => {
       console.log('Cleaning up character status subscription');
       supabase.removeChannel(channel);
     };
-  }, [characterId]);
+  }, [characterId, setCurrentStep]);
 
   return (
     <CharacterCreationBackground currentStep={currentStep}>

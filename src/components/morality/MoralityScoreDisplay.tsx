@@ -4,7 +4,6 @@ import { MoralityLoadingState } from "./score-display/MoralityLoadingState";
 import { ScoresDisplay } from "./score-display/ScoresDisplay";
 import { ContinueButton } from "./score-display/ContinueButton";
 import { useToast } from "@/hooks/use-toast";
-import { useCharacterCreation } from "@/hooks/useCharacterCreation";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
