@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { useToast } from "@/hooks/use-toast";
-import { showSuccessToast } from "@/utils/toast";
 import { InfoTooltip } from "./shared/InfoTooltip";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AnimalTypeSelectionProps {
   characterId: string;
@@ -18,11 +19,43 @@ const ANIMAL_TYPES = [
 ];
 
 export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected }: AnimalTypeSelectionProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSelected = (value: string) => {
-    showSuccessToast(toast, "Animal type selected");
-    onAnimalTypeSelected(value);
+  const handleSelected = async (value: string) => {
+    if (!value || !characterId) {
+      toast({
+        variant: "destructive",
+        description: "Please select an animal type to continue",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('characters')
+        .update({ 
+          animal_type: value,
+          status: 'class'
+        })
+        .eq('id', characterId);
+
+      if (error) throw error;
+
+      toast({
+        description: "Animal type selected successfully",
+      });
+      onAnimalTypeSelected(value);
+    } catch (error) {
+      console.error('Error updating animal type:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save animal type selection. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const animalTypesWithInfo = ANIMAL_TYPES.map(option => ({
@@ -46,6 +79,7 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
         onBack={onBack}
         updateField="animal_type"
         nextStatus="class"
+        isSubmitting={isSubmitting}
       />
     </div>
   );
