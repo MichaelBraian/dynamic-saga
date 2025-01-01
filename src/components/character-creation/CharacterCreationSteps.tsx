@@ -2,6 +2,7 @@ import { CharacterStatus } from "@/types/character";
 import { useCharacterSubscription } from "@/hooks/character/useCharacterSubscription";
 import { StepRenderer } from "./StepRenderer";
 import { LoadingState } from "./LoadingState";
+import { ErrorBoundary } from "../shared/ErrorBoundary";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -47,28 +48,35 @@ export const CharacterCreationSteps = ({
     selectedAnimalType
   });
 
+  if (!currentStep) {
+    console.error('No current step provided');
+    return <LoadingState message="Initializing character creation..." />;
+  }
+
   if (isTransitioning) {
     return <LoadingState message={`Transitioning to ${currentStep} step...`} />;
   }
 
   return (
-    <div className="animate-fade-in">
-      <StepRenderer
-        currentStep={currentStep}
-        characterId={characterId}
-        selectedClass={selectedClass}
-        onNameSelected={(newCharacterId: string) => {
-          console.log('Name selected, updating character ID:', newCharacterId);
-          onNameSelected(newCharacterId);
-        }}
-        onGenderSelected={onGenderSelected}
-        onRaceSelected={onRaceSelected}
-        onAnimalTypeSelected={onAnimalTypeSelected}
-        onClassSelected={onClassSelected}
-        onClothingSelected={onClothingSelected}
-        onArmorSelected={onArmorSelected}
-        onBack={onBack}
-      />
-    </div>
+    <ErrorBoundary>
+      <div className="animate-fade-in">
+        <StepRenderer
+          currentStep={currentStep}
+          characterId={characterId}
+          selectedClass={selectedClass}
+          onNameSelected={(newCharacterId: string) => {
+            console.log('Name selected, updating character ID:', newCharacterId);
+            onNameSelected(newCharacterId);
+          }}
+          onGenderSelected={onGenderSelected}
+          onRaceSelected={onRaceSelected}
+          onAnimalTypeSelected={onAnimalTypeSelected}
+          onClassSelected={onClassSelected}
+          onClothingSelected={onClothingSelected}
+          onArmorSelected={onArmorSelected}
+          onBack={onBack}
+        />
+      </div>
+    </ErrorBoundary>
   );
 };
