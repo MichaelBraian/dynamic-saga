@@ -37,7 +37,7 @@ export const CharacterCreationSteps = ({
   useCharacterSubscription(characterId, currentStep);
 
   if (isTransitioning) {
-    return <LoadingState />;
+    return <LoadingState message={`Transitioning to ${currentStep} step...`} />;
   }
 
   return (
