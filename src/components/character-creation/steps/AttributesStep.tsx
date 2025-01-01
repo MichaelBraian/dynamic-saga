@@ -13,27 +13,19 @@ export const AttributesStep = ({ characterId, onBack, onComplete }: AttributesSt
   const {
     attributeRolls,
     isSaving,
-    allAttributesRolled,
+    areAllAttributesRolled,
     handleRollComplete,
-    handleBack,
     handleContinue
   } = useAttributesManagement(characterId, onComplete);
 
-  const handleBackClick = async () => {
-    const success = await handleBack();
-    if (success) {
-      onBack();
-    }
-  };
-
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
-      <AttributesHeader onBack={handleBackClick} />
+      <AttributesHeader onBack={onBack} />
       <AttributesList
         attributeRolls={attributeRolls}
         onRollComplete={handleRollComplete}
       />
-      {allAttributesRolled && (
+      {areAllAttributesRolled() && (
         <ContinueButton
           onClick={handleContinue}
           disabled={isSaving}
