@@ -28,6 +28,11 @@ export const RaceSelection = ({
   });
 
   const handleSelection = async (race: string) => {
+    if (isSubmitting) {
+      console.log('Race selection already in progress');
+      return;
+    }
+
     try {
       console.log('Race Selection - Attempting to save race:', {
         characterId,
@@ -55,7 +60,7 @@ export const RaceSelection = ({
         variant: "destructive",
         description: "Failed to save race selection. Please try again.",
       });
-      throw error; // Re-throw to be handled by error boundary
+      throw error;
     }
   };
 

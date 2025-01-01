@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { CharacterStatus } from "@/types/character";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useCharacterSubscription = (
   characterId: string | null,
-  updateCharacterState: (updates: { currentStep: CharacterStatus }) => void
+  currentStep: CharacterStatus
 ) => {
   useEffect(() => {
     if (!characterId) return;
@@ -24,7 +24,10 @@ export const useCharacterSubscription = (
         (payload: any) => {
           console.log('Character status changed:', payload.new.status);
           const newStatus = payload.new.status as CharacterStatus;
-          updateCharacterState({ currentStep: newStatus });
+          if (newStatus !== currentStep) {
+            console.log('Status changed from', currentStep, 'to', newStatus);
+            window.location.reload();
+          }
         }
       )
       .subscribe((status) => {
@@ -35,5 +38,5 @@ export const useCharacterSubscription = (
       console.log('Cleaning up character status subscription');
       void supabase.removeChannel(channel);
     };
-  }, [characterId, updateCharacterState]);
+  }, [characterId, currentStep]);
 };
