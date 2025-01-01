@@ -78,7 +78,16 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
   };
 
   const formatModifier = (value: number) => {
-    return value > 0 ? `+${value}` : value.toString();
+    if (value > 0) return `+${value}`;
+    return value.toString();
+  };
+
+  const formatTooltipContent = (specialty: Specialty) => {
+    const modifiersText = Object.entries(specialty.attribute_modifiers)
+      .map(([attr, mod]) => `${attr.charAt(0).toUpperCase() + attr.slice(1)}: ${formatModifier(mod)}`)
+      .join('\n');
+    
+    return `${specialty.description}\n\nAttribute Modifiers:\n${modifiersText}`;
   };
 
   if (isLoading) {
@@ -122,11 +131,7 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
             >
               <div className="flex items-center gap-2">
                 {specialty.name}
-                <InfoTooltip content={`${specialty.description}
-                  ${Object.entries(specialty.attribute_modifiers)
-                    .map(([attr, mod]) => `\n${attr.charAt(0).toUpperCase() + attr.slice(1)}: ${formatModifier(mod)}`)
-                    .join('')}`} 
-                />
+                <InfoTooltip content={formatTooltipContent(specialty)} />
               </div>
             </Label>
           </div>

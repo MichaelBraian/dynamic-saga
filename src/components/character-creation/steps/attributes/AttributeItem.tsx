@@ -13,9 +13,11 @@ export const AttributeItem = ({ name, value, onRollComplete }: AttributeItemProp
 
   const handleRoll = () => {
     setIsRolling(true);
-    // Simulate dice roll
+    // Simulate two d6 dice rolls (2-12 range)
     setTimeout(() => {
-      const rollResult = Math.floor(Math.random() * 16) + 3; // 3-18 range
+      const dice1 = Math.floor(Math.random() * 6) + 1;
+      const dice2 = Math.floor(Math.random() * 6) + 1;
+      const rollResult = dice1 + dice2;
       onRollComplete(rollResult);
       setIsRolling(false);
     }, 1000);
