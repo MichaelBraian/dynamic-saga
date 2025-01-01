@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MoralityLoadingState } from "./score-display/MoralityLoadingState";
 import { ScoresDisplay } from "./score-display/ScoresDisplay";
 import { ContinueButton } from "./score-display/ContinueButton";
+import { useToast } from "@/hooks/use-toast";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
@@ -10,6 +11,8 @@ interface MoralityScoreDisplayProps {
 }
 
 export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
+  const { toast } = useToast();
+  
   const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
     queryFn: async () => {
@@ -33,9 +36,15 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       console.log('Retrieved morality score:', data);
       return data;
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   if (error) {
+    toast({
+      variant: "destructive",
+      description: "Failed to load morality score. Please try again.",
+    });
     return <MoralityLoadingState message="Error loading score" />;
   }
 

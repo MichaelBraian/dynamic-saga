@@ -1,5 +1,6 @@
 import { MoralityQuestions } from "../../MoralityQuestions";
 import { useCharacterStatusUpdate } from "@/utils/characterStatus";
+import { useToast } from "@/hooks/use-toast";
 
 interface MoralityStepProps {
   characterId: string;
@@ -8,12 +9,23 @@ interface MoralityStepProps {
 
 export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
   const { updateStatus } = useCharacterStatusUpdate();
+  const { toast } = useToast();
 
   const handleContinue = async () => {
     console.log('Handling continue in MoralityStep');
-    const success = await updateStatus(characterId, 'attributes');
-    if (success) {
-      console.log('Successfully updated status to attributes in MoralityStep');
+    try {
+      const success = await updateStatus(characterId, 'attributes');
+      if (success) {
+        console.log('Successfully updated status to attributes in MoralityStep');
+      } else {
+        throw new Error('Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error transitioning to attributes:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed to attributes. Please try again.",
+      });
     }
   };
 

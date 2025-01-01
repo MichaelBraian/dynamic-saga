@@ -27,24 +27,23 @@ export const useMoralityQuestions = (characterId: string) => {
 
     let goodEvilScore = 0;
     let lawfulChaoticScore = 0;
-    let totalResponses = 0;
+    let totalResponses = responses.length;
     
-    responses.forEach(response => {
+    responses.forEach((response, index) => {
       const question = questions.find(q => q.id === response.question_id);
       if (!question) return;
 
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       if (isNaN(choiceNumber)) return;
       
-      totalResponses++;
-      
       const normalizedScore = choiceNumber <= 2 ? 1 : -1;
       const weightedScore = question.morality_weight * normalizedScore;
       
-      if (totalResponses % 2 === 0) {
-        lawfulChaoticScore += weightedScore;
-      } else {
+      // Alternate between good/evil and lawful/chaotic questions
+      if (index % 2 === 0) {
         goodEvilScore += weightedScore;
+      } else {
+        lawfulChaoticScore += weightedScore;
       }
     });
 
@@ -53,8 +52,9 @@ export const useMoralityQuestions = (characterId: string) => {
       return null;
     }
 
-    const maxPossibleScore = questions.reduce((acc, q) => acc + Math.abs(q.morality_weight), 0) / 2;
-
+    // Calculate normalized scores
+    const maxPossibleScore = Math.floor(questions.length / 2) * Math.max(...questions.map(q => Math.abs(q.morality_weight)));
+    
     const normalizedGoodEvil = Math.max(-100, Math.min(100, Math.round((goodEvilScore / maxPossibleScore) * 100)));
     const normalizedLawfulChaotic = Math.max(-100, Math.min(100, Math.round((lawfulChaoticScore / maxPossibleScore) * 100)));
     const alignmentScore = Math.max(0, Math.min(100, Math.round(((normalizedGoodEvil + 100) / 2 + (normalizedLawfulChaotic + 100) / 2) / 2)));
@@ -88,7 +88,7 @@ export const useMoralityQuestions = (characterId: string) => {
       // Save the current response
       const { error: responseError } = await supabase
         .from('character_responses')
-        .insert({
+        .upsert({
           character_id: characterId,
           question_id: questionId,
           answer: answer
@@ -120,7 +120,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
         console.log('Saving morality scores:', scores);
 
-        // Save morality scores
+        // Save morality scores using upsert to handle potential duplicates
         const { error: moralityError } = await supabase
           .from('character_morality')
           .upsert({
