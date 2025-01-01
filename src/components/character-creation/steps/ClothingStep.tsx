@@ -13,7 +13,7 @@ export const ClothingStep = ({ characterId, selectedClass, onBack, onClothingSel
       characterId={characterId}
       characterClass={selectedClass}
       onBack={onBack}
-      onClothingSelected={onClothingSelected}
+      onClothingSelected={() => onClothingSelected(characterId)}
     />
   </div>
 );
