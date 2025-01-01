@@ -36,6 +36,12 @@ export const StepRenderer = ({
   onArmorSelected,
   onBack,
 }: StepRendererProps) => {
+  console.log('StepRenderer - Rendering step:', {
+    currentStep,
+    characterId,
+    selectedClass
+  });
+
   switch (currentStep) {
     case "naming":
       return <NameStep onNameSelected={onNameSelected} />;

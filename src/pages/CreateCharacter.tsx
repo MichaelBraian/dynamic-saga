@@ -22,10 +22,11 @@ const CreateCharacter = () => {
     handleBack,
   } = useCharacterCreation();
 
-  console.log('CreateCharacter rendering with:', {
+  console.log('CreateCharacter - Current State:', {
     characterId,
     currentStep,
     selectedRace,
+    selectedAnimalType,
     selectedClass,
     isTransitioning
   });

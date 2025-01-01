@@ -39,13 +39,13 @@ export const CharacterCreationSteps = ({
 }: CharacterCreationStepsProps) => {
   useCharacterSubscription(characterId, currentStep);
 
-  console.log('CharacterCreationSteps - Current state:', {
+  console.log('CharacterCreationSteps - Props:', {
     currentStep,
     characterId,
-    selectedClass,
-    isTransitioning,
     selectedRace,
-    selectedAnimalType
+    selectedAnimalType,
+    selectedClass,
+    isTransitioning
   });
 
   if (!currentStep) {
@@ -54,6 +54,7 @@ export const CharacterCreationSteps = ({
   }
 
   if (isTransitioning) {
+    console.log('CharacterCreationSteps - Transitioning to:', currentStep);
     return <LoadingState message={`Transitioning to ${currentStep} step...`} />;
   }
 
