@@ -58,19 +58,55 @@ export const useCharacterSelectionHandlers = () => {
   };
 
   const handleRaceSelected = async (characterId: string) => {
+    if (!characterId) {
+      console.error('No character ID provided for race selection');
+      return;
+    }
+
     try {
-      const { data } = await supabase
+      console.log('Handling race selection completion');
+      
+      // Get the current race to determine next status
+      const { data: character, error: fetchError } = await supabase
         .from('characters')
-        .select('race, status')
+        .select('race')
         .eq('id', characterId)
         .single();
-      
+
+      if (fetchError) throw fetchError;
+
+      // Determine next status based on race
+      const nextStatus = character?.race === 'Animal' ? 'animal_type' : 'class';
+
+      // Update character status in database
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ status: nextStatus })
+        .eq('id', characterId);
+
+      if (updateError) {
+        console.error('Error updating character status:', updateError);
+        toast({
+          variant: "destructive",
+          description: "Failed to proceed to next step. Please try again.",
+        });
+        throw updateError;
+      }
+
+      // Update UI state
       updateCharacterState({
-        currentStep: data?.status || "class",
-        selectedRace: data?.race || null
+        currentStep: nextStatus
+      });
+
+      toast({
+        description: `Proceeding to ${nextStatus === 'animal_type' ? 'animal type' : 'class'} selection`,
       });
     } catch (error) {
       console.error('Error handling race selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed. Please try again.",
+      });
     }
   };
 
