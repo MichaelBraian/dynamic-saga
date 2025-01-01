@@ -40,6 +40,8 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
+  console.log('Current step:', currentStep); // Add this log to track the current step
+
   switch (currentStep) {
     case "naming":
       return <NameStep onNameSelected={onNameSelected} />;
