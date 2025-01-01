@@ -15,10 +15,6 @@ const CreateCharacter = () => {
     handleNameSelected,
     handleGenderSelected,
     handleRaceSelected,
-    handleAnimalTypeSelected,
-    handleClassSelected,
-    handleClothingSelected,
-    handleArmorSelected,
     handleBack,
   } = useMockCharacterCreation();
 
@@ -46,10 +42,10 @@ const CreateCharacter = () => {
             onNameSelected={handleNameSelected}
             onGenderSelected={handleGenderSelected}
             onRaceSelected={handleRaceSelected}
-            onAnimalTypeSelected={handleAnimalTypeSelected}
-            onClassSelected={handleClassSelected}
-            onClothingSelected={handleClothingSelected}
-            onArmorSelected={handleArmorSelected}
+            onAnimalTypeSelected={() => {}}
+            onClassSelected={() => {}}
+            onClothingSelected={() => {}}
+            onArmorSelected={() => {}}
             onBack={handleBack}
           />
         </div>
