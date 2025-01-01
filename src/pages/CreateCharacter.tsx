@@ -40,10 +40,10 @@ const CreateCharacter = () => {
         },
         (payload: any) => {
           console.log('Character status changed:', payload.new.status);
+          // Remove the forced reload and let React handle the transition naturally
           const newStatus = payload.new.status as CharacterStatus;
           if (newStatus === 'attributes' && currentStep === 'morality') {
-            console.log('Transitioning from morality to attributes step');
-            window.location.reload(); // Force a refresh to ensure proper state update
+            console.log('Transitioning from morality to attributes step naturally');
           }
         }
       )
