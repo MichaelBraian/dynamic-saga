@@ -46,10 +46,10 @@ const CreateCharacter = () => {
             onNameSelected={handleNameSelected}
             onGenderSelected={handleGenderSelected}
             onRaceSelected={() => handleRaceSelected(characterId!)}
-            onAnimalTypeSelected={(animalType: string) => handleAnimalTypeSelected(animalType, characterId!)}
+            onAnimalTypeSelected={handleAnimalTypeSelected}
             onClassSelected={handleClassSelected}
-            onClothingSelected={handleClothingSelected}
-            onArmorSelected={handleArmorSelected}
+            onClothingSelected={() => handleClothingSelected(characterId!)}
+            onArmorSelected={() => handleArmorSelected(characterId!)}
             onBack={handleBack}
           />
         </div>

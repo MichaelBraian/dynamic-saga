@@ -91,7 +91,14 @@ export const useClassAndEquipmentHandlers = () => {
   };
 
   const handleArmorSelected = async (characterId: string) => {
+    if (!characterId) {
+      console.error('No character ID provided for armor selection');
+      return;
+    }
+
     try {
+      console.log('Handling armor selection completion:', { characterId });
+      
       const { error: updateError } = await supabase
         .from('characters')
         .update({ status: 'morality' })
