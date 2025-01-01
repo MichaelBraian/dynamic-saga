@@ -156,18 +156,49 @@ export const useCharacterSelectionHandlers = () => {
   };
 
   const handleClassSelected = async (characterClass: string, characterId: string, selectedRace: string) => {
-    if (!characterId || !selectedRace) return;
+    if (!characterId || !selectedRace) {
+      console.error('Missing required data for class selection:', { characterId, selectedRace });
+      toast({
+        variant: "destructive",
+        description: "Missing required information. Please try again.",
+      });
+      return;
+    }
     
     try {
-      const success = await handleClassSelection(characterId, selectedRace, characterClass);
-      if (success) {
-        updateCharacterState({
-          currentStep: "clothing",
-          selectedClass: characterClass
+      console.log('Handling class selection:', { characterId, class: characterClass, race: selectedRace });
+      
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ 
+          class: characterClass,
+          status: 'clothing'
+        })
+        .eq('id', characterId);
+
+      if (updateError) {
+        console.error('Error updating character class:', updateError);
+        toast({
+          variant: "destructive",
+          description: "Failed to save class selection. Please try again.",
         });
+        throw updateError;
       }
+
+      updateCharacterState({
+        currentStep: "clothing",
+        selectedClass: characterClass
+      });
+
+      toast({
+        description: "Class selected successfully. Proceeding to clothing selection.",
+      });
     } catch (error) {
       console.error('Error handling class selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed. Please try again.",
+      });
     }
   };
 
