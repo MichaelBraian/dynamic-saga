@@ -86,6 +86,8 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void):
         throw new Error("Authentication required");
       }
 
+      console.log('Creating character with name:', characterName);
+
       const { data, error } = await supabase
         .from('characters')
         .insert([{
@@ -117,7 +119,7 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void):
         duration: 2000,
       });
 
-      // Ensure we call onNameSelected with the new character ID
+      // Call onNameSelected with the new character ID
       onNameSelected(data.id);
     } catch (error) {
       console.error('Error creating character:', error);

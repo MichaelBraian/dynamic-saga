@@ -23,6 +23,8 @@ interface CharacterCreationStepsProps {
 export const CharacterCreationSteps = ({
   currentStep,
   characterId,
+  selectedRace,
+  selectedAnimalType,
   selectedClass,
   isTransitioning,
   onNameSelected,
@@ -40,7 +42,9 @@ export const CharacterCreationSteps = ({
     currentStep,
     characterId,
     selectedClass,
-    isTransitioning
+    isTransitioning,
+    selectedRace,
+    selectedAnimalType
   });
 
   if (isTransitioning) {
@@ -53,7 +57,10 @@ export const CharacterCreationSteps = ({
         currentStep={currentStep}
         characterId={characterId}
         selectedClass={selectedClass}
-        onNameSelected={onNameSelected}
+        onNameSelected={(newCharacterId: string) => {
+          console.log('Name selected, updating character ID:', newCharacterId);
+          onNameSelected(newCharacterId);
+        }}
         onGenderSelected={onGenderSelected}
         onRaceSelected={onRaceSelected}
         onAnimalTypeSelected={onAnimalTypeSelected}

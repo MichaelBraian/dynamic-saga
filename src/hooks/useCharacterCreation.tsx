@@ -46,6 +46,7 @@ export const useCharacterCreation = () => {
         (payload: any) => {
           console.log('Character status changed:', payload.new.status);
           const newStatus = payload.new.status as CharacterStatus;
+          updateCharacterState({ currentStep: newStatus });
           if (newStatus === 'attributes' && currentStep === 'morality') {
             console.log('Transitioning from morality to attributes step');
             window.location.reload();
@@ -58,7 +59,7 @@ export const useCharacterCreation = () => {
       console.log('Cleaning up character status subscription');
       supabase.removeChannel(channel);
     };
-  }, [characterId, currentStep]);
+  }, [characterId, currentStep, updateCharacterState]);
 
   const handleBack = () => {
     handleStepBack(
@@ -80,7 +81,14 @@ export const useCharacterCreation = () => {
     selectedClass,
     isTransitioning,
     // Handlers
-    handleNameSelected,
+    handleNameSelected: async (newCharacterId: string) => {
+      console.log('Handling name selection with ID:', newCharacterId);
+      updateCharacterState({
+        characterId: newCharacterId,
+        currentStep: 'gender'
+      });
+      await handleNameSelected(newCharacterId);
+    },
     handleGenderSelected: () => handleGenderSelected(characterId!, isTransitioning),
     handleRaceSelected,
     handleAnimalTypeSelected,
