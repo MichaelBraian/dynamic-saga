@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNameSelection } from "@/hooks/useNameSelection";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { LoadingState } from "@/components/shared/LoadingState";
 
 interface NameSelectionProps {
   onNameSelected: (characterId: string) => void;
@@ -14,11 +15,22 @@ export const NameSelection = ({ onNameSelected }: NameSelectionProps) => {
     setCharacterName,
     isSubmitting,
     isValidating,
+    error,
     handleSubmit
   } = useNameSelection(onNameSelected);
 
+  if (isSubmitting) {
+    return <LoadingState message="Creating your character..." />;
+  }
+
   return (
-    <ErrorBoundary fallback={<div>Something went wrong. Please refresh the page and try again.</div>}>
+    <ErrorBoundary 
+      fallback={
+        <div className="text-white bg-red-500/20 p-4 rounded-lg">
+          Something went wrong. Please refresh and try again.
+        </div>
+      }
+    >
       <form 
         onSubmit={handleSubmit} 
         className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6"
@@ -38,6 +50,8 @@ export const NameSelection = ({ onNameSelected }: NameSelectionProps) => {
               minLength={2}
               maxLength={50}
               aria-label="Character name"
+              aria-invalid={error ? "true" : "false"}
+              aria-describedby={error ? "name-error" : undefined}
             />
             {isValidating && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -45,6 +59,11 @@ export const NameSelection = ({ onNameSelected }: NameSelectionProps) => {
               </div>
             )}
           </div>
+          {error && (
+            <p id="name-error" className="text-red-400 text-sm mt-1">
+              {error}
+            </p>
+          )}
           <Button 
             type="submit"
             className="w-full bg-white/20 hover:bg-white/30 text-white font-['Cinzel'] relative"

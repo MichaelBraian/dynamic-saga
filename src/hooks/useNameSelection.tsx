@@ -2,20 +2,28 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
-export const useNameSelection = (onNameSelected: (characterId: string) => void) => {
+interface UseNameSelectionReturn {
+  characterName: string;
+  setCharacterName: (name: string) => void;
+  isSubmitting: boolean;
+  isValidating: boolean;
+  error: string | null;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
+}
+
+export const useNameSelection = (onNameSelected: (characterId: string) => void): UseNameSelectionReturn => {
   const [characterName, setCharacterName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const validateName = async (name: string): Promise<boolean> => {
+    setError(null);
+    
     if (!name.trim() || name.length < 2 || name.length > 50) {
-      toast({
-        variant: "destructive",
-        description: "Name must be between 2 and 50 characters",
-      });
+      setError("Name must be between 2 and 50 characters");
       return false;
     }
 
@@ -24,10 +32,10 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
-        throw new Error("Authentication required");
+        setError("Authentication required");
+        return false;
       }
 
-      // Check for existing character name
       const { data: existingCharacter, error: checkError } = await supabase
         .from('characters')
         .select('id')
@@ -37,26 +45,19 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
 
       if (checkError) {
         console.error('Error checking character name:', checkError);
-        throw new Error("Failed to validate character name");
+        setError("Failed to validate character name");
+        return false;
       }
 
       if (existingCharacter) {
-        toast({
-          title: "Name already exists",
-          description: "Please choose a different name for your character",
-          variant: "destructive",
-        });
+        setError("This name is already taken");
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Error validating character name:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to validate character name",
-        variant: "destructive",
-      });
+      setError(error instanceof Error ? error.message : "Failed to validate character name");
       return false;
     } finally {
       setIsValidating(false);
@@ -65,13 +66,10 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!characterName.trim()) {
-      toast({
-        title: "Name required",
-        description: "Please enter a name for your character",
-        variant: "destructive",
-      });
+      setError("Please enter a name for your character");
       return;
     }
 
@@ -88,7 +86,6 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
         throw new Error("Authentication required");
       }
 
-      // Create new character
       const { data, error } = await supabase
         .from('characters')
         .insert([{
@@ -121,10 +118,10 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
       onNameSelected(data.id);
     } catch (error) {
       console.error('Error creating character:', error);
+      setError(error instanceof Error ? error.message : "There was a problem creating your character");
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "There was a problem creating your character",
         variant: "destructive",
+        description: error instanceof Error ? error.message : "There was a problem creating your character",
       });
     } finally {
       setIsSubmitting(false);
@@ -136,6 +133,7 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
     setCharacterName,
     isSubmitting,
     isValidating,
+    error,
     handleSubmit
   };
 };
