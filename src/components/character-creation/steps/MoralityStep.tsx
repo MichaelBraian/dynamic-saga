@@ -20,7 +20,7 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
         .from('character_morality')
         .select('*')
         .eq('character_id', characterId)
-        .maybeSingle();
+        .single();
 
       if (moralityError || !morality) {
         console.error('Morality scores not found:', moralityError);
@@ -32,12 +32,8 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
       }
 
       console.log('Morality scores found, proceeding to attributes');
-      const success = await updateStatus(characterId, 'attributes');
-      if (success) {
-        console.log('Successfully updated status to attributes in MoralityStep');
-      } else {
-        throw new Error('Failed to update status');
-      }
+      await updateStatus(characterId, 'attributes');
+      console.log('Successfully updated status to attributes in MoralityStep');
     } catch (error) {
       console.error('Error transitioning to attributes:', error);
       toast({

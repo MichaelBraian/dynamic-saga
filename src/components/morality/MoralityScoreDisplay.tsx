@@ -13,7 +13,7 @@ interface MoralityScoreDisplayProps {
 export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
   
-  const { data: morality, isLoading, error, refetch } = useQuery({
+  const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
     queryFn: async () => {
       console.log('Fetching morality score for character:', characterId);
@@ -21,24 +21,16 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
         .from('character_morality')
         .select('alignment_score, good_evil_scale, lawful_chaotic_scale')
         .eq('character_id', characterId)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error fetching morality score:', error);
         throw error;
       }
 
-      if (!data) {
-        console.log('No morality score found, retrying in 1 second...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return refetch();
-      }
-
       console.log('Retrieved morality score:', data);
       return data;
     },
-    retry: 3,
-    retryDelay: 1000,
   });
 
   if (error) {
@@ -54,6 +46,19 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     return <MoralityLoadingState message="Loading your morality score..." />;
   }
 
+  const handleContinue = async () => {
+    try {
+      console.log('Handling continue in MoralityScoreDisplay');
+      onContinue();
+    } catch (error) {
+      console.error('Error in handleContinue:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed. Please try again.",
+      });
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
       <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Your Morality Score</h2>
@@ -64,7 +69,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
         lawfulChaoticScale={morality.lawful_chaotic_scale}
       />
 
-      <ContinueButton onClick={onContinue} />
+      <ContinueButton onClick={handleContinue} />
     </div>
   );
 };
