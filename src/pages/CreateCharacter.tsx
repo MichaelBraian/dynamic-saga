@@ -28,8 +28,6 @@ const CreateCharacter = () => {
   useEffect(() => {
     if (!characterId) return;
 
-    console.log('Setting up character status subscription for:', characterId);
-    
     const channel = supabase
       .channel(`character_status_${characterId}`)
       .on(
@@ -41,15 +39,13 @@ const CreateCharacter = () => {
           filter: `id=eq.${characterId}`,
         },
         (payload: any) => {
-          console.log('Character status changed:', payload.new.status);
-          if (payload.new && payload.new.status) {
+          if (payload.new?.status) {
             setCurrentStep(payload.new.status as CharacterStatus);
           }
         }
       )
       .subscribe();
 
-    // Initial fetch of character status
     const fetchCharacterStatus = async () => {
       const { data, error } = await supabase
         .from('characters')
@@ -58,7 +54,6 @@ const CreateCharacter = () => {
         .single();
 
       if (!error && data) {
-        console.log('Initial character status:', data.status);
         setCurrentStep(data.status);
       }
     };
@@ -66,7 +61,6 @@ const CreateCharacter = () => {
     fetchCharacterStatus();
 
     return () => {
-      console.log('Cleaning up character status subscription');
       supabase.removeChannel(channel);
     };
   }, [characterId, setCurrentStep]);
