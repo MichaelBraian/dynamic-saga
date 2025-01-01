@@ -40,7 +40,12 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  console.log('Current step:', currentStep); // Add this log to track the current step
+  console.log('Current step:', currentStep);
+
+  if (!characterId && currentStep !== "naming") {
+    console.error('No character ID found');
+    return null;
+  }
 
   switch (currentStep) {
     case "naming":
@@ -110,6 +115,7 @@ export const CharacterCreationSteps = ({
         />
       );
     default:
+      console.error('Unknown step:', currentStep);
       return null;
   }
 };

@@ -11,10 +11,7 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
 
   const handleContinue = async () => {
     console.log('Transitioning from morality to attributes step');
-    const success = await updateStatus(characterId, 'attributes');
-    if (!success) {
-      console.error('Failed to update status to attributes');
-    }
+    await updateStatus(characterId, 'attributes');
   };
 
   return (
