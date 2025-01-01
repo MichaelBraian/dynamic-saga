@@ -6,6 +6,7 @@ interface FinalStepsProps {
   currentStep: CharacterStatus;
   characterId: string;
   onMoralityCompleted: () => void;
+  onAttributesCompleted: () => void;
   onBack: () => void;
 }
 
@@ -13,6 +14,7 @@ export const FinalSteps = ({
   currentStep,
   characterId,
   onMoralityCompleted,
+  onAttributesCompleted,
   onBack,
 }: FinalStepsProps) => {
   switch (currentStep) {
@@ -29,6 +31,7 @@ export const FinalSteps = ({
         <AttributesStep
           characterId={characterId}
           onBack={onBack}
+          onComplete={onAttributesCompleted}
         />
       );
     default:

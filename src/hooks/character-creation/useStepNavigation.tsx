@@ -42,6 +42,12 @@ export const useStepNavigation = (
       case "attributes":
         setCurrentStep("morality");
         break;
+      case "specialty":
+        setCurrentStep("attributes");
+        break;
+      case "faith_points":
+        setCurrentStep("specialty");
+        break;
       default:
         break;
     }
