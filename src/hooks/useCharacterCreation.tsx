@@ -5,6 +5,10 @@ import { useCharacterDatabase } from "./character/useCharacterDatabase";
 import { useCharacterNavigation } from "./character/useCharacterNavigation";
 import { useCharacterCleanup } from "./character/useCharacterCleanup";
 import { useCharacterLogic } from "./character/useCharacterLogic";
+import { useCharacterValidation } from "./character/useCharacterValidation";
+import { useCharacterRetry } from "./character/useCharacterRetry";
+import { useCharacterTransactions } from "./character/useCharacterTransactions";
+import { useCharacterLoading } from "./character/useCharacterLoading";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useCharacterCreation = () => {
@@ -23,6 +27,10 @@ export const useCharacterCreation = () => {
   const { verifyCharacterOwnership } = useCharacterDatabase();
   const { getPreviousStep, handleNavigation } = useCharacterNavigation();
   const { handleClassSelection } = useCharacterLogic();
+  const { validateNameSelection, validateStatusUpdate } = useCharacterValidation();
+  const { retryOperation, isRetrying } = useCharacterRetry();
+  const { executeTransaction } = useCharacterTransactions();
+  const { setLoading, isLoading } = useCharacterLoading();
 
   // Initialize cleanup hook
   useCharacterCleanup(characterId);
@@ -30,52 +38,50 @@ export const useCharacterCreation = () => {
   useEffect(() => {
     if (!characterId) return;
 
-    console.log('Setting up real-time subscription for character:', characterId);
-    
-    const channel = supabase
-      .channel('character_status')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'characters',
-          filter: `id=eq.${characterId}`,
-        },
-        (payload: any) => {
-          console.log('Character status updated:', payload.new.status);
-          if (payload.new && payload.new.status) {
-            updateCharacterState({ currentStep: payload.new.status as CharacterStatus });
+    const setupCharacterSubscription = async () => {
+      const channel = supabase
+        .channel('character_status')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'characters',
+            filter: `id=eq.${characterId}`,
+          },
+          (payload: any) => {
+            if (payload.new && payload.new.status) {
+              updateCharacterState({ currentStep: payload.new.status as CharacterStatus });
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    const fetchCharacter = async () => {
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    const initializeCharacter = async () => {
+      setLoading('initialization', true);
       try {
-        const character = await verifyCharacterOwnership(characterId);
-        updateCharacterState({
-          characterId,
-          currentStep: character.status,
-          selectedRace: character.race || null,
-          selectedAnimalType: character.animal_type || null,
-          selectedClass: character.class || null
-        });
-      } catch (error) {
-        console.error('Error fetching character:', error);
-        toast({
-          variant: "destructive",
-          description: "Failed to load character data. Please try again.",
-        });
+        const character = await retryOperation(() => verifyCharacterOwnership(characterId));
+        if (character) {
+          updateCharacterState({
+            characterId,
+            currentStep: character.status,
+            selectedRace: character.race || null,
+            selectedAnimalType: character.animal_type || null,
+            selectedClass: character.class || null
+          });
+        }
+      } finally {
+        setLoading('initialization', false);
       }
     };
 
-    fetchCharacter();
-
-    return () => {
-      console.log('Cleaning up character status subscription');
-      supabase.removeChannel(channel);
-    };
+    setupCharacterSubscription();
+    initializeCharacter();
   }, [characterId]);
 
   const handleNameSelected = (newCharacterId: string) => {
@@ -212,6 +218,8 @@ export const useCharacterCreation = () => {
     selectedAnimalType,
     selectedClass,
     isTransitioning,
+    isRetrying,
+    isLoading,
     handleNameSelected,
     handleGenderSelected,
     handleRaceSelected,

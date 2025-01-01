@@ -8,6 +8,7 @@ import { ClothingStep } from "./steps/ClothingStep";
 import { ArmorStep } from "./steps/ArmorStep";
 import { MoralityStep } from "./steps/MoralityStep";
 import { AttributesStep } from "./steps/AttributesStep";
+import { LoadingSpinner } from "../shared/LoadingSpinner";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +18,8 @@ interface CharacterCreationStepsProps {
   selectedRace: string | null;
   selectedAnimalType: string | null;
   selectedClass: string | null;
+  isLoading: boolean;
+  isRetrying: boolean;
   onNameSelected: (newCharacterId: string) => void;
   onGenderSelected: () => void;
   onRaceSelected: () => Promise<void>;
@@ -33,6 +36,8 @@ export const CharacterCreationSteps = ({
   selectedRace,
   selectedAnimalType,
   selectedClass,
+  isLoading,
+  isRetrying,
   onNameSelected,
   onGenderSelected,
   onRaceSelected,
@@ -42,12 +47,9 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  console.log('Current step:', currentStep, 'Character ID:', characterId);
-
   useEffect(() => {
     if (!characterId) return;
 
-    // Subscribe to character status changes
     const channel = supabase
       .channel(`character_status_${characterId}`)
       .on(
@@ -59,41 +61,36 @@ export const CharacterCreationSteps = ({
           filter: `id=eq.${characterId}`,
         },
         (payload: any) => {
-          console.log('Character status updated:', payload.new.status);
-          // Status updates will be handled by the parent component
+          console.log('Character status changed:', payload.new.status);
+          const newStatus = payload.new.status as CharacterStatus;
+          if (newStatus === 'attributes' && currentStep === 'morality') {
+            console.log('Transitioning from morality to attributes step');
+            window.location.reload();
+          }
         }
       )
       .subscribe();
 
-    // Verify character exists and belongs to current user
-    const verifyCharacter = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: character, error } = await supabase
-        .from('characters')
-        .select('*')
-        .eq('id', characterId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error || !character) {
-        console.error('Character verification failed:', error);
-        // Handle invalid character ID - redirect to name selection
-        onNameSelected('');
-      }
-    };
-
-    verifyCharacter();
-
     return () => {
+      console.log('Cleaning up character status subscription');
       supabase.removeChannel(channel);
     };
-  }, [characterId, onNameSelected]);
+  }, [characterId, currentStep]);
 
-  if (!characterId && currentStep !== "naming") {
-    console.error('No character ID found');
-    return null;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (isRetrying) {
+    return (
+      <div className="flex items-center justify-center">
+        <p className="text-white">Retrying operation...</p>
+      </div>
+    );
   }
 
   const renderStep = () => {
