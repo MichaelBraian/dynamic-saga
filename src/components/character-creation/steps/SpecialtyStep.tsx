@@ -84,8 +84,23 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
 
   const formatModifiersText = (modifiers: Record<string, number>) => {
     return Object.entries(modifiers)
-      .map(([attr, mod]) => `${formatModifier(mod)} ${attr.charAt(0).toUpperCase() + attr.slice(1)}`)
-      .join(', ');
+      .map(([attr, mod]) => {
+        const modifierValue = formatModifier(mod);
+        const modifierClass = mod > 0 ? 'text-green-500' : 'text-red-500';
+        return (
+          <span key={attr}>
+            <span className={modifierClass}>{modifierValue}</span>
+            {` ${attr.charAt(0).toUpperCase() + attr.slice(1)}`}
+          </span>
+        );
+      })
+      .reduce((prev, curr) => (
+        <>
+          {prev}
+          {prev && ', '}
+          {curr}
+        </>
+      ), null);
   };
 
   if (isLoading) {
@@ -131,7 +146,7 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
                 <span>{specialty.name}</span>
                 <div className="flex items-center gap-2">
                   <InfoTooltip content={specialty.description} />
-                  <span className="text-sm font-normal opacity-90">
+                  <span className="text-lg font-normal">
                     {formatModifiersText(specialty.attribute_modifiers)}
                   </span>
                 </div>
