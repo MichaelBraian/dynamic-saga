@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface RaceSelectionProps {
   characterId: string;
-  onRaceSelected: () => void;
+  onRaceSelected: () => Promise<void>;
   onBack: () => void;
 }
 
@@ -55,6 +55,7 @@ export const RaceSelection = ({
         variant: "destructive",
         description: "Failed to save race selection. Please try again.",
       });
+      throw error; // Re-throw to be handled by error boundary
     }
   };
 

@@ -58,11 +58,11 @@ export const useRaceSelection = ({
         response: data 
       });
 
+      await onRaceSelected();
+      
       toast({
         description: "Race selected successfully",
       });
-      
-      await onRaceSelected();
     } catch (error) {
       console.error('Error updating race:', error);
       toast({
