@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dice } from "lucide-react";
+import { Dice1 } from "lucide-react";
 
 interface AttributeItemProps {
   name: string;
@@ -34,7 +34,7 @@ export const AttributeItem = ({ name, value, onRollComplete }: AttributeItemProp
         disabled={value !== undefined || isRolling}
         className="bg-white/10 text-white hover:bg-white/20"
       >
-        <Dice className={isRolling ? "animate-spin" : ""} />
+        <Dice1 className={isRolling ? "animate-spin" : ""} />
         {isRolling ? "Rolling..." : "Roll"}
       </Button>
     </div>
