@@ -60,7 +60,11 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
 
       if (updateError) {
         console.error('Error updating character status:', updateError);
-        throw updateError;
+        toast({
+          variant: "destructive",
+          description: "Failed to proceed. Please try again.",
+        });
+        return;
       }
 
       console.log('Successfully transitioned to attributes step');
