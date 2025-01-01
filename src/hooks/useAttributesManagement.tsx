@@ -48,8 +48,6 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
               character_id: characterId,
               attribute_name: name.toLowerCase(),
               value: value
-            }, {
-              onConflict: 'character_id,attribute_name'
             });
           
           if (error) {
