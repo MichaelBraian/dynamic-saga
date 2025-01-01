@@ -3,6 +3,8 @@ import { SelectionLoadingState } from "./shared/SelectionLoadingState";
 import { ErrorBoundary } from "./shared/ErrorBoundary";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { useClothingSelection } from "@/hooks/character/useClothingSelection";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface ClothingSelectionProps {
   characterId: string;
@@ -19,6 +21,7 @@ export const ClothingSelection = ({
 }: ClothingSelectionProps) => {
   const {
     isSubmitting,
+    error,
     options,
     handleSelected
   } = useClothingSelection(characterId, characterClass, onClothingSelected);
@@ -40,6 +43,12 @@ export const ClothingSelection = ({
       }
     >
       <div className="pt-16">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <CharacterSelectionScreen
           title="Choose Clothing"
           options={options}

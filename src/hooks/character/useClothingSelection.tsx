@@ -8,7 +8,6 @@ import { InfoTooltip } from "@/components/shared/InfoTooltip";
 interface ClothingOption {
   value: string;
   label: string;
-  labelComponent?: React.ReactNode;
 }
 
 export const useClothingSelection = (
@@ -18,6 +17,7 @@ export const useClothingSelection = (
 ) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const options = CLOTHING_OPTIONS[characterClass] || [];
   const optionsWithInfo = options.map(option => ({
@@ -31,12 +31,40 @@ export const useClothingSelection = (
     ),
   }));
 
+  const validateClothingSelection = (value: string): boolean => {
+    if (!characterClass) {
+      setError("Character class is required for clothing selection");
+      return false;
+    }
+
+    if (!CLOTHING_OPTIONS[characterClass]) {
+      setError(`No clothing options available for class: ${characterClass}`);
+      return false;
+    }
+
+    if (!CLOTHING_OPTIONS[characterClass].some(option => option.value === value)) {
+      setError(`Invalid clothing selection for ${characterClass}`);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSelected = async (value: string) => {
+    setError(null);
     setIsSubmitting(true);
+
     try {
+      // Validate selection
+      if (!validateClothingSelection(value)) {
+        throw new Error("Invalid clothing selection");
+      }
+
       // Verify character ownership
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Authentication required");
+      if (!user) {
+        throw new Error("Authentication required");
+      }
 
       const { data: character, error: verifyError } = await supabase
         .from('characters')
@@ -44,17 +72,17 @@ export const useClothingSelection = (
         .eq('id', characterId)
         .maybeSingle();
 
-      if (verifyError || !character) {
+      if (verifyError) {
+        console.error('Error verifying character:', verifyError);
+        throw new Error("Failed to verify character ownership");
+      }
+
+      if (!character) {
         throw new Error("Character not found");
       }
 
       if (character.user_id !== user.id) {
-        throw new Error("Unauthorized");
-      }
-
-      // Validate clothing selection based on class
-      if (!CLOTHING_OPTIONS[character.class]?.some(option => option.value === value)) {
-        throw new Error(`Invalid clothing selection for ${character.class}. Please choose a valid option.`);
+        throw new Error("You don't have permission to modify this character");
       }
 
       // Save clothing selection
@@ -65,25 +93,31 @@ export const useClothingSelection = (
           clothing_type: value
         });
 
-      if (saveError) throw saveError;
+      if (saveError) {
+        console.error('Error saving clothing:', saveError);
+        throw new Error("Failed to save clothing selection");
+      }
 
-      // Update character status to 'armor'
+      // Update character status
       const { error: updateError } = await supabase
         .from('characters')
         .update({ status: 'armor' })
         .eq('id', characterId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating status:', updateError);
+        throw new Error("Failed to update character status");
+      }
 
-      await onClothingSelected();
       showSuccessToast(toast, "Clothing selected successfully");
+      await onClothingSelected();
     } catch (error) {
-      console.error('Error selecting clothing:', error);
+      console.error('Error in clothing selection:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to select clothing";
+      setError(errorMessage);
       toast({
         variant: "destructive",
-        description: error instanceof Error 
-          ? error.message 
-          : "Failed to select clothing. Please try again.",
+        description: errorMessage,
       });
     } finally {
       setIsSubmitting(false);
@@ -92,6 +126,7 @@ export const useClothingSelection = (
 
   return {
     isSubmitting,
+    error,
     options: optionsWithInfo,
     handleSelected
   };
