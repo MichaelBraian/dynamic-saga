@@ -64,10 +64,7 @@ export const CharacterCreationSteps = ({
           currentStep={currentStep}
           characterId={characterId}
           selectedClass={selectedClass}
-          onNameSelected={(newCharacterId: string) => {
-            console.log('Name selected, updating character ID:', newCharacterId);
-            onNameSelected(newCharacterId);
-          }}
+          onNameSelected={onNameSelected}
           onGenderSelected={onGenderSelected}
           onRaceSelected={onRaceSelected}
           onAnimalTypeSelected={onAnimalTypeSelected}

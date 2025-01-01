@@ -44,7 +44,7 @@ const CreateCharacter = () => {
             isTransitioning={isTransitioning}
             onNameSelected={handleNameSelected}
             onGenderSelected={handleGenderSelected}
-            onRaceSelected={handleRaceSelected}
+            onRaceSelected={() => handleRaceSelected(characterId!)}
             onAnimalTypeSelected={handleAnimalTypeSelected}
             onClassSelected={handleClassSelected}
             onClothingSelected={handleClothingSelected}
