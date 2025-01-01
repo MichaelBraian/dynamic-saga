@@ -3,9 +3,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 
-interface AttributeRolls {
-  [key: string]: number | undefined;
-}
+// Define valid attribute names as a constant to ensure consistency
+const VALID_ATTRIBUTES = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
+type ValidAttributeName = typeof VALID_ATTRIBUTES[number];
+
+// Display names mapping for UI
+const DISPLAY_NAMES: Record<ValidAttributeName, string> = {
+  strength: "Strength",
+  dexterity: "Dexterity",
+  constitution: "Constitution",
+  intelligence: "Intelligence",
+  wisdom: "Wisdom",
+  charisma: "Charisma"
+};
+
+// Database codes mapping (three-letter codes for database)
+const DB_CODES: Record<ValidAttributeName, string> = {
+  strength: "STR",
+  dexterity: "DEX",
+  constitution: "CON",
+  intelligence: "INT",
+  wisdom: "WIS",
+  charisma: "CHA"
+};
+
+type AttributeRolls = Partial<Record<ValidAttributeName, number>>;
 
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const [attributeRolls, setAttributeRolls] = useState<AttributeRolls>({});
@@ -13,22 +35,21 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   const { toast } = useToast();
 
   const handleRollComplete = (attributeName: string, value: number) => {
+    const normalizedName = attributeName.toLowerCase() as ValidAttributeName;
+    if (!VALID_ATTRIBUTES.includes(normalizedName)) {
+      console.error(`Invalid attribute name: ${attributeName}`);
+      return;
+    }
+
+    console.log(`Rolling complete for ${DISPLAY_NAMES[normalizedName]} with value ${value}`);
     setAttributeRolls(prev => ({
       ...prev,
-      [attributeName]: value
+      [normalizedName]: value
     }));
   };
 
   const areAllAttributesRolled = () => {
-    const requiredAttributes = [
-      "strength",
-      "dexterity",
-      "constitution",
-      "intelligence",
-      "wisdom",
-      "charisma"
-    ];
-    return requiredAttributes.every(attr => attributeRolls[attr] !== undefined);
+    return VALID_ATTRIBUTES.every(attr => attributeRolls[attr] !== undefined);
   };
 
   const handleContinue = async () => {
@@ -41,20 +62,25 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
     }
 
     setIsSaving(true);
-    console.log("Starting to save all attributes...");
+    console.log("Current attribute rolls:", attributeRolls);
 
     try {
-      const attributeInserts = Object.entries(attributeRolls).map(([attribute_name, value]) => ({
+      const attributeInserts = VALID_ATTRIBUTES.map(attr => ({
         character_id: characterId,
-        attribute_name,
-        value
+        attribute_name: DB_CODES[attr], // Use three-letter codes for database
+        value: attributeRolls[attr]
       }));
+
+      console.log("Sending to database:", JSON.stringify(attributeInserts, null, 2));
 
       const { error } = await supabase
         .from('character_attributes')
         .upsert(attributeInserts);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database error details:", error);
+        throw error;
+      }
 
       const { error: statusError } = await supabase
         .from('characters')

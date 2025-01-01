@@ -20,6 +20,7 @@ const CreateCharacter = () => {
     handleMoralityCompleted,
     handleAttributesCompleted,
     handleSpecialtySelected,
+    handleFaithPointsCompleted,
     handleBack,
   } = useCharacterCreation();
 
@@ -43,6 +44,7 @@ const CreateCharacter = () => {
           onMoralityCompleted={handleMoralityCompleted}
           onAttributesCompleted={handleAttributesCompleted}
           onSpecialtySelected={handleSpecialtySelected}
+          onFaithPointsCompleted={handleFaithPointsCompleted}
           onBack={handleBack}
         />
       </div>

@@ -4,6 +4,7 @@ import { useCharacterTypeStepsRenderer } from "./step-renderers/useCharacterType
 import { useEquipmentStepsRenderer } from "./step-renderers/useEquipmentStepsRenderer";
 import { useFinalStepsRenderer } from "./step-renderers/useFinalStepsRenderer";
 import { useSpecialtyStepRenderer } from "./step-renderers/useSpecialtyStepRenderer";
+import { useFaithPointsStepRenderer } from "./step-renderers/useFaithPointsStepRenderer";
 
 interface StepRendererProps {
   currentStep: CharacterStatus;
@@ -21,6 +22,7 @@ interface StepRendererProps {
   onMoralityCompleted: () => void;
   onAttributesCompleted: () => void;
   onSpecialtySelected: () => void;
+  onFaithPointsCompleted: () => void;
   onBack: () => void;
 }
 
@@ -66,11 +68,18 @@ export const useStepRenderer = (props: StepRendererProps) => {
     onBack: props.onBack,
   });
 
+  const { renderFaithPointsStep } = useFaithPointsStepRenderer({
+    characterId: props.characterId,
+    onFaithPointsCompleted: props.onFaithPointsCompleted,
+    onBack: props.onBack,
+  });
+
   return {
     renderInitialSteps,
     renderCharacterTypeSteps,
     renderEquipmentSteps,
     renderFinalSteps,
     renderSpecialtyStep,
+    renderFaithPointsStep,
   };
 };

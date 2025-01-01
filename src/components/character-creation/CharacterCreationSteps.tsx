@@ -17,6 +17,7 @@ interface CharacterCreationStepsProps {
   onMoralityCompleted: () => void;
   onAttributesCompleted: () => void;
   onSpecialtySelected: () => void;
+  onFaithPointsCompleted: () => void;
   onBack: () => void;
 }
 
@@ -36,6 +37,7 @@ export const CharacterCreationSteps = ({
   onMoralityCompleted,
   onAttributesCompleted,
   onSpecialtySelected,
+  onFaithPointsCompleted,
   onBack,
 }: CharacterCreationStepsProps) => {
   console.log('Current step:', currentStep);
@@ -48,6 +50,7 @@ export const CharacterCreationSteps = ({
     renderEquipmentSteps,
     renderFinalSteps,
     renderSpecialtyStep,
+    renderFaithPointsStep,
   } = useStepRenderer({
     currentStep,
     characterId: characterId || "",
@@ -64,6 +67,7 @@ export const CharacterCreationSteps = ({
     onMoralityCompleted,
     onAttributesCompleted,
     onSpecialtySelected,
+    onFaithPointsCompleted,
     onBack,
   });
 
@@ -82,7 +86,7 @@ export const CharacterCreationSteps = ({
     morality: renderFinalSteps,
     attributes: renderFinalSteps,
     specialty: renderSpecialtyStep,
-    faith_points: () => null,
+    faith_points: renderFaithPointsStep,
     questioning: () => null,
     generated: () => null,
     completed: () => null

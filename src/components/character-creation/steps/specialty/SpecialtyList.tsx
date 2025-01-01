@@ -25,18 +25,18 @@ export const SpecialtyList = ({ specialties, onSelect, isSubmitting }: Specialty
     return Object.entries(modifiers)
       .map(([attr, mod]) => {
         const modifierValue = formatModifier(mod);
-        const modifierClass = mod > 0 ? 'text-green-500' : 'text-red-500';
+        const modifierClass = mod > 0 ? 'text-emerald-400' : 'text-rose-400';
         return (
-          <span key={attr}>
-            <span className={modifierClass}>{modifierValue}</span>
-            {` ${attr.charAt(0).toUpperCase() + attr.slice(1)}`}
+          <span key={attr} className="inline-flex items-center gap-1">
+            <span className={`${modifierClass} font-bold`}>{modifierValue}</span>
+            <span className="text-white/80">{attr.charAt(0).toUpperCase() + attr.slice(1)}</span>
           </span>
         );
       })
       .reduce((prev, curr) => (
         <>
           {prev}
-          {prev && ', '}
+          {prev && <span className="mx-2 text-white/50">/</span>}
           {curr}
         </>
       ), null);
@@ -57,15 +57,15 @@ export const SpecialtyList = ({ specialties, onSelect, isSubmitting }: Specialty
           />
           <Label
             htmlFor={specialty.id}
-            className="flex w-full items-center justify-between rounded-lg border-2 border-white/20 bg-white/20 p-4 hover:bg-white/30 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/30 cursor-pointer text-2xl font-['Cinzel'] text-white"
+            className="flex w-full cursor-pointer rounded-lg border-2 border-white/20 bg-white/10 p-4 hover:bg-white/20 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/20"
           >
-            <div className="flex items-center gap-4">
-              <span>{specialty.name}</span>
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
+                <span className="font-['Cinzel'] text-2xl text-white">{specialty.name}</span>
                 <InfoTooltip content={specialty.description} />
-                <span className="text-lg font-normal">
-                  {formatModifiersText(specialty.attribute_modifiers)}
-                </span>
+              </div>
+              <div className="text-base font-normal">
+                {formatModifiersText(specialty.attribute_modifiers)}
               </div>
             </div>
           </Label>

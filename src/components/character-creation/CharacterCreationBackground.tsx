@@ -25,6 +25,10 @@ export const CharacterCreationBackground = ({ currentStep, children }: Character
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/moral.webp";
       case "attributes":
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/attributes.webp";
+      case "specialty":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/attributes.webp";
+      case "faith_points":
+        return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/attributes.webp";
       default:
         return "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Name_Character.webp";
     }

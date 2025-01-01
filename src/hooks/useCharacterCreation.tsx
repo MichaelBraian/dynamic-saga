@@ -132,6 +132,26 @@ export const useCharacterCreation = () => {
     }
   };
 
+  const handleFaithPointsCompleted = async () => {
+    console.log("Faith points completed, transitioning to questioning");
+    if (characterId) {
+      const { error } = await supabase
+        .from('characters')
+        .update({ status: 'questioning' })
+        .eq('id', characterId);
+
+      if (error) {
+        console.error('Error updating character status:', error);
+        toast({
+          variant: "destructive",
+          description: "Failed to update character status. Please try again.",
+        });
+        return;
+      }
+      setCurrentStep("questioning");
+    }
+  };
+
   return {
     characterId,
     currentStep,
@@ -148,6 +168,7 @@ export const useCharacterCreation = () => {
     handleMoralityCompleted,
     handleAttributesCompleted,
     handleSpecialtySelected,
+    handleFaithPointsCompleted,
     handleBack,
     setCurrentStep,
   };
