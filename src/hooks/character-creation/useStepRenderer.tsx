@@ -1,9 +1,9 @@
 import { CharacterStatus } from "@/types/character";
-import { InitialSteps } from "@/components/character-creation/step-groups/InitialSteps";
-import { CharacterTypeSteps } from "@/components/character-creation/step-groups/CharacterTypeSteps";
-import { EquipmentSteps } from "@/components/character-creation/step-groups/EquipmentSteps";
-import { FinalSteps } from "@/components/character-creation/step-groups/FinalSteps";
-import { SpecialtyStep } from "@/components/character-creation/steps/SpecialtyStep";
+import { useInitialStepsRenderer } from "./step-renderers/useInitialStepsRenderer";
+import { useCharacterTypeStepsRenderer } from "./step-renderers/useCharacterTypeStepsRenderer";
+import { useEquipmentStepsRenderer } from "./step-renderers/useEquipmentStepsRenderer";
+import { useFinalStepsRenderer } from "./step-renderers/useFinalStepsRenderer";
+import { useSpecialtyStepRenderer } from "./step-renderers/useSpecialtyStepRenderer";
 
 interface StepRendererProps {
   currentStep: CharacterStatus;
@@ -24,74 +24,47 @@ interface StepRendererProps {
   onBack: () => void;
 }
 
-export const useStepRenderer = ({
-  currentStep,
-  characterId,
-  selectedRace,
-  selectedAnimalType,
-  selectedClass,
-  onNameSelected,
-  onGenderSelected,
-  onRaceSelected,
-  onAnimalTypeSelected,
-  onClassSelected,
-  onClothingSelected,
-  onArmorSelected,
-  onMoralityCompleted,
-  onAttributesCompleted,
-  onSpecialtySelected,
-  onBack,
-}: StepRendererProps) => {
-  const renderInitialSteps = () => (
-    <InitialSteps
-      currentStep={currentStep}
-      characterId={characterId}
-      onNameSelected={onNameSelected}
-      onGenderSelected={onGenderSelected}
-      onRaceSelected={onRaceSelected}
-      onBack={onBack}
-    />
-  );
+export const useStepRenderer = (props: StepRendererProps) => {
+  const { renderInitialSteps } = useInitialStepsRenderer({
+    currentStep: props.currentStep,
+    characterId: props.characterId,
+    onNameSelected: props.onNameSelected,
+    onGenderSelected: props.onGenderSelected,
+    onRaceSelected: props.onRaceSelected,
+    onBack: props.onBack,
+  });
 
-  const renderCharacterTypeSteps = () => (
-    <CharacterTypeSteps
-      currentStep={currentStep}
-      characterId={characterId}
-      onAnimalTypeSelected={onAnimalTypeSelected}
-      onClassSelected={onClassSelected}
-      onBack={onBack}
-    />
-  );
+  const { renderCharacterTypeSteps } = useCharacterTypeStepsRenderer({
+    currentStep: props.currentStep,
+    characterId: props.characterId,
+    onAnimalTypeSelected: props.onAnimalTypeSelected,
+    onClassSelected: props.onClassSelected,
+    onBack: props.onBack,
+  });
 
-  const renderEquipmentSteps = () => (
-    <EquipmentSteps
-      currentStep={currentStep}
-      characterId={characterId}
-      selectedClass={selectedClass}
-      onClothingSelected={onClothingSelected}
-      onArmorSelected={onArmorSelected}
-      onBack={onBack}
-    />
-  );
+  const { renderEquipmentSteps } = useEquipmentStepsRenderer({
+    currentStep: props.currentStep,
+    characterId: props.characterId,
+    selectedClass: props.selectedClass,
+    onClothingSelected: props.onClothingSelected,
+    onArmorSelected: props.onArmorSelected,
+    onBack: props.onBack,
+  });
 
-  const renderFinalSteps = () => (
-    <FinalSteps
-      currentStep={currentStep}
-      characterId={characterId}
-      onMoralityCompleted={onMoralityCompleted}
-      onAttributesCompleted={onAttributesCompleted}
-      onBack={onBack}
-    />
-  );
+  const { renderFinalSteps } = useFinalStepsRenderer({
+    currentStep: props.currentStep,
+    characterId: props.characterId,
+    onMoralityCompleted: props.onMoralityCompleted,
+    onAttributesCompleted: props.onAttributesCompleted,
+    onBack: props.onBack,
+  });
 
-  const renderSpecialtyStep = () => (
-    <SpecialtyStep
-      characterId={characterId}
-      characterClass={selectedClass || ''}
-      onBack={onBack}
-      onComplete={onSpecialtySelected}
-    />
-  );
+  const { renderSpecialtyStep } = useSpecialtyStepRenderer({
+    characterId: props.characterId,
+    selectedClass: props.selectedClass,
+    onSpecialtySelected: props.onSpecialtySelected,
+    onBack: props.onBack,
+  });
 
   return {
     renderInitialSteps,
