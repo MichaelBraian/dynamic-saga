@@ -5,6 +5,15 @@ import { useCharacterStatusUpdate } from "@/utils/characterStatus";
 export const useMoralityCalculation = (characterId: string) => {
   const { updateStatus } = useCharacterStatusUpdate();
 
+  const calculateAlignmentScore = (goodEvil: number, lawfulChaotic: number): number => {
+    // Convert from -100 to 100 scale to 0 to 100 scale
+    const normalizedGoodEvil = (goodEvil + 100) / 2;
+    const normalizedLawfulChaotic = (lawfulChaotic + 100) / 2;
+    
+    // Weight both axes equally
+    return Math.round((normalizedGoodEvil + normalizedLawfulChaotic) / 2);
+  };
+
   const calculateAndSaveMoralityScores = async (questions: MoralityQuestion[]) => {
     try {
       const { data: responses, error: responsesError } = await supabase
@@ -43,7 +52,9 @@ export const useMoralityCalculation = (characterId: string) => {
       const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / maxPossibleScore) * 100);
       const boundedGoodEvil = Math.max(-100, Math.min(100, normalizedGoodEvil));
       const boundedLawfulChaotic = Math.max(-100, Math.min(100, normalizedLawfulChaotic));
-      const alignmentScore = Math.round((Math.abs(boundedGoodEvil) + Math.abs(boundedLawfulChaotic)) / 2);
+      
+      // Calculate alignment score using the new method
+      const alignmentScore = calculateAlignmentScore(boundedGoodEvil, boundedLawfulChaotic);
 
       const { error: moralityError } = await supabase
         .from('character_morality')
