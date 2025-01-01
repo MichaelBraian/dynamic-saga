@@ -22,7 +22,10 @@ const Progress = React.forwardRef<
       {showIndicator && (
         <div 
           className="absolute top-0 bottom-0 right-0 w-[2px] bg-white"
-          style={{ boxShadow: '0 0 4px rgba(255, 255, 255, 0.5)' }}
+          style={{ 
+            boxShadow: '0 0 4px rgba(255, 255, 255, 0.5)',
+            right: value === 100 ? '0' : '0'  // This ensures the line is visible at 100%
+          }}
         />
       )}
     </ProgressPrimitive.Indicator>
