@@ -42,8 +42,13 @@ export const useCharacterNavigation = () => {
     }
 
     try {
+      console.log(`Navigating to ${newStatus} for character ${characterId}`);
       await updateCharacterStatus(characterId, newStatus);
       onSuccess();
+      toast({
+        description: `Successfully moved to ${newStatus} step`,
+        className: "bg-green-500 text-white",
+      });
     } catch (error) {
       console.error('Error navigating:', error);
       toast({

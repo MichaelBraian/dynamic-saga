@@ -39,7 +39,7 @@ export const useCharacterCreation = () => {
         (payload: any) => {
           console.log('Character status updated:', payload.new.status);
           if (payload.new && payload.new.status) {
-            updateCharacterState(null, payload.new.status as CharacterStatus);
+            updateCharacterState({ currentStep: payload.new.status as CharacterStatus });
           }
         }
       )
@@ -48,13 +48,13 @@ export const useCharacterCreation = () => {
     const fetchCharacter = async () => {
       try {
         const character = await verifyCharacterOwnership(characterId);
-        updateCharacterState(
+        updateCharacterState({
           characterId,
-          character.status as CharacterStatus,
-          character.race || null,
-          character.animal_type || null,
-          character.class || null
-        );
+          currentStep: character.status,
+          selectedRace: character.race || null,
+          selectedAnimalType: character.animal_type || null,
+          selectedClass: character.class || null
+        });
       } catch (error) {
         console.error('Error fetching character:', error);
         toast({
@@ -73,7 +73,10 @@ export const useCharacterCreation = () => {
   }, [characterId]);
 
   const handleNameSelected = (newCharacterId: string) => {
-    updateCharacterState(newCharacterId, "gender");
+    updateCharacterState({
+      characterId: newCharacterId,
+      currentStep: "gender"
+    });
   };
 
   const handleGenderSelected = async () => {
@@ -81,7 +84,7 @@ export const useCharacterCreation = () => {
     setIsTransitioning(true);
     
     await handleNavigation(characterId, "race", () => {
-      updateCharacterState(null, "race");
+      updateCharacterState({ currentStep: "race" });
     });
     
     setIsTransitioning(false);
@@ -98,11 +101,10 @@ export const useCharacterCreation = () => {
         .eq('id', characterId)
         .maybeSingle();
       
-      updateCharacterState(
-        null,
-        data?.status as CharacterStatus || "class",
-        data?.race || null
-      );
+      updateCharacterState({
+        currentStep: data?.status as CharacterStatus || "class",
+        selectedRace: data?.race || null
+      });
     } catch (error) {
       console.error('Error handling race selection:', error);
       toast({
@@ -119,7 +121,10 @@ export const useCharacterCreation = () => {
     setIsTransitioning(true);
     
     try {
-      updateCharacterState(null, "class", null, animalType);
+      updateCharacterState({
+        currentStep: "class",
+        selectedAnimalType: animalType
+      });
     } finally {
       setIsTransitioning(false);
     }
@@ -130,7 +135,10 @@ export const useCharacterCreation = () => {
     setIsTransitioning(true);
     
     try {
-      updateCharacterState(null, "clothing", null, null, characterClass);
+      updateCharacterState({
+        currentStep: "clothing",
+        selectedClass: characterClass
+      });
     } finally {
       setIsTransitioning(false);
     }
@@ -141,7 +149,7 @@ export const useCharacterCreation = () => {
     setIsTransitioning(true);
     
     try {
-      updateCharacterState(null, "armor");
+      updateCharacterState({ currentStep: "armor" });
     } finally {
       setIsTransitioning(false);
     }
@@ -153,7 +161,7 @@ export const useCharacterCreation = () => {
     
     try {
       console.log("Armor selected, transitioning to morality");
-      updateCharacterState(null, "morality");
+      updateCharacterState({ currentStep: "morality" });
     } finally {
       setIsTransitioning(false);
     }
@@ -168,13 +176,13 @@ export const useCharacterCreation = () => {
       
       if (characterId) {
         await handleNavigation(characterId, newStatus, () => {
-          updateCharacterState(
-            newStatus === "naming" ? null : characterId,
-            newStatus,
-            newStatus === "race" ? null : selectedRace,
-            newStatus === "animal_type" ? null : selectedAnimalType,
-            newStatus === "class" ? null : selectedClass
-          );
+          updateCharacterState({
+            characterId: newStatus === "naming" ? null : characterId,
+            currentStep: newStatus,
+            selectedRace: newStatus === "race" ? null : selectedRace,
+            selectedAnimalType: newStatus === "animal_type" ? null : selectedAnimalType,
+            selectedClass: newStatus === "class" ? null : selectedClass
+          });
         });
       }
     } catch (error) {

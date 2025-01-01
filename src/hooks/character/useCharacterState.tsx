@@ -1,37 +1,42 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { CharacterStatus } from "@/types/character";
 import { useToast } from "@/hooks/use-toast";
 
+interface CharacterState {
+  characterId: string | null;
+  currentStep: CharacterStatus;
+  selectedRace: string | null;
+  selectedAnimalType: string | null;
+  selectedClass: string | null;
+  isTransitioning: boolean;
+}
+
 export const useCharacterState = () => {
-  const [characterId, setCharacterId] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
-  const [selectedRace, setSelectedRace] = useState<string | null>(null);
-  const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [state, setState] = useState<CharacterState>({
+    characterId: null,
+    currentStep: "naming",
+    selectedRace: null,
+    selectedAnimalType: null,
+    selectedClass: null,
+    isTransitioning: false,
+  });
+  
   const { toast } = useToast();
 
-  const updateCharacterState = (
-    newCharacterId: string | null,
-    newStep: CharacterStatus,
-    newRace?: string | null,
-    newAnimalType?: string | null,
-    newClass?: string | null
-  ) => {
-    if (newCharacterId !== undefined) setCharacterId(newCharacterId);
-    if (newStep) setCurrentStep(newStep);
-    if (newRace !== undefined) setSelectedRace(newRace);
-    if (newAnimalType !== undefined) setSelectedAnimalType(newAnimalType);
-    if (newClass !== undefined) setSelectedClass(newClass);
-  };
+  const updateCharacterState = useCallback((updates: Partial<CharacterState>) => {
+    setState(prev => {
+      const newState = { ...prev, ...updates };
+      console.log('Character state updated:', newState);
+      return newState;
+    });
+  }, []);
+
+  const setIsTransitioning = useCallback((isTransitioning: boolean) => {
+    updateCharacterState({ isTransitioning });
+  }, [updateCharacterState]);
 
   return {
-    characterId,
-    currentStep,
-    selectedRace,
-    selectedAnimalType,
-    selectedClass,
-    isTransitioning,
+    ...state,
     setIsTransitioning,
     updateCharacterState,
     toast
