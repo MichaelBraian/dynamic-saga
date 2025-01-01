@@ -1,23 +1,30 @@
 import { AttributeItem } from "./AttributeItem";
-import { attributes } from "./attributeDefinitions";
 
 interface AttributesListProps {
   attributeRolls: Record<string, number | undefined>;
-  onRollComplete: (attributeName: string, total: number) => void;
+  onRollComplete: (attributeName: string, value: number) => void;
 }
 
-export const AttributesList = ({ attributeRolls, onRollComplete }: AttributesListProps) => (
-  <div className="space-y-4">
-    {attributes.map((attr) => (
-      <AttributeItem
-        key={attr.name}
-        icon={attr.icon}
-        label={attr.label}
-        name={attr.name}
-        description={attr.description}
-        value={attributeRolls[attr.name]}
-        onRollComplete={(total) => onRollComplete(attr.name, total)}
-      />
-    ))}
-  </div>
-);
+export const AttributesList = ({ attributeRolls, onRollComplete }: AttributesListProps) => {
+  const attributes = [
+    "strength",
+    "dexterity",
+    "constitution",
+    "intelligence",
+    "wisdom",
+    "charisma",
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+      {attributes.map((attributeName) => (
+        <AttributeItem
+          key={attributeName}
+          name={attributeName}
+          value={attributeRolls[attributeName]}
+          onRollComplete={(value) => onRollComplete(attributeName, value)}
+        />
+      ))}
+    </div>
+  );
+};

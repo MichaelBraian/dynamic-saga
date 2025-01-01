@@ -1,40 +1,42 @@
-import { InfoTooltip } from "@/components/shared/InfoTooltip";
-import { DiceRoll } from "@/components/shared/DiceRoll";
-import { LucideIcon } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dice } from "lucide-react";
 
 interface AttributeItemProps {
-  icon: LucideIcon;
-  label: string;
   name: string;
-  description: string;
   value: number | undefined;
-  onRollComplete: (total: number) => void;
+  onRollComplete: (value: number) => void;
 }
 
-export const AttributeItem = ({ 
-  icon: Icon, 
-  label, 
-  name, 
-  description, 
-  value, 
-  onRollComplete 
-}: AttributeItemProps) => {
+export const AttributeItem = ({ name, value, onRollComplete }: AttributeItemProps) => {
+  const [isRolling, setIsRolling] = useState(false);
+
+  const handleRoll = () => {
+    setIsRolling(true);
+    // Simulate dice roll
+    setTimeout(() => {
+      const rollResult = Math.floor(Math.random() * 16) + 3; // 3-18 range
+      onRollComplete(rollResult);
+      setIsRolling(false);
+    }, 1000);
+  };
+
   return (
-    <div className="flex items-center gap-4 text-white p-4 rounded-lg bg-black/30">
-      <div className="flex items-center gap-2 flex-1">
-        <Icon className="h-5 w-5" />
-        <span className="font-['Cinzel'] text-lg">{label}</span>
-        <span className="text-sm opacity-70">({name})</span>
-        <InfoTooltip content={description} />
+    <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+      <div>
+        <h3 className="capitalize text-lg font-['Cinzel'] text-white">{name}</h3>
+        <p className="text-2xl font-bold text-white">
+          {value !== undefined ? value : "-"}
+        </p>
       </div>
-      <div className="flex items-center gap-2">
-        {value === undefined && (
-          <DiceRoll onRollComplete={onRollComplete} />
-        )}
-        {value !== undefined && (
-          <span className="font-bold min-w-[2ch] text-center">{value}</span>
-        )}
-      </div>
+      <Button
+        onClick={handleRoll}
+        disabled={value !== undefined || isRolling}
+        className="bg-white/10 text-white hover:bg-white/20"
+      >
+        <Dice className={isRolling ? "animate-spin" : ""} />
+        {isRolling ? "Rolling..." : "Roll"}
+      </Button>
     </div>
   );
 };
