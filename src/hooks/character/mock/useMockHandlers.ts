@@ -41,6 +41,8 @@ export const useMockHandlers = (
       setIsTransitioning(true);
       await simulateDelay();
       
+      console.log('Mock gender selected:', gender);
+      
       updateState({ 
         currentStep: "race",
         gender 
