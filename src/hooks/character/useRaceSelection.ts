@@ -33,17 +33,30 @@ export const useRaceSelection = ({
       
       const nextStatus = value === 'Animal' ? 'animal_type' : 'class';
       
-      const { error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('characters')
         .update({ 
           race: value, 
           status: nextStatus 
         })
-        .eq('id', characterId);
+        .eq('id', characterId)
+        .select();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database error:', updateError);
+        throw updateError;
+      }
+
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from update');
+      }
       
-      console.log('Race selection saved successfully:', { characterId, race: value, nextStatus });
+      console.log('Race selection saved successfully:', { 
+        characterId, 
+        race: value, 
+        nextStatus,
+        response: data 
+      });
 
       toast({
         description: "Race selected successfully",
@@ -58,6 +71,7 @@ export const useRaceSelection = ({
           ? error.message 
           : "Failed to save race selection. Please try again.",
       });
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

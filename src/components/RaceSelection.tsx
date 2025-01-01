@@ -2,6 +2,7 @@ import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { SelectionLoadingState } from "./shared/SelectionLoadingState";
 import { ErrorBoundary } from "./shared/ErrorBoundary";
 import { useRaceSelection } from "@/hooks/character/useRaceSelection";
+import { useToast } from "@/hooks/use-toast";
 
 interface RaceSelectionProps {
   characterId: string;
@@ -20,10 +21,42 @@ export const RaceSelection = ({
   onRaceSelected, 
   onBack 
 }: RaceSelectionProps) => {
+  const { toast } = useToast();
   const { isSubmitting, handleRaceSelected } = useRaceSelection({
     characterId,
     onRaceSelected
   });
+
+  const handleSelection = async (race: string) => {
+    try {
+      console.log('Race Selection - Attempting to save race:', {
+        characterId,
+        race
+      });
+
+      if (!characterId) {
+        toast({
+          variant: "destructive",
+          description: "Character ID is missing. Please try again.",
+        });
+        return;
+      }
+
+      await handleRaceSelected(race);
+      
+      console.log('Race Selection - Race saved successfully');
+      
+      toast({
+        description: "Race selected successfully",
+      });
+    } catch (error) {
+      console.error('Error in race selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save race selection. Please try again.",
+      });
+    }
+  };
 
   if (isSubmitting) {
     return (
@@ -46,7 +79,7 @@ export const RaceSelection = ({
           title="Choose Race"
           options={RACE_OPTIONS}
           characterId={characterId}
-          onSelected={handleRaceSelected}
+          onSelected={handleSelection}
           onBack={onBack}
           updateField="race"
           nextStatus="class"
