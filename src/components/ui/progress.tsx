@@ -16,7 +16,7 @@ const Progress = React.forwardRef<
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-gradient-to-r from-red-500 to-blue-500 transition-all"
+      className="h-full w-full flex-1 transition-all"
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     >
       {showIndicator && (
