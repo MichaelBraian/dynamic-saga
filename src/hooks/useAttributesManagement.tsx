@@ -44,7 +44,7 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
       for (const [name, value] of Object.entries(attributeRolls)) {
         if (value !== undefined) {
           console.log(`Saving ${name} with value ${value}`);
-          const { error } = await supabase
+          const { error: saveError } = await supabase
             .from('character_attributes')
             .upsert({
               character_id: characterId,
@@ -52,9 +52,9 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
               value: value
             });
           
-          if (error) {
-            console.error(`Error saving ${name}:`, error);
-            throw error;
+          if (saveError) {
+            console.error(`Error saving ${name}:`, saveError);
+            throw saveError;
           }
         }
       }

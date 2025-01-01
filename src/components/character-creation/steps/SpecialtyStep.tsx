@@ -9,7 +9,6 @@ import { SpecialtyHeader } from "./specialty/SpecialtyHeader";
 
 interface SpecialtyStepProps {
   characterId: string;
-  characterClass: string;
   onBack: () => void;
   onComplete: () => void;
 }
@@ -25,12 +24,26 @@ interface Specialty {
 
 export const SpecialtyStep = ({
   characterId,
-  characterClass,
   onBack,
   onComplete,
 }: SpecialtyStepProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // First, fetch the character's class
+  const { data: characterClass, isLoading: loadingClass } = useQuery({
+    queryKey: ['character-class', characterId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('characters')
+        .select('class')
+        .eq('id', characterId)
+        .single();
+      
+      if (error) throw error;
+      return data?.class;
+    }
+  });
 
   const { data: attributesCheck, isLoading: checkingAttributes } = useQuery({
     queryKey: ['attributes-check', characterId],
@@ -48,6 +61,8 @@ export const SpecialtyStep = ({
   const { data: specialties, isLoading: loadingSpecialties } = useQuery({
     queryKey: ['specialties', characterClass],
     queryFn: async () => {
+      if (!characterClass) return [];
+      
       const { data, error } = await supabase
         .from('specialties')
         .select('*')
@@ -55,13 +70,12 @@ export const SpecialtyStep = ({
       
       if (error) throw error;
       
-      // Transform the data to ensure attribute_modifiers is correctly typed
       return (data || []).map(specialty => ({
         ...specialty,
         attribute_modifiers: specialty.attribute_modifiers as Record<string, number>
       })) as Specialty[];
     },
-    enabled: !!attributesCheck,
+    enabled: !!characterClass && !!attributesCheck,
   });
 
   const handleSpecialtySelect = async (specialtyId: string) => {
@@ -101,15 +115,17 @@ export const SpecialtyStep = ({
     }
   };
 
+  const isLoading = loadingClass || checkingAttributes || loadingSpecialties;
+
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
       <SpecialtyStateDisplay
-        isLoading={checkingAttributes || loadingSpecialties}
+        isLoading={isLoading}
         attributesIncomplete={!attributesCheck}
         onBack={onBack}
       />
       
-      {attributesCheck && specialties && (
+      {attributesCheck && specialties && characterClass && (
         <>
           <SpecialtyHeader onBack={onBack} />
           <SpecialtyList
