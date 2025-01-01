@@ -19,6 +19,7 @@ interface SelectionFormProps {
   updateField: string;
   nextStatus: CharacterStatus;
   showBackButton?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const SelectionForm = ({
@@ -30,13 +31,18 @@ export const SelectionForm = ({
   updateField,
   nextStatus,
   showBackButton = true,
+  isSubmitting = false,
 }: SelectionFormProps) => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localSubmitting, setLocalSubmitting] = useState(false);
 
   const handleSubmit = async (value: string) => {
-    setIsSubmitting(true);
+    if (isSubmitting || localSubmitting) return;
+    
+    setLocalSubmitting(true);
     try {
+      console.log(`Updating ${updateField} to ${value} for character ${characterId}`);
+      
       const { error } = await supabase
         .from('characters')
         .update({ [updateField]: value, status: nextStatus })
@@ -64,7 +70,7 @@ export const SelectionForm = ({
         className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
       });
     } finally {
-      setIsSubmitting(false);
+      setLocalSubmitting(false);
     }
   };
 
@@ -78,7 +84,7 @@ export const SelectionForm = ({
       <SelectionOptions 
         options={options}
         onValueChange={handleSubmit}
-        isDisabled={isSubmitting}
+        isDisabled={isSubmitting || localSubmitting}
       />
     </div>
   );
