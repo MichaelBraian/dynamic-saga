@@ -34,7 +34,7 @@ export const useGenderSelection = ({
 
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id, status')
+        .select('user_id')
         .eq('id', characterId)
         .single();
 
@@ -46,15 +46,14 @@ export const useGenderSelection = ({
         throw new Error("Unauthorized");
       }
 
-      // Update gender and status in a single transaction
+      // Update gender and status
       const { error: updateError } = await supabase
         .from('characters')
         .update({ 
           gender,
           status: 'race'
         })
-        .eq('id', characterId)
-        .eq('user_id', user.id);
+        .eq('id', characterId);
 
       if (updateError) {
         console.error('Error updating gender:', updateError);

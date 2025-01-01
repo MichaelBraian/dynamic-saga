@@ -46,7 +46,7 @@ const CreateCharacter = () => {
             onNameSelected={handleNameSelected}
             onGenderSelected={handleGenderSelected}
             onRaceSelected={() => handleRaceSelected(characterId!)}
-            onAnimalTypeSelected={handleAnimalTypeSelected}
+            onAnimalTypeSelected={(animalType: string) => handleAnimalTypeSelected(animalType, characterId!)}
             onClassSelected={handleClassSelected}
             onClothingSelected={() => handleClothingSelected(characterId!)}
             onArmorSelected={() => handleArmorSelected(characterId!)}
