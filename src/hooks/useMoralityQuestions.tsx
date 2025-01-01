@@ -62,12 +62,12 @@ export const useMoralityQuestions = (characterId: string) => {
     // Calculate the maximum possible score for normalization
     const maxPossibleScore = questions.reduce((acc, q) => acc + Math.abs(q.morality_weight), 0) / 2;
 
-    // Normalize scores to -100 to 100 range
-    const normalizedGoodEvil = Math.round((goodEvilScore / maxPossibleScore) * 100);
-    const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / maxPossibleScore) * 100);
+    // Normalize scores to -100 to 100 range and ensure they stay within bounds
+    const normalizedGoodEvil = Math.max(-100, Math.min(100, Math.round((goodEvilScore / maxPossibleScore) * 100)));
+    const normalizedLawfulChaotic = Math.max(-100, Math.min(100, Math.round((lawfulChaoticScore / maxPossibleScore) * 100)));
 
     // Calculate overall alignment score (0-100)
-    const alignmentScore = Math.round(((normalizedGoodEvil + 100) / 2 + (normalizedLawfulChaotic + 100) / 2) / 2);
+    const alignmentScore = Math.max(0, Math.min(100, Math.round(((normalizedGoodEvil + 100) / 2 + (normalizedLawfulChaotic + 100) / 2) / 2)));
 
     console.log('Calculated Morality Scores:', {
       goodEvilScore: normalizedGoodEvil,

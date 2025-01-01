@@ -1,9 +1,9 @@
-import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowDown } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { ArrowRight } from "lucide-react";
+import { useCharacterStatusUpdate } from "@/utils/characterStatus";
+import { ProgressBarWithIndicator } from "@/components/shared/ProgressBarWithIndicator";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
@@ -11,7 +11,7 @@ interface MoralityScoreDisplayProps {
 }
 
 export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
-  const { toast } = useToast();
+  const { updateStatus } = useCharacterStatusUpdate();
 
   const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
@@ -39,30 +39,9 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   });
 
   const handleContinue = async () => {
-    try {
-      console.log('Attempting to update character status to attributes');
-      const { error } = await supabase
-        .from('characters')
-        .update({ status: 'attributes' })
-        .eq('id', characterId);
-
-      if (error) {
-        console.error('Error updating character status:', error);
-        toast({
-          variant: "destructive",
-          description: "Failed to proceed to attributes. Please try again.",
-        });
-        return;
-      }
-
-      console.log('Successfully updated character status to attributes');
+    const success = await updateStatus(characterId, 'attributes');
+    if (success) {
       onContinue();
-    } catch (error) {
-      console.error('Error in handleContinue:', error);
-      toast({
-        variant: "destructive",
-        description: "An unexpected error occurred. Please try again.",
-      });
     }
   };
 
@@ -118,64 +97,33 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       
       <div className="space-y-6 text-white">
         <div>
-          <div className="relative mb-2">
-            <Progress 
-              value={morality.alignment_score} 
-              className="h-8"
-              showIndicator
-            />
-            <div className="absolute top-[-24px] left-0 right-0">
-              <div style={{ marginLeft: `${morality.alignment_score}%` }} className="relative flex justify-center transform -translate-x-1/2">
-                <ArrowDown className="text-white" />
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-sm font-['IM_Fell_English']">
-              <span className="text-white">Devil</span>
-              <span className="text-white">Angel</span>
-            </div>
-          </div>
-          <p className="text-lg font-semibold">Overall Alignment</p>
-          <p className="text-sm opacity-80">{getAlignmentDescription(morality.alignment_score)}</p>
+          <ProgressBarWithIndicator
+            value={morality.alignment_score}
+            leftLabel="Devil"
+            rightLabel="Angel"
+            description={getAlignmentDescription(morality.alignment_score)}
+            height="lg"
+          />
         </div>
 
         <div>
-          <div className="relative mb-2">
-            <Progress 
-              value={(morality.good_evil_scale + 100) / 2} 
-              className="h-6"
-              showIndicator
-            />
-            <div className="absolute top-[-24px] left-0 right-0">
-              <div style={{ marginLeft: `${(morality.good_evil_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
-                <ArrowDown className="text-white" />
-              </div>
-            </div>
-            <div className="flex justify-between mt-1 text-sm">
-              <span className="text-white">Evil</span>
-              <span className="text-white">Good</span>
-            </div>
-          </div>
-          <p className="text-sm opacity-80">{getScaleDescription(morality.good_evil_scale, 'goodEvil')}</p>
+          <ProgressBarWithIndicator
+            value={(morality.good_evil_scale + 100) / 2}
+            leftLabel="Evil"
+            rightLabel="Good"
+            description={getScaleDescription(morality.good_evil_scale, 'goodEvil')}
+            height="md"
+          />
         </div>
 
         <div>
-          <div className="relative mb-2">
-            <Progress 
-              value={(morality.lawful_chaotic_scale + 100) / 2} 
-              className="h-6"
-              showIndicator
-            />
-            <div className="absolute top-[-24px] left-0 right-0">
-              <div style={{ marginLeft: `${(morality.lawful_chaotic_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
-                <ArrowDown className="text-white" />
-              </div>
-            </div>
-            <div className="flex justify-between mt-1 text-sm">
-              <span className="text-white">Chaotic</span>
-              <span className="text-white">Lawful</span>
-            </div>
-          </div>
-          <p className="text-sm opacity-80">{getScaleDescription(morality.lawful_chaotic_scale, 'lawfulChaotic')}</p>
+          <ProgressBarWithIndicator
+            value={(morality.lawful_chaotic_scale + 100) / 2}
+            leftLabel="Chaotic"
+            rightLabel="Lawful"
+            description={getScaleDescription(morality.lawful_chaotic_scale, 'lawfulChaotic')}
+            height="md"
+          />
         </div>
       </div>
 
