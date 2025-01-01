@@ -21,16 +21,11 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
         .from('character_morality')
         .select('alignment_score, good_evil_scale, lawful_chaotic_scale')
         .eq('character_id', characterId)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error fetching morality score:', error);
         throw error;
-      }
-
-      if (!data) {
-        console.error('No morality score found for character:', characterId);
-        throw new Error('No morality score found');
       }
 
       console.log('Retrieved morality score:', data);
