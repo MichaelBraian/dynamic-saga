@@ -4,6 +4,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { InfoTooltip } from "@/components/shared/InfoTooltip";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface Specialty {
   id: string;
@@ -40,14 +43,12 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
   const handleSpecialtySelect = async (specialtyId: string) => {
     setIsSubmitting(true);
     try {
-      // Save specialty selection
       const { error: specialtyError } = await supabase
         .from('character_specialties')
         .upsert({ character_id: characterId, specialty_id: specialtyId });
 
       if (specialtyError) throw specialtyError;
 
-      // Update character status
       const { error: statusError } = await supabase
         .from('characters')
         .update({ status: 'faith_points' })
@@ -103,30 +104,34 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
         <div className="w-10" />
       </div>
 
-      <div className="space-y-4">
+      <RadioGroup
+        className="space-y-4"
+        onValueChange={handleSpecialtySelect}
+        disabled={isSubmitting}
+      >
         {specialties?.map((specialty) => (
-          <div
-            key={specialty.id}
-            className="p-4 rounded-lg bg-white/10 hover:bg-white/20 cursor-pointer transition-colors"
-            onClick={() => !isSubmitting && handleSpecialtySelect(specialty.id)}
-          >
-            <h3 className="text-xl font-['Cinzel'] text-white mb-2">{specialty.name}</h3>
-            <p className="text-white/80 mb-2">{specialty.description}</p>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(specialty.attribute_modifiers).map(([attr, mod]) => (
-                <span
-                  key={attr}
-                  className={`px-2 py-1 rounded text-sm ${
-                    mod > 0 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
-                  }`}
-                >
-                  {attr.charAt(0).toUpperCase() + attr.slice(1)}: {formatModifier(mod)}
-                </span>
-              ))}
-            </div>
+          <div key={specialty.id}>
+            <RadioGroupItem
+              value={specialty.id}
+              id={specialty.id}
+              className="peer sr-only"
+            />
+            <Label
+              htmlFor={specialty.id}
+              className="flex w-full items-center justify-between rounded-lg border-2 border-white/20 bg-white/20 p-4 hover:bg-white/30 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/30 cursor-pointer text-2xl font-['Cinzel'] text-white"
+            >
+              <div className="flex items-center gap-2">
+                {specialty.name}
+                <InfoTooltip content={`${specialty.description}
+                  ${Object.entries(specialty.attribute_modifiers)
+                    .map(([attr, mod]) => `\n${attr.charAt(0).toUpperCase() + attr.slice(1)}: ${formatModifier(mod)}`)
+                    .join('')}`} 
+                />
+              </div>
+            </Label>
           </div>
         ))}
-      </div>
+      </RadioGroup>
     </div>
   );
 };
