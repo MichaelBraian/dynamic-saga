@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { SelectionLoadingState } from "./shared/SelectionLoadingState";
 import { ErrorBoundary } from "./shared/ErrorBoundary";
+import { useGenderSelection } from "@/hooks/character/useGenderSelection";
 
 interface GenderSelectionProps {
   characterId: string;
@@ -16,67 +14,15 @@ const GENDER_OPTIONS = [
   { value: 'female', label: 'Female' }
 ];
 
-export const GenderSelection = ({ characterId, onGenderSelected, onBack }: GenderSelectionProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const handleGenderSelected = async (gender: string) => {
-    if (!gender || !characterId) {
-      toast({
-        variant: "destructive",
-        description: "Please select a gender to continue",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      // Verify character ownership
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Authentication required");
-
-      const { data: character, error: verifyError } = await supabase
-        .from('characters')
-        .select('user_id')
-        .eq('id', characterId)
-        .maybeSingle();
-
-      if (verifyError || !character) {
-        throw new Error("Character not found");
-      }
-
-      if (character.user_id !== user.id) {
-        throw new Error("Unauthorized");
-      }
-
-      // Update gender
-      const { error: updateError } = await supabase
-        .from('characters')
-        .update({ 
-          gender,
-          status: 'race'
-        })
-        .eq('id', characterId)
-        .eq('user_id', user.id);
-
-      if (updateError) throw updateError;
-
-      toast({
-        description: "Gender selected successfully",
-      });
-      onGenderSelected();
-    } catch (error) {
-      console.error('Error updating gender:', error);
-      toast({
-        variant: "destructive",
-        description: error instanceof Error 
-          ? error.message 
-          : "Failed to save gender selection. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+export const GenderSelection = ({ 
+  characterId, 
+  onGenderSelected, 
+  onBack 
+}: GenderSelectionProps) => {
+  const { isSubmitting, handleGenderSelected } = useGenderSelection({
+    characterId,
+    onGenderSelected
+  });
 
   if (isSubmitting) {
     return (
