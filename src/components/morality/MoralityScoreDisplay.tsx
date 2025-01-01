@@ -90,7 +90,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   if (error) {
     return (
       <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
-        <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Error loading score</h2>
+        <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">Error loading score</h2>
         <p className="text-white text-center">Please try again later.</p>
       </div>
     );
@@ -99,7 +99,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   if (isLoading) {
     return (
       <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
-        <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Loading your morality score...</h2>
+        <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">Loading your morality score...</h2>
       </div>
     );
   }
@@ -107,25 +107,28 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   if (!morality) {
     return (
       <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
-        <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Score not available</h2>
+        <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">Score not available</h2>
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
-      <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Your Morality Score</h2>
+      <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">Your Morality Score</h2>
       
       <div className="space-y-6 text-white">
         <div>
           <div className="relative mb-2">
-            <Progress value={morality.alignment_score} className="h-8" />
+            <Progress 
+              value={morality.alignment_score} 
+              className="h-8 [&>div]:bg-gradient-to-r [&>div]:from-[#FF8B8B] [&>div]:via-[#9B6B9B] [&>div]:to-[#6B9BFF] bg-black/20 backdrop-blur-sm" 
+            />
             <div className="absolute top-[-24px] left-0 right-0">
               <div style={{ marginLeft: `${morality.alignment_score}%` }} className="relative flex justify-center transform -translate-x-1/2">
                 <ArrowDown className="text-white" />
               </div>
             </div>
-            <div className="flex justify-between mt-2 text-sm font-['Cinzel']">
+            <div className="flex justify-between mt-2 text-sm font-['IM_Fell_English']">
               <span className="text-white">Devil</span>
               <span className="text-white">Angel</span>
             </div>
@@ -138,7 +141,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
           <div className="relative mb-2">
             <Progress 
               value={(morality.good_evil_scale + 100) / 2} 
-              className="h-6" 
+              className="h-6 [&>div]:bg-gradient-to-r [&>div]:from-[#FF8B8B] [&>div]:via-[#9B6B9B] [&>div]:to-[#6B9BFF] bg-black/20 backdrop-blur-sm" 
             />
             <div className="absolute top-[-24px] left-0 right-0">
               <div style={{ marginLeft: `${(morality.good_evil_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
@@ -157,7 +160,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
           <div className="relative mb-2">
             <Progress 
               value={(morality.lawful_chaotic_scale + 100) / 2} 
-              className="h-6" 
+              className="h-6 [&>div]:bg-gradient-to-r [&>div]:from-[#FF8B8B] [&>div]:via-[#9B6B9B] [&>div]:to-[#6B9BFF] bg-black/20 backdrop-blur-sm" 
             />
             <div className="absolute top-[-24px] left-0 right-0">
               <div style={{ marginLeft: `${(morality.lawful_chaotic_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
@@ -176,7 +179,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       <div className="flex justify-center mt-6">
         <Button
           onClick={handleContinue}
-          className="bg-white/10 text-white hover:bg-white/20"
+          className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
         >
           Continue to Attributes <ArrowRight className="ml-2" />
         </Button>
