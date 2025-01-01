@@ -4,7 +4,9 @@ import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
 import { CLASS_OPTIONS } from "@/data/classOptions";
 import { InfoTooltip } from "./shared/InfoTooltip";
-import { LoadingSpinner } from "./shared/LoadingSpinner";
+import { SelectionLoadingState } from "./shared/SelectionLoadingState";
+import { ErrorBoundary } from "./shared/ErrorBoundary";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ClassSelectionProps {
   characterId: string;
@@ -27,13 +29,38 @@ export const ClassSelection = ({ characterId, onBack, onClassSelected }: ClassSe
 
     setIsSubmitting(true);
     try {
+      // Verify character ownership
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Authentication required");
+
+      const { data: character, error: verifyError } = await supabase
+        .from('characters')
+        .select('user_id, race')
+        .eq('id', characterId)
+        .maybeSingle();
+
+      if (verifyError || !character) {
+        throw new Error("Character not found");
+      }
+
+      if (character.user_id !== user.id) {
+        throw new Error("Unauthorized");
+      }
+
+      // Validate class selection based on race
+      if (character.race === 'Animal' && ['Paladin', 'Artificer'].includes(value)) {
+        throw new Error(`${character.race}s cannot be ${value}s. Please choose a different class.`);
+      }
+
       await onClassSelected(value);
       showSuccessToast(toast, "Class selected successfully");
     } catch (error) {
       console.error('Error selecting class:', error);
       toast({
         variant: "destructive",
-        description: "Failed to select class. Please try again.",
+        description: error instanceof Error 
+          ? error.message 
+          : "Failed to select class. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -53,24 +80,32 @@ export const ClassSelection = ({ characterId, onBack, onClassSelected }: ClassSe
 
   if (isSubmitting) {
     return (
-      <div className="flex items-center justify-center pt-16">
-        <LoadingSpinner />
+      <div className="pt-16">
+        <SelectionLoadingState message="Saving class selection..." />
       </div>
     );
   }
 
   return (
-    <div className="pt-16">
-      <CharacterSelectionScreen
-        title="Choose Class"
-        options={classOptionsWithInfo}
-        characterId={characterId}
-        onSelected={handleSelected}
-        onBack={onBack}
-        updateField="class"
-        nextStatus="clothing"
-        isSubmitting={isSubmitting}
-      />
-    </div>
+    <ErrorBoundary 
+      fallback={
+        <div className="text-white bg-red-500/20 p-4 rounded-lg">
+          Something went wrong. Please refresh and try again.
+        </div>
+      }
+    >
+      <div className="pt-16">
+        <CharacterSelectionScreen
+          title="Choose Class"
+          options={classOptionsWithInfo}
+          characterId={characterId}
+          onSelected={handleSelected}
+          onBack={onBack}
+          updateField="class"
+          nextStatus="clothing"
+          isSubmitting={isSubmitting}
+        />
+      </div>
+    </ErrorBoundary>
   );
 };
