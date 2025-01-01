@@ -49,11 +49,6 @@ export const useCharacterCreation = () => {
           console.log('Character status changed:', payload.new.status);
           const newStatus = payload.new.status as CharacterStatus;
           updateCharacterState({ currentStep: newStatus });
-          
-          if (newStatus === 'attributes' && currentStep === 'morality') {
-            console.log('Transitioning from morality to attributes step');
-            window.location.reload();
-          }
         }
       )
       .subscribe((status) => {
@@ -64,7 +59,7 @@ export const useCharacterCreation = () => {
       console.log('Cleaning up character status subscription');
       void supabase.removeChannel(channel);
     };
-  }, [characterId, currentStep, updateCharacterState]);
+  }, [characterId, updateCharacterState]);
 
   const handleBack = async () => {
     if (isTransitioning || !characterId) {
@@ -103,6 +98,10 @@ export const useCharacterCreation = () => {
       });
     } catch (error) {
       console.error('Error in name selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to create character. Please try again.",
+      });
     } finally {
       setIsTransitioning(false);
     }
@@ -113,8 +112,13 @@ export const useCharacterCreation = () => {
     try {
       setIsTransitioning(true);
       await handleGenderSelectedBase(characterId);
+      updateCharacterState({ currentStep: 'race' });
     } catch (error) {
       console.error('Error in gender selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save gender. Please try again.",
+      });
     } finally {
       setIsTransitioning(false);
     }
@@ -179,14 +183,12 @@ export const useCharacterCreation = () => {
   };
 
   return {
-    // State
     characterId,
     currentStep,
     selectedRace,
     selectedAnimalType,
     selectedClass,
     isTransitioning,
-    // Handlers
     handleNameSelected,
     handleGenderSelected,
     handleRaceSelected,

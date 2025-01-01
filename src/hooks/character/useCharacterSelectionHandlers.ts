@@ -6,14 +6,14 @@ export const useCharacterSelectionHandlers = () => {
   const { toast } = useToast();
 
   const verifyCharacter = async (characterId: string) => {
-    const { data: character, error } = await supabase
+    const { data: character, error: verifyError } = await supabase
       .from('characters')
       .select('*')
       .eq('id', characterId)
       .maybeSingle();
 
-    if (error) {
-      console.error('Error verifying character:', error);
+    if (verifyError) {
+      console.error('Error verifying character:', verifyError);
       throw new Error('Failed to verify character');
     }
 
