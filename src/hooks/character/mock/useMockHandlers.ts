@@ -7,7 +7,6 @@ export const useMockHandlers = (
   setIsTransitioning: (isTransitioning: boolean) => void
 ) => {
   const { toast } = useToast();
-
   const simulateDelay = () => new Promise(resolve => setTimeout(resolve, 500));
 
   const handleNameSelected = useCallback(async (name: string) => {

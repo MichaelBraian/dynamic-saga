@@ -1,7 +1,7 @@
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
 import { CharacterCreationBackground } from "@/components/character-creation/CharacterCreationBackground";
-import { useMockCharacterCreation } from "@/hooks/character/useMockCharacterCreation";
+import { useMockCharacterCreation } from "@/hooks/character/mock/useMockCharacterCreation";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 const CreateCharacter = () => {
@@ -40,8 +40,8 @@ const CreateCharacter = () => {
             selectedClass={selectedClass}
             isTransitioning={isTransitioning}
             onNameSelected={handleNameSelected}
-            onGenderSelected={handleGenderSelected}
-            onRaceSelected={handleRaceSelected}
+            onGenderSelected={() => handleGenderSelected}
+            onRaceSelected={() => handleRaceSelected}
             onAnimalTypeSelected={() => {}}
             onClassSelected={() => {}}
             onClothingSelected={() => {}}
