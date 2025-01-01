@@ -34,7 +34,6 @@ export const useMoralityQuestions = (characterId: string) => {
       const questionId = questions[currentQuestionIndex].id;
       console.log('Saving response:', { characterId, questionId, answer });
 
-      // First, save the response
       const { error: responseError } = await supabase
         .from('character_responses')
         .insert({
@@ -48,12 +47,10 @@ export const useMoralityQuestions = (characterId: string) => {
         throw responseError;
       }
 
-      // Check if this was the last question
       const nextIndex = currentQuestionIndex + 1;
       const isLastQuestion = nextIndex >= (questions?.length || 0);
 
       if (isLastQuestion) {
-        // Calculate and save final morality scores
         await calculateAndSaveMoralityScores(characterId);
         return true;
       }
@@ -72,7 +69,6 @@ export const useMoralityQuestions = (characterId: string) => {
 
   const calculateAndSaveMoralityScores = async (characterId: string) => {
     try {
-      // Fetch all responses in a single query
       const { data: responses, error: responsesError } = await supabase
         .from('character_responses')
         .select('question_id, answer')
@@ -125,7 +121,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
       if (moralityError) throw moralityError;
 
-      // Update character status
+      // Update character status after saving morality scores
       await updateStatus(characterId, 'attributes');
 
     } catch (error) {

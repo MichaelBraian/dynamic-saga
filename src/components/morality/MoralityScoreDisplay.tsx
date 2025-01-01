@@ -12,7 +12,6 @@ interface MoralityScoreDisplayProps {
 
 export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
-  const { handleArmorSelected } = useCharacterCreation();
   
   const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
@@ -54,7 +53,7 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
 
   const handleContinue = async () => {
     try {
-      console.log('Attempting to update character status to attributes');
+      console.log('Transitioning from morality to attributes step');
       const { error: updateError } = await supabase
         .from('characters')
         .update({ status: 'attributes' })
@@ -65,8 +64,7 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
         throw updateError;
       }
 
-      console.log('Successfully updated character status to attributes');
-      handleArmorSelected();
+      console.log('Successfully transitioned to attributes step');
     } catch (error) {
       console.error('Error transitioning to attributes:', error);
       toast({

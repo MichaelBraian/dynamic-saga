@@ -40,7 +40,7 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  console.log('Current step:', currentStep);
+  console.log('Current step:', currentStep, 'Character ID:', characterId);
 
   if (!characterId && currentStep !== "naming") {
     console.error('No character ID found');
