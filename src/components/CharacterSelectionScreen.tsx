@@ -17,6 +17,7 @@ interface CharacterSelectionScreenProps {
   updateField: string;
   nextStatus: CharacterStatus;
   showBackButton?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const CharacterSelectionScreen = ({
@@ -28,6 +29,7 @@ export const CharacterSelectionScreen = ({
   updateField,
   nextStatus,
   showBackButton = true,
+  isSubmitting = false,
 }: CharacterSelectionScreenProps) => {
   if (updateField === 'clothing_type') {
     return (
@@ -38,6 +40,7 @@ export const CharacterSelectionScreen = ({
         onSelected={onSelected}
         onBack={onBack}
         showBackButton={showBackButton}
+        isSubmitting={isSubmitting}
       />
     );
   }
@@ -52,6 +55,7 @@ export const CharacterSelectionScreen = ({
       updateField={updateField}
       nextStatus={nextStatus}
       showBackButton={showBackButton}
+      isSubmitting={isSubmitting}
     />
   );
 };

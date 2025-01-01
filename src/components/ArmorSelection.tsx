@@ -23,7 +23,11 @@ export const ArmorSelection = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleArmorSelected = async (value: string) => {
+    if (isSubmitting) return;
+    
     setIsSubmitting(true);
+    console.log('Selecting armor:', value, 'for character:', characterId);
+    
     try {
       const { error: updateError } = await supabase
         .from('characters')
@@ -38,7 +42,9 @@ export const ArmorSelection = ({
         throw updateError;
       }
 
+      console.log('Armor selection saved successfully');
       showSuccessToast(toast, "Armor selected");
+      
       if (onArmorSelected) {
         onArmorSelected();
       }
@@ -76,6 +82,7 @@ export const ArmorSelection = ({
         updateField="armor_type"
         nextStatus="morality"
         showBackButton={true}
+        isSubmitting={isSubmitting}
       />
     </div>
   );
