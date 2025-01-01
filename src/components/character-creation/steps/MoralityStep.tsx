@@ -1,6 +1,7 @@
 import { MoralityQuestions } from "../../MoralityQuestions";
 import { useCharacterStatusUpdate } from "@/utils/characterStatus";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MoralityStepProps {
   characterId: string;
@@ -19,7 +20,7 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
         .from('character_morality')
         .select('*')
         .eq('character_id', characterId)
-        .single();
+        .maybeSingle();
 
       if (moralityError || !morality) {
         console.error('Morality scores not found:', moralityError);

@@ -57,7 +57,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
     return {
       goodEvilScore: normalizedGoodEvil,
-      lawfulChaoticScore: normalizedLawfulChaotic,
+      lawfulChaoticScore,
       alignmentScore,
     };
   };
@@ -143,7 +143,7 @@ export const useMoralityQuestions = (characterId: string) => {
           .upsert({
             character_id: characterId,
             good_evil_scale: scores.goodEvilScore,
-            lawful_chaotic_scale: scores.lawfulChaoticScale,
+            lawful_chaotic_scale: scores.lawfulChaoticScore,
             alignment_score: scores.alignmentScore
           });
 
