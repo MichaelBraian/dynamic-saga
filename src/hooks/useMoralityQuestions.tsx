@@ -70,7 +70,7 @@ export const useMoralityQuestions = (characterId: string) => {
     console.log('Saving response:', { characterId, questionId: questions[currentQuestionIndex].id, answer });
 
     try {
-      // Get current user and verify character ownership in a single query
+      // First, verify character ownership
       const { data: character, error: verifyError } = await supabase
         .from('characters')
         .select('user_id, status')
@@ -81,18 +81,30 @@ export const useMoralityQuestions = (characterId: string) => {
         throw new Error("Character not found or unauthorized");
       }
 
-      // Save the response
+      // Save the response using insert instead of upsert
       const { error: responseError } = await supabase
         .from('character_responses')
-        .upsert({
+        .insert({
           character_id: characterId,
           question_id: questions[currentQuestionIndex].id,
           answer
-        }, {
-          onConflict: 'character_id,question_id'
         });
 
-      if (responseError) throw responseError;
+      if (responseError) {
+        // If insert fails due to duplicate, try update
+        if (responseError.code === '23505') {
+          const { error: updateError } = await supabase
+            .from('character_responses')
+            .update({ answer })
+            .match({ 
+              character_id: characterId, 
+              question_id: questions[currentQuestionIndex].id 
+            });
+          if (updateError) throw updateError;
+        } else {
+          throw responseError;
+        }
+      }
 
       const nextIndex = currentQuestionIndex + 1;
       const isLastQuestion = nextIndex >= questions.length;
@@ -124,6 +136,14 @@ export const useMoralityQuestions = (characterId: string) => {
           });
 
         if (moralityError) throw moralityError;
+
+        // Update character status to attributes
+        const { error: statusError } = await supabase
+          .from('characters')
+          .update({ status: 'attributes' })
+          .eq('id', characterId);
+
+        if (statusError) throw statusError;
 
         return true;
       }
