@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 import { showSuccessToast } from "@/utils/toast";
+import { PostgrestResponse } from "@supabase/supabase-js";
 
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const { toast } = useToast();
@@ -43,19 +44,23 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
     setIsSaving(true);
     try {
       // Save all attributes with consistent naming
-      const attributePromises = Object.entries(attributeRolls).map(([name, value]) => {
-        if (value === undefined) return Promise.resolve();
-        return supabase
-          .from('character_attributes')
-          .insert({
-            character_id: characterId,
-            attribute_name: name.toLowerCase(),
-            value: value
-          });
-      });
+      const attributePromises = Object.entries(attributeRolls)
+        .filter(([_, value]) => value !== undefined)
+        .map(([name, value]) => 
+          supabase
+            .from('character_attributes')
+            .insert({
+              character_id: characterId,
+              attribute_name: name.toLowerCase(),
+              value: value
+            })
+        );
 
       const results = await Promise.all(attributePromises);
-      const errors = results.filter(result => result?.error).map(result => result?.error);
+      const errors = results
+        .filter((result): result is PostgrestResponse<null> => result !== null)
+        .filter(result => result.error)
+        .map(result => result.error);
       
       if (errors.length > 0) {
         console.error('Errors saving attributes:', errors);
