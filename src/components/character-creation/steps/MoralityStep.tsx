@@ -1,7 +1,6 @@
 import { MoralityQuestions } from "../../MoralityQuestions";
-import { useCharacterStatusUpdate } from "@/utils/characterStatus";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MoralityStepProps {
   characterId: string;
@@ -9,7 +8,6 @@ interface MoralityStepProps {
 }
 
 export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
-  const { updateStatus } = useCharacterStatusUpdate();
   const { toast } = useToast();
 
   const handleContinue = async () => {
@@ -31,9 +29,18 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
         return;
       }
 
-      console.log('Morality scores found, proceeding to attributes');
-      await updateStatus(characterId, 'attributes');
-      console.log('Successfully updated status to attributes in MoralityStep');
+      // Update the character status directly
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ status: 'attributes' })
+        .eq('id', characterId);
+
+      if (updateError) {
+        console.error('Error updating character status:', updateError);
+        throw updateError;
+      }
+
+      console.log('Successfully updated character status to attributes');
     } catch (error) {
       console.error('Error transitioning to attributes:', error);
       toast({

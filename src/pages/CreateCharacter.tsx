@@ -4,7 +4,6 @@ import { CharacterCreationBackground } from "@/components/character-creation/Cha
 import { useCharacterCreation } from "@/hooks/useCharacterCreation";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CharacterStatus } from "@/types/character";
 
 const CreateCharacter = () => {
   const {
