@@ -34,10 +34,48 @@ export const useMoralityQuestionsState = (
         throw new Error("Unauthorized");
       }
 
-      const complete = await saveResponse(answer);
-      if (complete) {
+      // Get current question
+      const { data: responses, error: responsesError } = await supabase
+        .from('character_responses')
+        .select('question_id')
+        .eq('character_id', characterId);
+
+      if (responsesError) throw responsesError;
+
+      // Get the next question that hasn't been answered yet
+      const { data: nextQuestion, error: questionError } = await supabase
+        .from('questions')
+        .select('id')
+        .order('id')
+        .limit(1);
+
+      if (questionError || !nextQuestion?.[0]) throw questionError;
+
+      // Save the response
+      const { error: saveError } = await supabase
+        .from('character_responses')
+        .insert({
+          character_id: characterId,
+          question_id: nextQuestion[0].id,
+          answer: answer
+        });
+
+      if (saveError) throw saveError;
+
+      // Check if all questions have been answered
+      const { data: allQuestions, error: allQuestionsError } = await supabase
+        .from('questions')
+        .select('count');
+
+      if (allQuestionsError) throw allQuestionsError;
+
+      const totalQuestions = allQuestions?.[0]?.count || 0;
+      const answeredQuestions = (responses?.length || 0) + 1;
+
+      if (answeredQuestions >= totalQuestions) {
         setIsComplete(true);
       }
+
     } catch (error) {
       console.error('Error handling answer:', error);
       toast({
