@@ -2,6 +2,7 @@ import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { SelectionLoadingState } from "./shared/SelectionLoadingState";
 import { ErrorBoundary } from "./shared/ErrorBoundary";
 import { useGenderSelection } from "@/hooks/character/useGenderSelection";
+import { useToast } from "@/hooks/use-toast";
 
 interface GenderSelectionProps {
   characterId: string;
@@ -19,10 +20,30 @@ export const GenderSelection = ({
   onGenderSelected, 
   onBack 
 }: GenderSelectionProps) => {
+  const { toast } = useToast();
   const { isSubmitting, handleGenderSelected } = useGenderSelection({
     characterId,
     onGenderSelected
   });
+
+  const handleSelection = async (gender: string) => {
+    try {
+      if (!characterId) {
+        toast({
+          variant: "destructive",
+          description: "Character ID is missing. Please try again.",
+        });
+        return;
+      }
+      await handleGenderSelected(gender);
+    } catch (error) {
+      console.error('Error in gender selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save gender selection. Please try again.",
+      });
+    }
+  };
 
   if (isSubmitting) {
     return (
@@ -45,7 +66,7 @@ export const GenderSelection = ({
           title="Choose Gender"
           options={GENDER_OPTIONS}
           characterId={characterId}
-          onSelected={handleGenderSelected}
+          onSelected={handleSelection}
           onBack={onBack}
           updateField="gender"
           nextStatus="race"
