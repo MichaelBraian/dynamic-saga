@@ -1,10 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useCharacterState } from "./useCharacterState";
 import { useCharacterOperations } from "./useCharacterOperations";
+import { useToast } from "@/hooks/use-toast";
 
 export const useCharacterSelectionHandlers = () => {
   const { updateCharacterState } = useCharacterState();
   const { handleClassSelection } = useCharacterOperations();
+  const { toast } = useToast();
 
   const handleNameSelected = async (newCharacterId: string) => {
     console.log('Handling name selection with ID:', newCharacterId);
@@ -15,23 +17,43 @@ export const useCharacterSelectionHandlers = () => {
   };
 
   const handleGenderSelected = async (characterId: string, isTransitioning: boolean) => {
-    if (isTransitioning || !characterId) return;
+    if (isTransitioning || !characterId) {
+      console.log('Cannot handle gender selection: transitioning or no character ID');
+      return;
+    }
     
     try {
       console.log('Handling gender selection completion');
-      const { data: character, error } = await supabase
+      
+      // Update character status in database
+      const { error: updateError } = await supabase
         .from('characters')
-        .select('status')
-        .eq('id', characterId)
-        .single();
+        .update({ status: 'race' })
+        .eq('id', characterId);
 
-      if (error) throw error;
+      if (updateError) {
+        console.error('Error updating character status:', updateError);
+        toast({
+          variant: "destructive",
+          description: "Failed to proceed to race selection. Please try again.",
+        });
+        throw updateError;
+      }
 
+      // Update UI state
       updateCharacterState({ 
-        currentStep: character?.status || "race"
+        currentStep: "race"
+      });
+
+      toast({
+        description: "Proceeding to race selection",
       });
     } catch (error) {
       console.error('Error handling gender selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed. Please try again.",
+      });
     }
   };
 
