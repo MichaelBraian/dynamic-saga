@@ -2,6 +2,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
+import { validateClassSelection, getFallbackClass } from "@/utils/classValidation";
+import { Race, Class } from "@/types/character";
 
 export const useClassSelection = (
   characterId: string,
@@ -21,7 +23,7 @@ export const useClassSelection = (
 
     setIsSubmitting(true);
     try {
-      // Verify character ownership
+      // Verify character ownership and get race
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Authentication required");
 
@@ -40,9 +42,40 @@ export const useClassSelection = (
       }
 
       // Validate class selection based on race
-      if (character.race === 'Animal' && ['Paladin', 'Artificer'].includes(value)) {
-        throw new Error(`${character.race}s cannot be ${value}s. Please choose a different class.`);
+      const validation = validateClassSelection(character.race as Race, value as Class);
+      
+      if (!validation.isValid) {
+        const fallbackClass = getFallbackClass(character.race as Race);
+        toast({
+          variant: "destructive",
+          description: `${validation.reason}. Assigning ${fallbackClass} as a fallback class.`,
+        });
+        
+        // Update with fallback class
+        const { error: updateError } = await supabase
+          .from('characters')
+          .update({ 
+            class: fallbackClass,
+            status: 'clothing'
+          })
+          .eq('id', characterId);
+
+        if (updateError) throw updateError;
+        
+        await onClassSelected(fallbackClass);
+        return;
       }
+
+      // Update with selected class
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ 
+          class: value,
+          status: 'clothing'
+        })
+        .eq('id', characterId);
+
+      if (updateError) throw updateError;
 
       await onClassSelected(value);
       showSuccessToast(toast, "Class selected successfully");
