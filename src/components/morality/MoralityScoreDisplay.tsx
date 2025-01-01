@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useCharacterStatusUpdate } from "@/utils/characterStatus";
 import { AlignmentScore } from "./score-display/AlignmentScore";
 import { MoralityScale } from "./score-display/MoralityScale";
+import { toast } from "@/components/ui/use-toast";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
@@ -40,9 +41,27 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   });
 
   const handleContinue = async () => {
-    const success = await updateStatus(characterId, 'attributes');
-    if (success) {
-      onContinue();
+    try {
+      console.log('Updating character status to attributes');
+      const success = await updateStatus(characterId, 'attributes');
+      
+      if (success) {
+        console.log('Successfully updated status, calling onContinue');
+        onContinue();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to proceed to attributes. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error('Error in handleContinue:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
     }
   };
 
