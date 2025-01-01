@@ -1,9 +1,7 @@
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
+import { useToast } from "@/hooks/use-toast";
+import { showSuccessToast } from "@/utils/toast";
 import { InfoTooltip } from "./shared/InfoTooltip";
-import { SelectionLoadingState } from "./shared/SelectionLoadingState";
-import { ErrorBoundary } from "./shared/ErrorBoundary";
-import { ANIMAL_TYPES } from "@/data/animalTypeOptions";
-import { useAnimalTypeSelection } from "@/hooks/character/useAnimalTypeSelection";
 
 interface AnimalTypeSelectionProps {
   characterId: string;
@@ -11,15 +9,21 @@ interface AnimalTypeSelectionProps {
   onAnimalTypeSelected: (animalType: string) => void;
 }
 
-export const AnimalTypeSelection = ({ 
-  characterId, 
-  onBack, 
-  onAnimalTypeSelected 
-}: AnimalTypeSelectionProps) => {
-  const { isSubmitting, handleSelected } = useAnimalTypeSelection(
-    characterId,
-    onAnimalTypeSelected
-  );
+const ANIMAL_TYPES = [
+  { value: 'Lion', label: 'Lion', description: 'A majestic big cat known for its strength, leadership, and fierce loyalty to its pride.' },
+  { value: 'Wolf', label: 'Wolf', description: 'A social predator that excels in pack tactics, known for its intelligence and endurance.' },
+  { value: 'Snake', label: 'Snake', description: 'A stealthy reptile with lightning-fast reflexes and deadly precision.' },
+  { value: 'Fox', label: 'Fox', description: 'A clever and adaptable creature known for its wit and agility.' },
+  { value: 'Bear', label: 'Bear', description: 'A powerful omnivore combining immense strength with surprising intelligence.' },
+];
+
+export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected }: AnimalTypeSelectionProps) => {
+  const { toast } = useToast();
+
+  const handleSelected = (value: string) => {
+    showSuccessToast(toast, "Animal type selected");
+    onAnimalTypeSelected(value);
+  };
 
   const animalTypesWithInfo = ANIMAL_TYPES.map(option => ({
     value: option.value,
@@ -32,34 +36,17 @@ export const AnimalTypeSelection = ({
     ),
   }));
 
-  if (isSubmitting) {
-    return (
-      <div className="pt-16">
-        <SelectionLoadingState message="Saving animal type selection..." />
-      </div>
-    );
-  }
-
   return (
-    <ErrorBoundary 
-      fallback={
-        <div className="text-white bg-red-500/20 p-4 rounded-lg">
-          Something went wrong. Please refresh and try again.
-        </div>
-      }
-    >
-      <div className="pt-16">
-        <CharacterSelectionScreen
-          title="Choose Animal Type"
-          options={animalTypesWithInfo}
-          characterId={characterId}
-          onSelected={handleSelected}
-          onBack={onBack}
-          updateField="animal_type"
-          nextStatus="class"
-          isSubmitting={isSubmitting}
-        />
-      </div>
-    </ErrorBoundary>
+    <div className="pt-16">
+      <CharacterSelectionScreen
+        title="Choose Animal Type"
+        options={animalTypesWithInfo}
+        characterId={characterId}
+        onSelected={handleSelected}
+        onBack={onBack}
+        updateField="animal_type"
+        nextStatus="class"
+      />
+    </div>
   );
 };

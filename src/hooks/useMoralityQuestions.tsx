@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 
 export const useMoralityQuestions = (characterId: string) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const { data: questions, isLoading } = useQuery({
@@ -48,12 +47,15 @@ export const useMoralityQuestions = (characterId: string) => {
 
     const maxPossibleScore = Math.floor(questions.length / 2) * Math.max(...questions.map(q => Math.abs(q.morality_weight)));
     
+    // Normalize scores to -100 to 100 range
     const normalizedGoodEvil = Math.round((goodEvilScore / maxPossibleScore) * 100);
     const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / maxPossibleScore) * 100);
     
+    // Ensure scores are within bounds
     const boundedGoodEvil = Math.max(-100, Math.min(100, normalizedGoodEvil));
     const boundedLawfulChaotic = Math.max(-100, Math.min(100, normalizedLawfulChaotic));
     
+    // Calculate overall alignment score (0-100)
     const alignmentScore = Math.round((Math.abs(boundedGoodEvil) + Math.abs(boundedLawfulChaotic)) / 2);
 
     return {
@@ -64,48 +66,36 @@ export const useMoralityQuestions = (characterId: string) => {
   };
 
   const saveResponse = async (answer: string) => {
-    if (isSubmitting || !questions?.[currentQuestionIndex]) return false;
-    
-    setIsSubmitting(true);
-    console.log('Saving response:', { characterId, questionId: questions[currentQuestionIndex].id, answer });
-
     try {
-      const { data: character, error: verifyError } = await supabase
-        .from('characters')
-        .select('id')
-        .eq('id', characterId)
-        .maybeSingle();
-
-      if (verifyError || !character) {
-        throw new Error("Character not found");
+      if (!questions?.[currentQuestionIndex]) {
+        console.error('No question found at current index');
+        return false;
       }
 
-      const { error: insertError } = await supabase
+      const questionId = questions[currentQuestionIndex].id;
+      console.log('Saving response:', { characterId, questionId, answer });
+
+      // Use upsert with explicit conflict handling
+      const { error: responseError } = await supabase
         .from('character_responses')
-        .insert({
+        .upsert({
           character_id: characterId,
-          question_id: questions[currentQuestionIndex].id,
+          question_id: questionId,
           answer
+        }, {
+          onConflict: 'character_id,question_id'
         });
 
-      if (insertError && insertError.code === '23505') {
-        const { error: updateError } = await supabase
-          .from('character_responses')
-          .update({ answer })
-          .match({ 
-            character_id: characterId, 
-            question_id: questions[currentQuestionIndex].id 
-          });
+      if (responseError) throw responseError;
 
-        if (updateError) throw updateError;
-      } else if (insertError) {
-        throw insertError;
-      }
-
+      // Check if this was the last question
       const nextIndex = currentQuestionIndex + 1;
-      const isLastQuestion = nextIndex >= questions.length;
+      const isLastQuestion = nextIndex >= (questions?.length || 0);
 
       if (isLastQuestion) {
+        console.log('Last question answered, calculating scores...');
+        
+        // Fetch all responses for this character
         const { data: responses, error: responsesError } = await supabase
           .from('character_responses')
           .select('*')
@@ -113,11 +103,16 @@ export const useMoralityQuestions = (characterId: string) => {
 
         if (responsesError) throw responsesError;
         
+        console.log('Retrieved responses:', responses);
+
         const scores = calculateMoralityScores(responses);
         if (!scores) {
           throw new Error('Failed to calculate morality scores');
         }
 
+        console.log('Calculated morality scores:', scores);
+
+        // Save morality scores with upsert
         const { error: moralityError } = await supabase
           .from('character_morality')
           .upsert({
@@ -131,6 +126,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
         if (moralityError) throw moralityError;
 
+        // Update character status to attributes
         const { error: statusError } = await supabase
           .from('characters')
           .update({ status: 'attributes' })
@@ -138,10 +134,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
         if (statusError) throw statusError;
 
-        toast({
-          description: "Morality questions completed successfully",
-        });
-
+        console.log('Morality scores saved successfully');
         return true;
       }
 
@@ -151,11 +144,9 @@ export const useMoralityQuestions = (characterId: string) => {
       console.error('Error in saveResponse:', error);
       toast({
         variant: "destructive",
-        description: "Failed to save your response. Please try again.",
+        description: "Failed to save response. Please try again.",
       });
       return false;
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -164,7 +155,6 @@ export const useMoralityQuestions = (characterId: string) => {
     questionNumber: currentQuestionIndex + 1,
     totalQuestions: questions?.length || 0,
     isLoading,
-    isSubmitting,
     saveResponse,
   };
 };

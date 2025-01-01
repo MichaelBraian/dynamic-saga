@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import { SelectionLoadingState } from "./shared/SelectionLoadingState";
-import { ErrorBoundary } from "./shared/ErrorBoundary";
-import { useArmorSelection } from "@/hooks/character/useArmorSelection";
-import { ArmorOptions } from "./armor/ArmorOptions";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { showSuccessToast } from "@/utils/toast";
+import { ARMOR_OPTIONS } from "@/data/armorOptions";
+import { InfoTooltip } from "./shared/InfoTooltip";
 
 interface ArmorSelectionProps {
   characterId: string;
@@ -17,40 +19,64 @@ export const ArmorSelection = ({
   onBack,
   onArmorSelected 
 }: ArmorSelectionProps) => {
-  const { isSubmitting, handleArmorSelected } = useArmorSelection({
-    characterId,
-    onArmorSelected
-  });
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (isSubmitting) {
-    return (
-      <div className="pt-16">
-        <SelectionLoadingState message="Saving armor selection..." />
+  const handleArmorSelected = async (value: string) => {
+    setIsSubmitting(true);
+    try {
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ 
+          armor_type: value,
+          status: 'morality'
+        })
+        .eq('id', characterId);
+
+      if (updateError) {
+        console.error('Error updating armor:', updateError);
+        throw updateError;
+      }
+
+      showSuccessToast(toast, "Armor selected");
+      if (onArmorSelected) {
+        onArmorSelected();
+      }
+    } catch (error) {
+      console.error('Error saving armor selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save armor selection. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const options = ARMOR_OPTIONS[characterClass] || [];
+  const optionsWithInfo = options.map(option => ({
+    value: option.value,
+    label: option.value,
+    labelComponent: (
+      <div className="flex items-center gap-2">
+        {option.value}
+        <InfoTooltip content={option.label} />
       </div>
-    );
-  }
+    ),
+  }));
 
   return (
-    <ErrorBoundary
-      fallback={
-        <div className="text-white bg-red-500/20 p-4 rounded-lg">
-          Something went wrong. Please refresh and try again.
-        </div>
-      }
-    >
-      <div className="pt-16">
-        <CharacterSelectionScreen
-          title="Choose Armor"
-          options={ArmorOptions({ characterClass })}
-          characterId={characterId}
-          onSelected={handleArmorSelected}
-          onBack={onBack}
-          updateField="armor_type"
-          nextStatus="morality"
-          showBackButton={true}
-          isSubmitting={isSubmitting}
-        />
-      </div>
-    </ErrorBoundary>
+    <div className="pt-16">
+      <CharacterSelectionScreen
+        title="Choose Armor"
+        options={optionsWithInfo}
+        characterId={characterId}
+        onSelected={handleArmorSelected}
+        onBack={onBack}
+        updateField="armor_type"
+        nextStatus="morality"
+        showBackButton={true}
+      />
+    </div>
   );
 };

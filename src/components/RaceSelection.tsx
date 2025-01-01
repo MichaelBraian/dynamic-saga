@@ -1,12 +1,9 @@
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import { SelectionLoadingState } from "./shared/SelectionLoadingState";
-import { ErrorBoundary } from "./shared/ErrorBoundary";
-import { useRaceSelection } from "@/hooks/character/useRaceSelection";
-import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RaceSelectionProps {
   characterId: string;
-  onRaceSelected: () => Promise<void>;
+  onRaceSelected: () => void;
   onBack: () => void;
 }
 
@@ -16,82 +13,34 @@ const RACE_OPTIONS = [
   { value: 'Animal', label: 'Animal' }
 ];
 
-export const RaceSelection = ({ 
-  characterId, 
-  onRaceSelected, 
-  onBack 
-}: RaceSelectionProps) => {
-  const { toast } = useToast();
-  const { isSubmitting, handleRaceSelected } = useRaceSelection({
-    characterId,
-    onRaceSelected
-  });
-
-  const handleSelection = async (race: string) => {
-    if (isSubmitting) {
-      console.log('Race selection already in progress');
-      return;
-    }
-
+export const RaceSelection = ({ characterId, onRaceSelected, onBack }: RaceSelectionProps) => {
+  const handleRaceSelected = async (value: string) => {
+    // Update the next status based on the selected race
+    const nextStatus = value === 'Animal' ? 'animal_type' : 'class';
+    
     try {
-      console.log('Race Selection - Attempting to save race:', {
-        characterId,
-        race
-      });
+      const { error } = await supabase
+        .from('characters')
+        .update({ race: value, status: nextStatus })
+        .eq('id', characterId);
 
-      if (!characterId) {
-        toast({
-          variant: "destructive",
-          description: "Character ID is missing. Please try again.",
-        });
-        return;
-      }
-
-      await handleRaceSelected(race);
+      if (error) throw error;
       
-      console.log('Race Selection - Race saved successfully');
-      
-      toast({
-        description: "Race selected successfully",
-      });
+      onRaceSelected();
     } catch (error) {
-      console.error('Error in race selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save race selection. Please try again.",
-      });
-      throw error;
+      console.error('Error updating race:', error);
     }
   };
 
-  if (isSubmitting) {
-    return (
-      <div className="pt-16">
-        <SelectionLoadingState message="Saving race selection..." />
-      </div>
-    );
-  }
-
   return (
-    <ErrorBoundary 
-      fallback={
-        <div className="text-white bg-red-500/20 p-4 rounded-lg">
-          Something went wrong. Please refresh and try again.
-        </div>
-      }
-    >
-      <div className="pt-16">
-        <CharacterSelectionScreen
-          title="Choose Race"
-          options={RACE_OPTIONS}
-          characterId={characterId}
-          onSelected={handleSelection}
-          onBack={onBack}
-          updateField="race"
-          nextStatus="class"
-          isSubmitting={isSubmitting}
-        />
-      </div>
-    </ErrorBoundary>
+    <CharacterSelectionScreen
+      title="Choose Race"
+      options={RACE_OPTIONS}
+      characterId={characterId}
+      onSelected={handleRaceSelected}
+      onBack={onBack}
+      updateField="race"
+      nextStatus="class"
+    />
   );
 };

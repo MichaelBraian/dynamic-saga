@@ -1,186 +1,137 @@
-import { useCharacterStateManagement } from "./character/useCharacterStateManagement";
-import { useCharacterSubscription } from "./character/useCharacterSubscription";
-import { useCharacterVerification } from "./character/useCharacterVerification";
-import { useCharacterSteps } from "./character/useCharacterSteps";
-import { useCharacterSelectionHandlers } from "./character/useCharacterSelectionHandlers";
+import { useState, useEffect } from "react";
+import { CharacterStatus } from "@/types/character";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useCharacterCreation = () => {
-  const {
-    characterId,
-    currentStep,
-    selectedRace,
-    selectedAnimalType,
-    selectedClass,
-    isTransitioning,
-    setIsTransitioning,
-    updateCharacterState,
-    toast
-  } = useCharacterStateManagement();
+  const [characterId, setCharacterId] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
+  const [selectedRace, setSelectedRace] = useState<string | null>(null);
+  const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
-  const { verifyCharacter } = useCharacterVerification();
-  const { handleBack: handleStepBack } = useCharacterSteps();
+  useEffect(() => {
+    if (characterId) {
+      console.log('Setting up real-time subscription for character:', characterId);
+      
+      const channel = supabase
+        .channel('character_status')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'characters',
+            filter: `id=eq.${characterId}`,
+          },
+          (payload: any) => {
+            console.log('Character status updated:', payload.new.status);
+            if (payload.new && payload.new.status) {
+              setCurrentStep(payload.new.status as CharacterStatus);
+            }
+          }
+        )
+        .subscribe();
 
-  useCharacterSubscription(characterId, updateCharacterState);
+      const fetchCharacter = async () => {
+        const { data, error } = await supabase
+          .from('characters')
+          .select('*')
+          .eq('id', characterId)
+          .single();
 
-  const {
-    handleNameSelected: handleNameSelectedBase,
-    handleGenderSelected: handleGenderSelectedBase,
-    handleRaceSelected: handleRaceSelectedBase,
-    handleAnimalTypeSelected: handleAnimalTypeSelectedBase,
-    handleClassSelected: handleClassSelectedBase,
-    handleClothingSelected: handleClothingSelectedBase,
-    handleArmorSelected: handleArmorSelectedBase
-  } = useCharacterSelectionHandlers();
+        if (!error && data) {
+          setCurrentStep(data.status);
+          setSelectedRace(data.race);
+          setSelectedAnimalType(data.animal_type);
+          setSelectedClass(data.class);
+        }
+      };
 
-  const handleBack = async () => {
-    if (isTransitioning || !characterId) {
-      console.log('Cannot go back: transitioning or no character ID');
-      return;
+      fetchCharacter();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
+  }, [characterId]);
 
-    try {
-      setIsTransitioning(true);
-      await handleStepBack(
-        isTransitioning,
-        characterId,
-        currentStep,
-        selectedRace,
-        selectedAnimalType,
-        selectedClass
-      );
-    } catch (error) {
-      console.error('Error handling back navigation:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to go back. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
-    }
+  const handleNameSelected = (newCharacterId: string) => {
+    setCharacterId(newCharacterId);
+    setCurrentStep("gender");
   };
 
-  const handleNameSelected = async (newCharacterId: string) => {
-    try {
-      setIsTransitioning(true);
-      await handleNameSelectedBase(newCharacterId);
-      await verifyCharacter(newCharacterId);
-      updateCharacterState({
-        characterId: newCharacterId,
-        currentStep: 'gender'
-      });
-    } catch (error) {
-      console.error('Error in name selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to create character. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
-    }
-  };
-
-  const handleGenderSelected = async () => {
-    if (!characterId) return;
-    try {
-      setIsTransitioning(true);
-      await verifyCharacter(characterId);
-      await handleGenderSelectedBase(characterId);
-      updateCharacterState({ currentStep: 'race' });
-    } catch (error) {
-      console.error('Error in gender selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save gender. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
-    }
+  const handleGenderSelected = () => {
+    setCurrentStep("race");
   };
 
   const handleRaceSelected = async () => {
-    if (!characterId) return;
-    try {
-      setIsTransitioning(true);
-      await verifyCharacter(characterId);
-      await handleRaceSelectedBase(characterId);
-    } catch (error) {
-      console.error('Error in race selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save race. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
+    if (characterId) {
+      const { data } = await supabase
+        .from('characters')
+        .select('race, status')
+        .eq('id', characterId)
+        .single();
+      
+      setSelectedRace(data?.race || null);
+      setCurrentStep(data?.status || 'class');
     }
   };
 
-  const handleAnimalTypeSelected = async (animalType: string) => {
-    if (!characterId) return;
-    try {
-      setIsTransitioning(true);
-      await verifyCharacter(characterId);
-      await handleAnimalTypeSelectedBase(animalType, characterId);
-      updateCharacterState({ selectedAnimalType: animalType });
-    } catch (error) {
-      console.error('Error in animal type selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save animal type. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
-    }
+  const handleAnimalTypeSelected = (animalType: string) => {
+    setSelectedAnimalType(animalType);
+    setCurrentStep("class");
   };
 
-  const handleClassSelected = async (characterClass: string) => {
-    if (!characterId || !selectedRace) return;
-    try {
-      setIsTransitioning(true);
-      await verifyCharacter(characterId);
-      await handleClassSelectedBase(characterClass, characterId);
-      updateCharacterState({ selectedClass: characterClass });
-    } catch (error) {
-      console.error('Error in class selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save class. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
-    }
+  const handleClassSelected = (characterClass: string) => {
+    setSelectedClass(characterClass);
+    setCurrentStep("clothing");
   };
 
-  const handleClothingSelected = async () => {
-    if (!characterId) return;
-    try {
-      setIsTransitioning(true);
-      await verifyCharacter(characterId);
-      await handleClothingSelectedBase(characterId);
-    } catch (error) {
-      console.error('Error in clothing selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save clothing. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
-    }
+  const handleClothingSelected = () => {
+    setCurrentStep("armor");
   };
 
-  const handleArmorSelected = async () => {
-    if (!characterId) return;
-    try {
-      setIsTransitioning(true);
-      await verifyCharacter(characterId);
-      await handleArmorSelectedBase(characterId);
-    } catch (error) {
-      console.error('Error in armor selection:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save armor. Please try again.",
-      });
-    } finally {
-      setIsTransitioning(false);
+  const handleArmorSelected = () => {
+    console.log("Armor selected, transitioning to morality");
+    setCurrentStep("morality");
+  };
+
+  const handleBack = () => {
+    switch (currentStep) {
+      case "gender":
+        setCurrentStep("naming");
+        setCharacterId(null);
+        break;
+      case "race":
+        setCurrentStep("gender");
+        break;
+      case "animal_type":
+        setCurrentStep("race");
+        setSelectedAnimalType(null);
+        break;
+      case "class":
+        if (selectedRace === 'Animal') {
+          setCurrentStep("animal_type");
+        } else {
+          setCurrentStep("race");
+          setSelectedRace(null);
+        }
+        break;
+      case "clothing":
+        setCurrentStep("class");
+        setSelectedClass(null);
+        break;
+      case "armor":
+        setCurrentStep("clothing");
+        break;
+      case "morality":
+        setCurrentStep("armor");
+        break;
+      case "attributes":
+        setCurrentStep("morality");
+        break;
+      default:
+        break;
     }
   };
 
@@ -190,7 +141,6 @@ export const useCharacterCreation = () => {
     selectedRace,
     selectedAnimalType,
     selectedClass,
-    isTransitioning,
     handleNameSelected,
     handleGenderSelected,
     handleRaceSelected,

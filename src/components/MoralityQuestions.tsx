@@ -1,9 +1,8 @@
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
-import { useMoralityQuestionsState } from "@/hooks/useMoralityQuestionsState";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
 import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
-import { LoadingQuestions } from "./morality/LoadingQuestions";
-import { NoQuestionsAvailable } from "./morality/NoQuestionsAvailable";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -11,11 +10,9 @@ interface MoralityQuestionsProps {
   onContinue: () => void;
 }
 
-export const MoralityQuestions = ({ 
-  characterId, 
-  onBack, 
-  onContinue 
-}: MoralityQuestionsProps) => {
+export const MoralityQuestions = ({ characterId, onBack, onContinue }: MoralityQuestionsProps) => {
+  const { toast } = useToast();
+  const [isComplete, setIsComplete] = useState(false);
   const {
     currentQuestion,
     questionNumber,
@@ -24,18 +21,39 @@ export const MoralityQuestions = ({
     saveResponse,
   } = useMoralityQuestions(characterId);
 
-  const {
-    isComplete,
-    isSubmitting,
-    handleAnswerSelected
-  } = useMoralityQuestionsState(characterId, onBack, onContinue);
+  const handleAnswerSelected = async (answer: string) => {
+    try {
+      const complete = await saveResponse(answer);
+      if (complete) {
+        setIsComplete(true);
+      }
+    } catch (error) {
+      console.error('Error handling answer:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save your response. Please try again.",
+      });
+    }
+  };
 
   if (isLoading) {
-    return <LoadingQuestions />;
+    return (
+      <div className="pt-16">
+        <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+          <p className="text-white text-center">Loading questions...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!currentQuestion && !isComplete) {
-    return <NoQuestionsAvailable />;
+    return (
+      <div className="pt-16">
+        <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+          <p className="text-white text-center">No questions available.</p>
+        </div>
+      </div>
+    );
   }
 
   if (isComplete) {

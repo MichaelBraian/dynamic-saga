@@ -1,9 +1,13 @@
 import { CharacterStatus } from "@/types/character";
-import { useCharacterSubscription } from "@/hooks/character/useCharacterSubscription";
-import { StepRenderer } from "./StepRenderer";
-import { LoadingState } from "./LoadingState";
-import { ErrorBoundary } from "../shared/ErrorBoundary";
-import { useEffect } from "react";
+import { NameStep } from "./steps/NameStep";
+import { GenderStep } from "./steps/GenderStep";
+import { RaceStep } from "./steps/RaceStep";
+import { AnimalTypeStep } from "./steps/AnimalTypeStep";
+import { ClassStep } from "./steps/ClassStep";
+import { ClothingStep } from "./steps/ClothingStep";
+import { ArmorStep } from "./steps/ArmorStep";
+import { MoralityStep } from "./steps/MoralityStep";
+import { AttributesStep } from "./steps/AttributesStep";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -11,7 +15,6 @@ interface CharacterCreationStepsProps {
   selectedRace: string | null;
   selectedAnimalType: string | null;
   selectedClass: string | null;
-  isTransitioning: boolean;
   onNameSelected: (newCharacterId: string) => void;
   onGenderSelected: () => void;
   onRaceSelected: () => Promise<void>;
@@ -28,7 +31,6 @@ export const CharacterCreationSteps = ({
   selectedRace,
   selectedAnimalType,
   selectedClass,
-  isTransitioning,
   onNameSelected,
   onGenderSelected,
   onRaceSelected,
@@ -38,46 +40,83 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  useCharacterSubscription(characterId, currentStep);
+  console.log('Current step:', currentStep);
 
-  useEffect(() => {
-    console.log('CharacterCreationSteps - State Update:', {
-      currentStep,
-      characterId,
-      selectedRace,
-      selectedAnimalType,
-      selectedClass,
-      isTransitioning,
-    });
-  }, [currentStep, characterId, selectedRace, selectedAnimalType, selectedClass, isTransitioning]);
-
-  if (!currentStep) {
-    console.error('No current step provided');
-    return <LoadingState message="Initializing character creation..." />;
+  if (!characterId && currentStep !== "naming") {
+    console.error('No character ID found');
+    return null;
   }
 
-  if (isTransitioning) {
-    console.log('CharacterCreationSteps - Transitioning to:', currentStep);
-    return <LoadingState message={`Transitioning to ${currentStep} step...`} />;
-  }
-
-  return (
-    <ErrorBoundary>
-      <div className="animate-fade-in">
-        <StepRenderer
-          currentStep={currentStep}
-          characterId={characterId}
-          selectedClass={selectedClass}
-          onNameSelected={onNameSelected}
+  switch (currentStep) {
+    case "naming":
+      return <NameStep onNameSelected={onNameSelected} />;
+    case "gender":
+      return (
+        <GenderStep 
+          characterId={characterId!} 
           onGenderSelected={onGenderSelected}
-          onRaceSelected={onRaceSelected}
-          onAnimalTypeSelected={onAnimalTypeSelected}
-          onClassSelected={onClassSelected}
-          onClothingSelected={onClothingSelected}
-          onArmorSelected={onArmorSelected}
           onBack={onBack}
         />
-      </div>
-    </ErrorBoundary>
-  );
+      );
+    case "race":
+      return (
+        <RaceStep 
+          characterId={characterId!} 
+          onRaceSelected={onRaceSelected}
+          onBack={onBack}
+        />
+      );
+    case "animal_type":
+      return (
+        <AnimalTypeStep 
+          characterId={characterId!}
+          onBack={onBack}
+          onAnimalTypeSelected={onAnimalTypeSelected}
+        />
+      );
+    case "class":
+      return (
+        <ClassStep 
+          characterId={characterId!}
+          onBack={onBack}
+          onClassSelected={onClassSelected}
+        />
+      );
+    case "clothing":
+      return (
+        <ClothingStep
+          characterId={characterId!}
+          selectedClass={selectedClass!}
+          onBack={onBack}
+          onClothingSelected={onClothingSelected}
+        />
+      );
+    case "armor":
+      return (
+        <ArmorStep
+          characterId={characterId!}
+          selectedClass={selectedClass!}
+          onBack={onBack}
+          onArmorSelected={onArmorSelected}
+        />
+      );
+    case "morality":
+      return (
+        <MoralityStep
+          characterId={characterId!}
+          onBack={onBack}
+        />
+      );
+    case "attributes":
+      console.log('Rendering AttributesStep with characterId:', characterId);
+      return (
+        <AttributesStep
+          characterId={characterId!}
+          onBack={onBack}
+        />
+      );
+    default:
+      console.error('Unknown step:', currentStep);
+      return null;
+  }
 };
