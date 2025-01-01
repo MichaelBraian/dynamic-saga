@@ -16,7 +16,6 @@ export const useSpecialtyStepRenderer = ({
   const renderSpecialtyStep = () => (
     <SpecialtyStep
       characterId={characterId}
-      characterClass={selectedClass || ''}
       onBack={onBack}
       onComplete={onSpecialtySelected}
     />
