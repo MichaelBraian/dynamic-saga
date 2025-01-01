@@ -108,6 +108,7 @@ export const CharacterCreationSteps = ({
         />
       );
     case "attributes":
+      console.log('Rendering AttributesStep with characterId:', characterId);
       return (
         <AttributesStep
           characterId={characterId!}
