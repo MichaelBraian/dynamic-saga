@@ -82,12 +82,10 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
     return value.toString();
   };
 
-  const formatTooltipContent = (specialty: Specialty) => {
-    const modifiersText = Object.entries(specialty.attribute_modifiers)
-      .map(([attr, mod]) => `${attr.charAt(0).toUpperCase() + attr.slice(1)}: ${formatModifier(mod)}`)
-      .join('\n');
-    
-    return `${specialty.description}\n\nAttribute Modifiers:\n${modifiersText}`;
+  const formatModifiersText = (modifiers: Record<string, number>) => {
+    return Object.entries(modifiers)
+      .map(([attr, mod]) => `${formatModifier(mod)} ${attr.charAt(0).toUpperCase() + attr.slice(1)}`)
+      .join(', ');
   };
 
   if (isLoading) {
@@ -129,9 +127,14 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
               htmlFor={specialty.id}
               className="flex w-full items-center justify-between rounded-lg border-2 border-white/20 bg-white/20 p-4 hover:bg-white/30 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/30 cursor-pointer text-2xl font-['Cinzel'] text-white"
             >
-              <div className="flex items-center gap-2">
-                {specialty.name}
-                <InfoTooltip content={formatTooltipContent(specialty)} />
+              <div className="flex items-center gap-4">
+                <span>{specialty.name}</span>
+                <div className="flex items-center gap-2">
+                  <InfoTooltip content={specialty.description} />
+                  <span className="text-sm font-normal opacity-90">
+                    {formatModifiersText(specialty.attribute_modifiers)}
+                  </span>
+                </div>
               </div>
             </Label>
           </div>
