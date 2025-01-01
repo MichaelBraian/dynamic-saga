@@ -5,20 +5,27 @@ import { cn } from "@/lib/utils"
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { showIndicator?: boolean }
+>(({ className, value, showIndicator = false, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      "relative h-4 w-full overflow-hidden rounded-full bg-gradient-to-r from-red-500 to-blue-500",
+      "relative h-4 w-full overflow-hidden rounded-full bg-black/20 backdrop-blur-sm",
       className
     )}
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-white/30 backdrop-blur-sm transition-all"
+      className="h-full w-full flex-1 bg-gradient-to-r from-red-500 to-blue-500 transition-all"
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-    />
+    >
+      {showIndicator && (
+        <div 
+          className="absolute top-0 bottom-0 right-0 w-[2px] bg-white"
+          style={{ boxShadow: '0 0 4px rgba(255, 255, 255, 0.5)' }}
+        />
+      )}
+    </ProgressPrimitive.Indicator>
   </ProgressPrimitive.Root>
 ))
 Progress.displayName = ProgressPrimitive.Root.displayName

@@ -121,7 +121,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
           <div className="relative mb-2">
             <Progress 
               value={morality.alignment_score} 
-              className="h-8 [&>div]:bg-gradient-to-r [&>div]:from-[#FF8B8B] [&>div]:via-[#9B6B9B] [&>div]:to-[#6B9BFF] bg-black/20 backdrop-blur-sm" 
+              className="h-8"
+              showIndicator
             />
             <div className="absolute top-[-24px] left-0 right-0">
               <div style={{ marginLeft: `${morality.alignment_score}%` }} className="relative flex justify-center transform -translate-x-1/2">
@@ -141,7 +142,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
           <div className="relative mb-2">
             <Progress 
               value={(morality.good_evil_scale + 100) / 2} 
-              className="h-6 [&>div]:bg-gradient-to-r [&>div]:from-[#FF8B8B] [&>div]:via-[#9B6B9B] [&>div]:to-[#6B9BFF] bg-black/20 backdrop-blur-sm" 
+              className="h-6"
+              showIndicator
             />
             <div className="absolute top-[-24px] left-0 right-0">
               <div style={{ marginLeft: `${(morality.good_evil_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
@@ -160,7 +162,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
           <div className="relative mb-2">
             <Progress 
               value={(morality.lawful_chaotic_scale + 100) / 2} 
-              className="h-6 [&>div]:bg-gradient-to-r [&>div]:from-[#FF8B8B] [&>div]:via-[#9B6B9B] [&>div]:to-[#6B9BFF] bg-black/20 backdrop-blur-sm" 
+              className="h-6"
+              showIndicator
             />
             <div className="absolute top-[-24px] left-0 right-0">
               <div style={{ marginLeft: `${(morality.lawful_chaotic_scale + 100) / 2}%` }} className="relative flex justify-center transform -translate-x-1/2">
