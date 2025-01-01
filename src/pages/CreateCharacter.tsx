@@ -1,7 +1,7 @@
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { CharacterCreationSteps } from "@/components/character-creation/CharacterCreationSteps";
 import { CharacterCreationBackground } from "@/components/character-creation/CharacterCreationBackground";
-import { useCharacterCreation } from "@/hooks/useCharacterCreation";
+import { useMockCharacterCreation } from "@/hooks/character/useMockCharacterCreation";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 const CreateCharacter = () => {
@@ -20,7 +20,7 @@ const CreateCharacter = () => {
     handleClothingSelected,
     handleArmorSelected,
     handleBack,
-  } = useCharacterCreation();
+  } = useMockCharacterCreation();
 
   console.log('CreateCharacter - Current State:', {
     characterId,
