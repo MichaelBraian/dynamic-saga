@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 import { showSuccessToast } from "@/utils/toast";
-import { PostgrestResponse } from "@supabase/supabase-js";
+import { PostgrestError, PostgrestResponse } from "@supabase/supabase-js";
 
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const { toast } = useToast();
@@ -57,10 +57,10 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
         );
 
       const results = await Promise.all(attributePromises);
-      const errors = results
+      const errors: PostgrestError[] = results
         .filter((result): result is PostgrestResponse<null> => result !== null)
-        .filter(result => result.error)
-        .map(result => result.error);
+        .map(result => result.error)
+        .filter((error): error is PostgrestError => error !== null);
       
       if (errors.length > 0) {
         console.error('Errors saving attributes:', errors);
