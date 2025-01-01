@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useCharacterStatusUpdate } from "@/utils/characterStatus";
-import { ProgressBarWithIndicator } from "@/components/shared/ProgressBarWithIndicator";
+import { AlignmentScore } from "./score-display/AlignmentScore";
+import { MoralityScale } from "./score-display/MoralityScale";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
@@ -45,27 +46,6 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     }
   };
 
-  const getAlignmentDescription = (score: number) => {
-    if (score >= 75) return "Angelic - You embody virtue and righteousness";
-    if (score >= 50) return "Noble - You tend towards good and order";
-    if (score >= 25) return "Moderate - You balance between light and dark";
-    return "Devilish - You embrace darkness and chaos";
-  };
-
-  const getScaleDescription = (value: number, type: 'goodEvil' | 'lawfulChaotic') => {
-    if (type === 'goodEvil') {
-      if (value > 50) return "Strongly Good - You prioritize helping others";
-      if (value > 0) return "Somewhat Good - You tend to do the right thing";
-      if (value > -50) return "Somewhat Evil - You're willing to harm others for gain";
-      return "Strongly Evil - You actively pursue destructive goals";
-    } else {
-      if (value > 50) return "Highly Lawful - You strictly follow rules and tradition";
-      if (value > 0) return "Somewhat Lawful - You respect order but can be flexible";
-      if (value > -50) return "Somewhat Chaotic - You follow your own path";
-      return "Highly Chaotic - You reject all constraints and order";
-    }
-  };
-
   if (error) {
     return (
       <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
@@ -97,32 +77,20 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       
       <div className="space-y-6 text-white">
         <div>
-          <ProgressBarWithIndicator
-            value={morality.alignment_score}
-            leftLabel="Devil"
-            rightLabel="Angel"
-            description={getAlignmentDescription(morality.alignment_score)}
-            height="lg"
+          <AlignmentScore score={morality.alignment_score} />
+        </div>
+
+        <div>
+          <MoralityScale 
+            value={morality.good_evil_scale} 
+            type="goodEvil" 
           />
         </div>
 
         <div>
-          <ProgressBarWithIndicator
-            value={(morality.good_evil_scale + 100) / 2}
-            leftLabel="Evil"
-            rightLabel="Good"
-            description={getScaleDescription(morality.good_evil_scale, 'goodEvil')}
-            height="md"
-          />
-        </div>
-
-        <div>
-          <ProgressBarWithIndicator
-            value={(morality.lawful_chaotic_scale + 100) / 2}
-            leftLabel="Chaotic"
-            rightLabel="Lawful"
-            description={getScaleDescription(morality.lawful_chaotic_scale, 'lawfulChaotic')}
-            height="md"
+          <MoralityScale 
+            value={morality.lawful_chaotic_scale} 
+            type="lawfulChaotic" 
           />
         </div>
       </div>

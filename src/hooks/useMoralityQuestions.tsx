@@ -30,22 +30,18 @@ export const useMoralityQuestions = (characterId: string) => {
     let lawfulChaoticScore = 0;
     let totalResponses = 0;
     
-    // Calculate scores based on responses
     responses.forEach(response => {
       const question = questions.find(q => q.id === response.question_id);
       if (!question) return;
 
-      // Parse the choice number from the answer (e.g., "1. Some answer" -> 1)
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       if (isNaN(choiceNumber)) return;
       
       totalResponses++;
       
-      // Normalize choice impact: 1 & 2 are good/lawful, 3 & 4 are evil/chaotic
       const normalizedScore = choiceNumber <= 2 ? 1 : -1;
       const weightedScore = question.morality_weight * normalizedScore;
       
-      // Alternate questions between good/evil and lawful/chaotic
       if (totalResponses % 2 === 0) {
         lawfulChaoticScore += weightedScore;
       } else {
@@ -53,28 +49,16 @@ export const useMoralityQuestions = (characterId: string) => {
       }
     });
 
-    // Ensure we have responses
     if (totalResponses === 0) {
       console.error('No valid responses found');
       return null;
     }
 
-    // Calculate the maximum possible score for normalization
     const maxPossibleScore = questions.reduce((acc, q) => acc + Math.abs(q.morality_weight), 0) / 2;
 
-    // Normalize scores to -100 to 100 range and ensure they stay within bounds
     const normalizedGoodEvil = Math.max(-100, Math.min(100, Math.round((goodEvilScore / maxPossibleScore) * 100)));
     const normalizedLawfulChaotic = Math.max(-100, Math.min(100, Math.round((lawfulChaoticScore / maxPossibleScore) * 100)));
-
-    // Calculate overall alignment score (0-100)
     const alignmentScore = Math.max(0, Math.min(100, Math.round(((normalizedGoodEvil + 100) / 2 + (normalizedLawfulChaotic + 100) / 2) / 2)));
-
-    console.log('Calculated Morality Scores:', {
-      goodEvilScore: normalizedGoodEvil,
-      lawfulChaoticScore: normalizedLawfulChaotic,
-      alignmentScore,
-      totalResponses,
-    });
 
     return {
       goodEvilScore: normalizedGoodEvil,
@@ -94,9 +78,11 @@ export const useMoralityQuestions = (characterId: string) => {
     }
 
     try {
+      const questionId = questions[currentQuestionIndex].id;
+      
       console.log('Saving response:', {
         characterId,
-        questionId: questions[currentQuestionIndex].id,
+        questionId,
         answer
       });
 
@@ -105,7 +91,7 @@ export const useMoralityQuestions = (characterId: string) => {
         .from('character_responses')
         .insert({
           character_id: characterId,
-          question_id: questions[currentQuestionIndex].id,
+          question_id: questionId,
           answer: answer
         });
 
@@ -113,7 +99,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
       // If this was the last question
       if (currentQuestionIndex === questions.length - 1) {
-        // Fetch all responses
+        // Fetch all responses in a single query
         const { data: responses, error: responsesError } = await supabase
           .from('character_responses')
           .select('question_id, answer')
@@ -145,16 +131,6 @@ export const useMoralityQuestions = (characterId: string) => {
           });
 
         if (moralityError) throw moralityError;
-
-        console.log('Updating character status to attributes');
-
-        // Update character status
-        const { error: statusError } = await supabase
-          .from('characters')
-          .update({ status: 'attributes' as CharacterStatus })
-          .eq('id', characterId);
-
-        if (statusError) throw statusError;
 
         return true; // Indicates completion
       }
