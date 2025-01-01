@@ -5,6 +5,12 @@ import { CLOTHING_OPTIONS } from "@/data/clothingOptions";
 import { showSuccessToast } from "@/utils/toast";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
 
+interface ClothingOption {
+  value: string;
+  label: string;
+  labelComponent?: React.ReactNode;
+}
+
 export const useClothingSelection = (
   characterId: string,
   characterClass: string,
@@ -60,6 +66,14 @@ export const useClothingSelection = (
         });
 
       if (saveError) throw saveError;
+
+      // Update character status to 'armor'
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ status: 'armor' })
+        .eq('id', characterId);
+
+      if (updateError) throw updateError;
 
       await onClothingSelected();
       showSuccessToast(toast, "Clothing selected successfully");
