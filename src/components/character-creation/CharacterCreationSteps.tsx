@@ -42,20 +42,21 @@ export const CharacterCreationSteps = ({
   onMoralityCompleted,
   onBack,
 }: CharacterCreationStepsProps) => {
-  console.log('Current step:', currentStep, 'Character ID:', characterId);
+  // Handle naming step separately since it doesn't require characterId
+  if (currentStep === "naming") {
+    return <NameStep onNameSelected={onNameSelected} />;
+  }
 
-  if (!characterId && currentStep !== "naming") {
-    console.error('No character ID found');
+  // Early return if no characterId for steps that require it
+  if (!characterId) {
     return null;
   }
 
   switch (currentStep) {
-    case "naming":
-      return <NameStep onNameSelected={onNameSelected} />;
     case "gender":
       return (
         <GenderStep 
-          characterId={characterId!} 
+          characterId={characterId} 
           onGenderSelected={onGenderSelected}
           onBack={onBack}
         />
@@ -63,7 +64,7 @@ export const CharacterCreationSteps = ({
     case "race":
       return (
         <RaceStep 
-          characterId={characterId!} 
+          characterId={characterId} 
           onRaceSelected={onRaceSelected}
           onBack={onBack}
         />
@@ -71,7 +72,7 @@ export const CharacterCreationSteps = ({
     case "animal_type":
       return (
         <AnimalTypeStep 
-          characterId={characterId!}
+          characterId={characterId}
           onBack={onBack}
           onAnimalTypeSelected={onAnimalTypeSelected}
         />
@@ -79,47 +80,45 @@ export const CharacterCreationSteps = ({
     case "class":
       return (
         <ClassStep 
-          characterId={characterId!}
+          characterId={characterId}
           onBack={onBack}
           onClassSelected={onClassSelected}
         />
       );
     case "clothing":
-      return (
+      return selectedClass ? (
         <ClothingStep
-          characterId={characterId!}
-          selectedClass={selectedClass!}
+          characterId={characterId}
+          selectedClass={selectedClass}
           onBack={onBack}
           onClothingSelected={onClothingSelected}
         />
-      );
+      ) : null;
     case "armor":
-      return (
+      return selectedClass ? (
         <ArmorStep
-          characterId={characterId!}
-          selectedClass={selectedClass!}
+          characterId={characterId}
+          selectedClass={selectedClass}
           onBack={onBack}
           onArmorSelected={onArmorSelected}
         />
-      );
+      ) : null;
     case "morality":
       return (
         <MoralityStep
-          characterId={characterId!}
+          characterId={characterId}
           onBack={onBack}
           onComplete={onMoralityCompleted}
         />
       );
     case "attributes":
-      console.log('Rendering AttributesStep with characterId:', characterId);
       return (
         <AttributesStep
-          characterId={characterId!}
+          characterId={characterId}
           onBack={onBack}
         />
       );
     default:
-      console.error('Unknown step:', currentStep);
       return null;
   }
 };
