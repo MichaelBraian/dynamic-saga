@@ -1,60 +1,33 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { CharacterStatus } from "@/types/character";
 import { supabase } from "@/integrations/supabase/client";
+import { useCharacterStatus } from "./character-creation/useCharacterStatus";
+import { useCharacterType } from "./character-creation/useCharacterType";
+import { useStepNavigation } from "./character-creation/useStepNavigation";
 
 export const useCharacterCreation = () => {
   const [characterId, setCharacterId] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<CharacterStatus>("naming");
-  const [selectedRace, setSelectedRace] = useState<string | null>(null);
-  const [selectedAnimalType, setSelectedAnimalType] = useState<string | null>(null);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  
+  const { currentStep, setCurrentStep } = useCharacterStatus(characterId);
+  
+  const {
+    selectedRace,
+    selectedAnimalType,
+    selectedClass,
+    setSelectedRace,
+    setSelectedAnimalType,
+    setSelectedClass,
+    fetchCharacterType
+  } = useCharacterType();
 
-  useEffect(() => {
-    if (characterId) {
-      console.log('Setting up real-time subscription for character:', characterId);
-      
-      const channel = supabase
-        .channel('character_status')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'characters',
-            filter: `id=eq.${characterId}`,
-          },
-          (payload: any) => {
-            console.log('Character status updated:', payload.new.status);
-            if (payload.new && payload.new.status) {
-              setCurrentStep(payload.new.status as CharacterStatus);
-            }
-          }
-        )
-        .subscribe();
-
-      const fetchCharacter = async () => {
-        const { data, error } = await supabase
-          .from('characters')
-          .select('*')
-          .eq('id', characterId)
-          .single();
-
-        if (!error && data) {
-          console.log('Fetched character data:', data);
-          setCurrentStep(data.status);
-          setSelectedRace(data.race);
-          setSelectedAnimalType(data.animal_type);
-          setSelectedClass(data.class);
-        }
-      };
-
-      fetchCharacter();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [characterId]);
+  const { handleBack } = useStepNavigation(
+    currentStep,
+    setCurrentStep,
+    selectedRace,
+    setSelectedRace,
+    setSelectedAnimalType,
+    setSelectedClass
+  );
 
   const handleNameSelected = (newCharacterId: string) => {
     setCharacterId(newCharacterId);
@@ -112,45 +85,6 @@ export const useCharacterCreation = () => {
       setCurrentStep("attributes");
     }
   };
-
-  const handleBack = useCallback(() => {
-    switch (currentStep) {
-      case "gender":
-        setCurrentStep("naming");
-        setCharacterId(null);
-        break;
-      case "race":
-        setCurrentStep("gender");
-        break;
-      case "animal_type":
-        setCurrentStep("race");
-        setSelectedAnimalType(null);
-        break;
-      case "class":
-        if (selectedRace === 'Animal') {
-          setCurrentStep("animal_type");
-        } else {
-          setCurrentStep("race");
-          setSelectedRace(null);
-        }
-        break;
-      case "clothing":
-        setCurrentStep("class");
-        setSelectedClass(null);
-        break;
-      case "armor":
-        setCurrentStep("clothing");
-        break;
-      case "morality":
-        setCurrentStep("armor");
-        break;
-      case "attributes":
-        setCurrentStep("morality");
-        break;
-      default:
-        break;
-    }
-  }, [currentStep, selectedRace]);
 
   return {
     characterId,
