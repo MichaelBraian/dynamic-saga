@@ -18,8 +18,7 @@ interface CharacterCreationStepsProps {
   selectedRace: string | null;
   selectedAnimalType: string | null;
   selectedClass: string | null;
-  isLoading: boolean;
-  isRetrying: boolean;
+  isTransitioning: boolean;
   onNameSelected: (newCharacterId: string) => void;
   onGenderSelected: () => void;
   onRaceSelected: () => Promise<void>;
@@ -36,8 +35,7 @@ export const CharacterCreationSteps = ({
   selectedRace,
   selectedAnimalType,
   selectedClass,
-  isLoading,
-  isRetrying,
+  isTransitioning,
   onNameSelected,
   onGenderSelected,
   onRaceSelected,
@@ -77,18 +75,10 @@ export const CharacterCreationSteps = ({
     };
   }, [characterId, currentStep]);
 
-  if (isLoading) {
+  if (isTransitioning) {
     return (
       <div className="flex items-center justify-center">
         <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (isRetrying) {
-    return (
-      <div className="flex items-center justify-center">
-        <p className="text-white">Retrying operation...</p>
       </div>
     );
   }

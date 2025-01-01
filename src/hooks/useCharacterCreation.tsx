@@ -82,11 +82,19 @@ export const useCharacterCreation = () => {
     if (isTransitioning || !characterId) return;
     setIsTransitioning(true);
     
-    await handleNavigation(characterId, "race", () => {
-      updateCharacterState({ currentStep: "race" });
-    });
-    
-    setIsTransitioning(false);
+    try {
+      await handleNavigation(characterId, "race", () => {
+        updateCharacterState({ currentStep: "race" });
+      });
+    } catch (error) {
+      console.error('Error handling gender selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed to next step. Please try again.",
+      });
+    } finally {
+      setIsTransitioning(false);
+    }
   };
 
   const handleRaceSelected = async () => {
