@@ -8,6 +8,8 @@ import { ClothingStep } from "./steps/ClothingStep";
 import { ArmorStep } from "./steps/ArmorStep";
 import { MoralityStep } from "./steps/MoralityStep";
 import { AttributesStep } from "./steps/AttributesStep";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -40,83 +42,137 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  console.log('Current step:', currentStep);
+  console.log('Current step:', currentStep, 'Character ID:', characterId);
+
+  useEffect(() => {
+    if (!characterId) return;
+
+    // Subscribe to character status changes
+    const channel = supabase
+      .channel(`character_status_${characterId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'characters',
+          filter: `id=eq.${characterId}`,
+        },
+        (payload: any) => {
+          console.log('Character status updated:', payload.new.status);
+          // Status updates will be handled by the parent component
+        }
+      )
+      .subscribe();
+
+    // Verify character exists and belongs to current user
+    const verifyCharacter = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: character, error } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('id', characterId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error || !character) {
+        console.error('Character verification failed:', error);
+        // Handle invalid character ID - redirect to name selection
+        onNameSelected('');
+      }
+    };
+
+    verifyCharacter();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [characterId, onNameSelected]);
 
   if (!characterId && currentStep !== "naming") {
     console.error('No character ID found');
     return null;
   }
 
-  switch (currentStep) {
-    case "naming":
-      return <NameStep onNameSelected={onNameSelected} />;
-    case "gender":
-      return (
-        <GenderStep 
-          characterId={characterId!} 
-          onGenderSelected={onGenderSelected}
-          onBack={onBack}
-        />
-      );
-    case "race":
-      return (
-        <RaceStep 
-          characterId={characterId!} 
-          onRaceSelected={onRaceSelected}
-          onBack={onBack}
-        />
-      );
-    case "animal_type":
-      return (
-        <AnimalTypeStep 
-          characterId={characterId!}
-          onBack={onBack}
-          onAnimalTypeSelected={onAnimalTypeSelected}
-        />
-      );
-    case "class":
-      return (
-        <ClassStep 
-          characterId={characterId!}
-          onBack={onBack}
-          onClassSelected={onClassSelected}
-        />
-      );
-    case "clothing":
-      return (
-        <ClothingStep
-          characterId={characterId!}
-          selectedClass={selectedClass!}
-          onBack={onBack}
-          onClothingSelected={onClothingSelected}
-        />
-      );
-    case "armor":
-      return (
-        <ArmorStep
-          characterId={characterId!}
-          selectedClass={selectedClass!}
-          onBack={onBack}
-          onArmorSelected={onArmorSelected}
-        />
-      );
-    case "morality":
-      return (
-        <MoralityStep
-          characterId={characterId!}
-          onBack={onBack}
-        />
-      );
-    case "attributes":
-      console.log('Rendering AttributesStep with characterId:', characterId);
-      return (
-        <AttributesStep
-          characterId={characterId!}
-          onBack={onBack}
-        />
-      );
-    default:
-      console.error('Unknown step:', currentStep);
-      return null;
-  }
+  const renderStep = () => {
+    switch (currentStep) {
+      case "naming":
+        return <NameStep onNameSelected={onNameSelected} />;
+      case "gender":
+        return (
+          <GenderStep 
+            characterId={characterId!} 
+            onGenderSelected={onGenderSelected}
+            onBack={onBack}
+          />
+        );
+      case "race":
+        return (
+          <RaceStep 
+            characterId={characterId!} 
+            onRaceSelected={onRaceSelected}
+            onBack={onBack}
+          />
+        );
+      case "animal_type":
+        return (
+          <AnimalTypeStep 
+            characterId={characterId!}
+            onBack={onBack}
+            onAnimalTypeSelected={onAnimalTypeSelected}
+          />
+        );
+      case "class":
+        return (
+          <ClassStep 
+            characterId={characterId!}
+            onBack={onBack}
+            onClassSelected={onClassSelected}
+          />
+        );
+      case "clothing":
+        return (
+          <ClothingStep
+            characterId={characterId!}
+            selectedClass={selectedClass!}
+            onBack={onBack}
+            onClothingSelected={onClothingSelected}
+          />
+        );
+      case "armor":
+        return (
+          <ArmorStep
+            characterId={characterId!}
+            selectedClass={selectedClass!}
+            onBack={onBack}
+            onArmorSelected={onArmorSelected}
+          />
+        );
+      case "morality":
+        return (
+          <MoralityStep
+            characterId={characterId!}
+            onBack={onBack}
+          />
+        );
+      case "attributes":
+        return (
+          <AttributesStep
+            characterId={characterId!}
+            onBack={onBack}
+          />
+        );
+      default:
+        console.error('Unknown step:', currentStep);
+        return null;
+    }
+  };
+
+  return (
+    <div className="animate-fade-in">
+      {renderStep()}
+    </div>
+  );
 };

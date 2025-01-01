@@ -29,18 +29,35 @@ export const ArmorSelection = ({
     console.log('Selecting armor:', value, 'for character:', characterId);
     
     try {
+      // Verify character exists and belongs to current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Authentication required");
+
+      const { data: character, error: verifyError } = await supabase
+        .from('characters')
+        .select('user_id, status')
+        .eq('id', characterId)
+        .single();
+
+      if (verifyError || !character) {
+        throw new Error("Character not found");
+      }
+
+      if (character.user_id !== user.id) {
+        throw new Error("Unauthorized");
+      }
+
+      // Update armor selection
       const { error: updateError } = await supabase
         .from('characters')
         .update({ 
           armor_type: value,
           status: 'morality'
         })
-        .eq('id', characterId);
+        .eq('id', characterId)
+        .eq('user_id', user.id);
 
-      if (updateError) {
-        console.error('Error updating armor:', updateError);
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
       console.log('Armor selection saved successfully');
       showSuccessToast(toast, "Armor selected");
