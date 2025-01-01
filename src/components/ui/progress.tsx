@@ -24,7 +24,7 @@ const Progress = React.forwardRef<
           className="absolute top-0 bottom-0 w-[2px] bg-white"
           style={{ 
             boxShadow: '0 0 4px rgba(255, 255, 255, 0.5)',
-            right: value === 100 ? '-3px' : '0'  // Offset by -3px at 100% to ensure visibility
+            right: value === 100 ? '3px' : '0'  // Offset by +3px at 100% to ensure visibility
           }}
         />
       )}
