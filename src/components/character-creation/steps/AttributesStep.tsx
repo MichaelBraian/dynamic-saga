@@ -63,27 +63,20 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     try {
       console.log('Saving attributes:', attributeRolls);
       
-      const attributePromises = Object.entries(attributeRolls).map(([name, value]) => {
-        return supabase
+      // Save each attribute one at a time to avoid response stream issues
+      for (const [name, value] of Object.entries(attributeRolls)) {
+        const { error } = await supabase
           .from('character_attributes')
           .insert({
             character_id: characterId,
             attribute_name: name,
             value: value
           });
-      });
 
-      const results = await Promise.all(attributePromises);
-      const errors = results.filter(result => result.error);
-
-      if (errors.length > 0) {
-        console.error('Errors saving attributes:', errors);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to save attributes. Please try again.",
-        });
-        return;
+        if (error) {
+          console.error(`Error saving attribute ${name}:`, error);
+          throw error;
+        }
       }
 
       console.log('Attributes saved successfully, updating character status');
@@ -95,12 +88,7 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
 
       if (statusError) {
         console.error('Error updating character status:', statusError);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to update character status. Please try again.",
-        });
-        return;
+        throw statusError;
       }
 
       toast({
