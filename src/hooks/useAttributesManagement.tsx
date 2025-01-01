@@ -3,11 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 import { showSuccessToast } from "@/utils/toast";
 
-interface AttributeRoll {
-  name: string;
-  value: number | null;
-}
-
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
@@ -47,19 +42,25 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   const handleContinue = async () => {
     setIsSaving(true);
     try {
-      // Save all attributes
+      // Save all attributes with consistent naming
       const attributePromises = Object.entries(attributeRolls).map(([name, value]) => {
         if (value === undefined) return Promise.resolve();
         return supabase
           .from('character_attributes')
           .insert({
             character_id: characterId,
-            attribute_name: name,
+            attribute_name: name.toLowerCase(),
             value: value
           });
       });
 
-      await Promise.all(attributePromises);
+      const results = await Promise.all(attributePromises);
+      const errors = results.filter(result => result?.error).map(result => result?.error);
+      
+      if (errors.length > 0) {
+        console.error('Errors saving attributes:', errors);
+        throw new Error('Failed to save some attributes');
+      }
 
       // Update character status
       const { error: statusError } = await supabase

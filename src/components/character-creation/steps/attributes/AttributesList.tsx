@@ -6,23 +6,24 @@ interface AttributesListProps {
 }
 
 export const AttributesList = ({ attributeRolls, onRollComplete }: AttributesListProps) => {
+  // Define the exact attribute names that match the database constraints
   const attributes = [
-    "strength",
-    "dexterity",
-    "constitution",
-    "intelligence",
-    "wisdom",
-    "charisma",
+    "Strength",
+    "Dexterity",
+    "Constitution",
+    "Intelligence",
+    "Wisdom",
+    "Charisma",
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
       {attributes.map((attributeName) => (
         <AttributeItem
-          key={attributeName}
-          name={attributeName}
-          value={attributeRolls[attributeName]}
-          onRollComplete={(value) => onRollComplete(attributeName, value)}
+          key={attributeName.toLowerCase()}
+          name={attributeName.toLowerCase()}
+          value={attributeRolls[attributeName.toLowerCase()]}
+          onRollComplete={(value) => onRollComplete(attributeName.toLowerCase(), value)}
         />
       ))}
     </div>
