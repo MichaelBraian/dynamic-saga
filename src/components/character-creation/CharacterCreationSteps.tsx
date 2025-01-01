@@ -38,7 +38,7 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  useCharacterSubscription(characterId);
+  const { data: character } = useCharacterSubscription(characterId);
 
   useEffect(() => {
     console.log('CharacterCreationSteps - State Update:', {
@@ -47,9 +47,10 @@ export const CharacterCreationSteps = ({
       selectedRace,
       selectedAnimalType,
       selectedClass,
-      isTransitioning
+      isTransitioning,
+      character
     });
-  }, [currentStep, characterId, selectedRace, selectedAnimalType, selectedClass, isTransitioning]);
+  }, [currentStep, characterId, selectedRace, selectedAnimalType, selectedClass, isTransitioning, character]);
 
   if (!currentStep) {
     console.error('No current step provided');

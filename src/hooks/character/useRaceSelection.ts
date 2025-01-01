@@ -40,14 +40,15 @@ export const useRaceSelection = ({
           status: nextStatus 
         })
         .eq('id', characterId)
-        .select();
+        .select()
+        .single();
 
       if (updateError) {
         console.error('Database error:', updateError);
         throw updateError;
       }
 
-      if (!data || data.length === 0) {
+      if (!data) {
         throw new Error('No data returned from update');
       }
       
