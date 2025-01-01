@@ -42,18 +42,9 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   const handleContinue = async () => {
     try {
       console.log('Updating character status to attributes');
-      const success = await updateStatus(characterId, 'attributes');
-      
-      if (success) {
-        console.log('Successfully updated status, calling onContinue');
-        onContinue();
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to proceed to attributes. Please try again.",
-        });
-      }
+      await updateStatus(characterId, 'attributes');
+      console.log('Successfully updated status, calling onContinue');
+      onContinue();
     } catch (error) {
       console.error('Error in handleContinue:', error);
       toast({

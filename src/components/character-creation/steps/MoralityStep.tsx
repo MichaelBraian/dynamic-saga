@@ -1,5 +1,4 @@
 import { MoralityQuestions } from "../../MoralityQuestions";
-import { useCharacterStatusUpdate } from "@/utils/characterStatus";
 
 interface MoralityStepProps {
   characterId: string;
@@ -7,11 +6,8 @@ interface MoralityStepProps {
 }
 
 export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
-  const { updateStatus } = useCharacterStatusUpdate();
-
-  const handleContinue = async () => {
+  const handleContinue = () => {
     console.log('Transitioning from morality to attributes step');
-    await updateStatus(characterId, 'attributes');
   };
 
   return (
