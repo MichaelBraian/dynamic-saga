@@ -13,6 +13,8 @@ const CreateCharacter = () => {
     selectedRace,
     selectedAnimalType,
     selectedClass,
+    isLoading,
+    isRetrying,
     handleNameSelected,
     handleGenderSelected,
     handleRaceSelected,
@@ -43,7 +45,7 @@ const CreateCharacter = () => {
           const newStatus = payload.new.status as CharacterStatus;
           if (newStatus === 'attributes' && currentStep === 'morality') {
             console.log('Transitioning from morality to attributes step');
-            window.location.reload(); // Force a refresh to ensure proper state update
+            window.location.reload();
           }
         }
       )
@@ -65,6 +67,8 @@ const CreateCharacter = () => {
           selectedRace={selectedRace}
           selectedAnimalType={selectedAnimalType}
           selectedClass={selectedClass}
+          isLoading={isLoading}
+          isRetrying={isRetrying}
           onNameSelected={handleNameSelected}
           onGenderSelected={handleGenderSelected}
           onRaceSelected={handleRaceSelected}

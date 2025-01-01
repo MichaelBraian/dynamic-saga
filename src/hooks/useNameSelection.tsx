@@ -6,7 +6,50 @@ import { supabase } from "@/integrations/supabase/client";
 export const useNameSelection = (onNameSelected: (characterId: string) => void) => {
   const [characterName, setCharacterName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
+
+  const validateName = async (name: string): Promise<boolean> => {
+    setIsValidating(true);
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        throw new Error("Authentication required");
+      }
+
+      // Check for existing character name
+      const { data: existingCharacter, error: checkError } = await supabase
+        .from('characters')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('name', name.trim())
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingCharacter) {
+        toast({
+          title: "Name already exists",
+          description: "Please choose a different name for your character",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error validating character name:', error);
+      toast({
+        title: "Error",
+        description: "Failed to validate character name. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,29 +65,16 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
 
     setIsSubmitting(true);
     try {
+      const isValid = await validateName(characterName);
+      if (!isValid) {
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
         throw new Error("Authentication required");
-      }
-
-      // Check for existing character name
-      const { data: existingCharacter, error: checkError } = await supabase
-        .from('characters')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('name', characterName.trim())
-        .maybeSingle();
-
-      if (checkError) throw checkError;
-
-      if (existingCharacter) {
-        toast({
-          title: "Name already exists",
-          description: "Please choose a different name for your character",
-          variant: "destructive",
-        });
-        return;
       }
 
       // Create new character
@@ -91,6 +121,7 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void) 
     characterName,
     setCharacterName,
     isSubmitting,
+    isValidating,
     handleSubmit
   };
 };
