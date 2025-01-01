@@ -105,6 +105,8 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void):
         throw new Error("Failed to create character - no ID returned");
       }
 
+      console.log('Character created successfully:', data);
+
       toast({
         description: (
           <div className="flex items-center gap-2">
@@ -115,6 +117,7 @@ export const useNameSelection = (onNameSelected: (characterId: string) => void):
         duration: 2000,
       });
 
+      // Ensure we call onNameSelected with the new character ID
       onNameSelected(data.id);
     } catch (error) {
       console.error('Error creating character:', error);
