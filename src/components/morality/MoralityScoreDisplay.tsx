@@ -4,14 +4,15 @@ import { MoralityLoadingState } from "./score-display/MoralityLoadingState";
 import { ScoresDisplay } from "./score-display/ScoresDisplay";
 import { ContinueButton } from "./score-display/ContinueButton";
 import { useToast } from "@/hooks/use-toast";
+import { useCharacterCreation } from "@/hooks/useCharacterCreation";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
-  onContinue: () => void;
 }
 
-export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
+export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
+  const { handleArmorSelected } = useCharacterCreation();
   
   const { data: morality, isLoading, error } = useQuery({
     queryKey: ['morality-score', characterId],
@@ -46,6 +47,28 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     return <MoralityLoadingState message="Loading your morality score..." />;
   }
 
+  const handleContinue = async () => {
+    try {
+      console.log('Transitioning to attributes step');
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ status: 'attributes' })
+        .eq('id', characterId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      handleArmorSelected();
+    } catch (error) {
+      console.error('Error transitioning to attributes:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed. Please try again.",
+      });
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
       <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Your Morality Score</h2>
@@ -56,7 +79,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
         lawfulChaoticScale={morality.lawful_chaotic_scale}
       />
 
-      <ContinueButton onClick={onContinue} />
+      <ContinueButton onClick={handleContinue} />
     </div>
   );
 };

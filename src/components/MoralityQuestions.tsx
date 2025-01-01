@@ -3,14 +3,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
 import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
+import { useCharacterCreation } from "@/hooks/useCharacterCreation";
 
 interface MoralityQuestionsProps {
   characterId: string;
   onBack: () => void;
-  onContinue: () => void;
 }
 
-export const MoralityQuestions = ({ characterId, onBack, onContinue }: MoralityQuestionsProps) => {
+export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProps) => {
   const { toast } = useToast();
   const [isComplete, setIsComplete] = useState(false);
   const {
@@ -61,7 +61,6 @@ export const MoralityQuestions = ({ characterId, onBack, onContinue }: MoralityQ
       <div className="pt-16 animate-fade-in">
         <MoralityScoreDisplay 
           characterId={characterId}
-          onContinue={onContinue}
         />
       </div>
     );
