@@ -38,25 +38,25 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   const handleContinue = async () => {
     setIsSaving(true);
     try {
-      console.log('Starting to save attributes...');
+      console.log('Starting to save all attributes...');
       
-      // Save attributes one by one
-      for (const [name, value] of Object.entries(attributeRolls)) {
-        if (value !== undefined) {
-          console.log(`Saving ${name} with value ${value}`);
-          const { error: saveError } = await supabase
-            .from('character_attributes')
-            .upsert({
-              character_id: characterId,
-              attribute_name: name.toLowerCase(),
-              value: value
-            });
-          
-          if (saveError) {
-            console.error(`Error saving ${name}:`, saveError);
-            throw saveError;
-          }
-        }
+      // Prepare all attributes for batch insert
+      const attributesToSave = Object.entries(attributeRolls)
+        .filter(([_, value]) => value !== undefined)
+        .map(([name, value]) => ({
+          character_id: characterId,
+          attribute_name: name.toLowerCase(),
+          value: value
+        }));
+
+      // Save all attributes in one operation
+      const { error: saveError } = await supabase
+        .from('character_attributes')
+        .upsert(attributesToSave);
+
+      if (saveError) {
+        console.error('Error saving attributes:', saveError);
+        throw saveError;
       }
 
       // Update character status to specialty
@@ -74,7 +74,7 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
       showSuccessToast(toast, "Attributes saved successfully");
       onComplete();
     } catch (error) {
-      console.error('Error saving attributes:', error);
+      console.error('Error in save operation:', error);
       toast({
         variant: "destructive",
         description: "Failed to save attributes. Please try again.",
