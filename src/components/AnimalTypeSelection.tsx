@@ -3,6 +3,8 @@ import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { useToast } from "@/hooks/use-toast";
 import { InfoTooltip } from "./shared/InfoTooltip";
 import { supabase } from "@/integrations/supabase/client";
+import { SelectionLoadingState } from "./shared/SelectionLoadingState";
+import { ErrorBoundary } from "./shared/ErrorBoundary";
 
 interface AnimalTypeSelectionProps {
   characterId: string;
@@ -33,13 +35,32 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
 
     setIsSubmitting(true);
     try {
+      // Verify character ownership
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Authentication required");
+
+      const { data: character, error: verifyError } = await supabase
+        .from('characters')
+        .select('user_id, status')
+        .eq('id', characterId)
+        .maybeSingle();
+
+      if (verifyError || !character) {
+        throw new Error("Character not found");
+      }
+
+      if (character.user_id !== user.id) {
+        throw new Error("Unauthorized");
+      }
+
       const { error } = await supabase
         .from('characters')
         .update({ 
           animal_type: value,
           status: 'class'
         })
-        .eq('id', characterId);
+        .eq('id', characterId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -51,7 +72,9 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
       console.error('Error updating animal type:', error);
       toast({
         variant: "destructive",
-        description: "Failed to save animal type selection. Please try again.",
+        description: error instanceof Error 
+          ? error.message 
+          : "Failed to save animal type selection. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -69,18 +92,34 @@ export const AnimalTypeSelection = ({ characterId, onBack, onAnimalTypeSelected 
     ),
   }));
 
+  if (isSubmitting) {
+    return (
+      <div className="pt-16">
+        <SelectionLoadingState message="Saving animal type selection..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="pt-16">
-      <CharacterSelectionScreen
-        title="Choose Animal Type"
-        options={animalTypesWithInfo}
-        characterId={characterId}
-        onSelected={handleSelected}
-        onBack={onBack}
-        updateField="animal_type"
-        nextStatus="class"
-        isSubmitting={isSubmitting}
-      />
-    </div>
+    <ErrorBoundary 
+      fallback={
+        <div className="text-white bg-red-500/20 p-4 rounded-lg">
+          Something went wrong. Please refresh and try again.
+        </div>
+      }
+    >
+      <div className="pt-16">
+        <CharacterSelectionScreen
+          title="Choose Animal Type"
+          options={animalTypesWithInfo}
+          characterId={characterId}
+          onSelected={handleSelected}
+          onBack={onBack}
+          updateField="animal_type"
+          nextStatus="class"
+          isSubmitting={isSubmitting}
+        />
+      </div>
+    </ErrorBoundary>
   );
 };
