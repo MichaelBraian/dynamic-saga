@@ -35,7 +35,6 @@ export const useMoralityQuestions = (characterId: string) => {
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       if (isNaN(choiceNumber)) return;
 
-      // Normalize choice numbers to -1 or 1
       const normalizedScore = choiceNumber <= 2 ? 1 : -1;
       const weightedScore = question.morality_weight * normalizedScore;
       
@@ -48,10 +47,11 @@ export const useMoralityQuestions = (characterId: string) => {
 
     const maxPossibleScore = Math.floor(questions.length / 2) * Math.max(...questions.map(q => Math.abs(q.morality_weight)));
     
+    // Normalize scores to -100 to 100 range
     const normalizedGoodEvil = Math.round((goodEvilScore / maxPossibleScore) * 100);
     const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / maxPossibleScore) * 100);
     
-    // Ensure scores are within -100 to 100 range
+    // Ensure scores are within bounds
     const boundedGoodEvil = Math.max(-100, Math.min(100, normalizedGoodEvil));
     const boundedLawfulChaotic = Math.max(-100, Math.min(100, normalizedLawfulChaotic));
     
@@ -75,7 +75,7 @@ export const useMoralityQuestions = (characterId: string) => {
       const questionId = questions[currentQuestionIndex].id;
       console.log('Saving response:', { characterId, questionId, answer });
 
-      // Use upsert to handle both insert and update cases
+      // Use upsert with explicit conflict handling
       const { error: responseError } = await supabase
         .from('character_responses')
         .upsert({
@@ -95,6 +95,7 @@ export const useMoralityQuestions = (characterId: string) => {
       if (isLastQuestion) {
         console.log('Last question answered, calculating scores...');
         
+        // Fetch all responses for this character
         const { data: responses, error: responsesError } = await supabase
           .from('character_responses')
           .select('*')
@@ -111,7 +112,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
         console.log('Calculated morality scores:', scores);
 
-        // Use upsert for morality scores
+        // Save morality scores with upsert
         const { error: moralityError } = await supabase
           .from('character_morality')
           .upsert({
