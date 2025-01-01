@@ -4,9 +4,10 @@ import { useToast } from "@/hooks/use-toast";
 interface MoralityStepProps {
   characterId: string;
   onBack: () => void;
+  onComplete: () => void;
 }
 
-export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
+export const MoralityStep = ({ characterId, onBack, onComplete }: MoralityStepProps) => {
   const { toast } = useToast();
 
   return (
@@ -14,6 +15,7 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
       <MoralityQuestions
         characterId={characterId}
         onBack={onBack}
+        onComplete={onComplete}
       />
     </div>
   );

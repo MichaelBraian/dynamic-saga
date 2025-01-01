@@ -22,6 +22,7 @@ interface CharacterCreationStepsProps {
   onClassSelected: (characterClass: string) => void;
   onClothingSelected: () => void;
   onArmorSelected: () => void;
+  onMoralityCompleted: () => void;
   onBack: () => void;
 }
 
@@ -38,6 +39,7 @@ export const CharacterCreationSteps = ({
   onClassSelected,
   onClothingSelected,
   onArmorSelected,
+  onMoralityCompleted,
   onBack,
 }: CharacterCreationStepsProps) => {
   console.log('Current step:', currentStep, 'Character ID:', characterId);
@@ -105,6 +107,7 @@ export const CharacterCreationSteps = ({
         <MoralityStep
           characterId={characterId!}
           onBack={onBack}
+          onComplete={onMoralityCompleted}
         />
       );
     case "attributes":

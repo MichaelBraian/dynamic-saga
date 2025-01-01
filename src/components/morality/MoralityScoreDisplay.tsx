@@ -7,9 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
+  onContinue: () => void;
 }
 
-export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps) => {
+export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
   
   const { data: morality, isLoading, error } = useQuery({
@@ -50,33 +51,6 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
     return <MoralityLoadingState message="Loading your morality score..." />;
   }
 
-  const handleContinue = async () => {
-    try {
-      console.log('Transitioning from morality to attributes step');
-      const { error: updateError } = await supabase
-        .from('characters')
-        .update({ status: 'attributes' })
-        .eq('id', characterId);
-
-      if (updateError) {
-        console.error('Error updating character status:', updateError);
-        toast({
-          variant: "destructive",
-          description: "Failed to proceed. Please try again.",
-        });
-        return;
-      }
-
-      console.log('Successfully transitioned to attributes step');
-    } catch (error) {
-      console.error('Error transitioning to attributes:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to proceed. Please try again.",
-      });
-    }
-  };
-
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
       <h2 className="text-2xl font-['Cinzel'] text-white text-center mb-6">Your Morality Score</h2>
@@ -87,7 +61,7 @@ export const MoralityScoreDisplay = ({ characterId }: MoralityScoreDisplayProps)
         lawfulChaoticScale={morality.lawful_chaotic_scale}
       />
 
-      <ContinueButton onClick={handleContinue} />
+      <ContinueButton onClick={onContinue} />
     </div>
   );
 };

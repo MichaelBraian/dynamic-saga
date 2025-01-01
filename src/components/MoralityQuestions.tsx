@@ -8,9 +8,10 @@ import { useCharacterCreation } from "@/hooks/useCharacterCreation";
 interface MoralityQuestionsProps {
   characterId: string;
   onBack: () => void;
+  onComplete: () => void;
 }
 
-export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProps) => {
+export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQuestionsProps) => {
   const { toast } = useToast();
   const [isComplete, setIsComplete] = useState(false);
   const {
@@ -61,6 +62,7 @@ export const MoralityQuestions = ({ characterId, onBack }: MoralityQuestionsProp
       <div className="pt-16 animate-fade-in">
         <MoralityScoreDisplay 
           characterId={characterId}
+          onContinue={onComplete}
         />
       </div>
     );

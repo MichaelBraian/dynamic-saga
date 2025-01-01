@@ -97,6 +97,22 @@ export const useCharacterCreation = () => {
     setCurrentStep("morality");
   };
 
+  const handleMoralityCompleted = async () => {
+    console.log("Morality completed, transitioning to attributes");
+    if (characterId) {
+      const { error } = await supabase
+        .from('characters')
+        .update({ status: 'attributes' })
+        .eq('id', characterId);
+
+      if (error) {
+        console.error('Error updating character status:', error);
+        return;
+      }
+      setCurrentStep("attributes");
+    }
+  };
+
   const handleBack = useCallback(() => {
     switch (currentStep) {
       case "gender":
@@ -149,7 +165,8 @@ export const useCharacterCreation = () => {
     handleClassSelected,
     handleClothingSelected,
     handleArmorSelected,
+    handleMoralityCompleted,
     handleBack,
-    setCurrentStep, // Expose setCurrentStep
+    setCurrentStep,
   };
 };
