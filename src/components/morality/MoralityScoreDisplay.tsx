@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
 import { MoralityLoadingState } from "./score-display/MoralityLoadingState";
 import { ScoresDisplay } from "./score-display/ScoresDisplay";
 import { ContinueButton } from "./score-display/ContinueButton";
@@ -36,34 +35,6 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     },
   });
 
-  const handleContinue = async () => {
-    try {
-      console.log('Updating character status to attributes');
-      const { error } = await supabase
-        .from('characters')
-        .update({ status: 'attributes' })
-        .eq('id', characterId);
-
-      if (error) {
-        console.error('Error updating character status:', error);
-        toast({
-          variant: "destructive",
-          description: "Failed to proceed to attributes. Please try again.",
-        });
-        return;
-      }
-
-      console.log('Successfully updated status, calling onContinue');
-      onContinue();
-    } catch (error) {
-      console.error('Error in handleContinue:', error);
-      toast({
-        variant: "destructive",
-        description: "An unexpected error occurred. Please try again.",
-      });
-    }
-  };
-
   if (error) {
     return <MoralityLoadingState message="Error loading score" />;
   }
@@ -86,7 +57,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
         lawfulChaoticScale={morality.lawful_chaotic_scale}
       />
 
-      <ContinueButton onClick={handleContinue} />
+      <ContinueButton onClick={onContinue} />
     </div>
   );
 };

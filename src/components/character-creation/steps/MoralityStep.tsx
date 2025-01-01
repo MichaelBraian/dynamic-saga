@@ -22,7 +22,10 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
           variant: "destructive",
           description: "Failed to proceed to attributes. Please try again.",
         });
+        return;
       }
+
+      console.log('Successfully updated status to attributes');
     } catch (error) {
       console.error('Error in handleContinue:', error);
       toast({
