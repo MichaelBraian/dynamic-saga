@@ -6,7 +6,8 @@ export const useCharacterSelectionHandlers = () => {
   const { updateCharacterState } = useCharacterState();
   const { handleClassSelection } = useCharacterOperations();
 
-  const handleNameSelected = (newCharacterId: string) => {
+  const handleNameSelected = async (newCharacterId: string) => {
+    console.log('Handling name selection with ID:', newCharacterId);
     updateCharacterState({
       characterId: newCharacterId,
       currentStep: "gender"
