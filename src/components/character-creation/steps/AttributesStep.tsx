@@ -6,9 +6,10 @@ import { ContinueButton } from "./attributes/ContinueButton";
 interface AttributesStepProps {
   characterId: string;
   onBack: () => void;
+  onComplete: () => void;
 }
 
-export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => {
+export const AttributesStep = ({ characterId, onBack, onComplete }: AttributesStepProps) => {
   const {
     attributeRolls,
     isSaving,
@@ -16,7 +17,7 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     handleRollComplete,
     handleBack,
     handleContinue
-  } = useAttributesManagement(characterId);
+  } = useAttributesManagement(characterId, onComplete);
 
   const handleBackClick = async () => {
     const success = await handleBack();

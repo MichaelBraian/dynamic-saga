@@ -1,106 +1,87 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { attributes } from "@/components/character-creation/steps/attributes/attributeDefinitions";
+import { useToast } from "./use-toast";
+import { showSuccessToast } from "@/utils/toast";
 
-export const useAttributesManagement = (characterId: string) => {
-  const [attributeRolls, setAttributeRolls] = useState<Record<string, number | null>>({});
-  const [isSaving, setIsSaving] = useState(false);
+interface AttributeRoll {
+  name: string;
+  value: number | null;
+}
+
+export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+  const [attributeRolls, setAttributeRolls] = useState<AttributeRoll[]>([
+    { name: "strength", value: null },
+    { name: "dexterity", value: null },
+    { name: "constitution", value: null },
+    { name: "intelligence", value: null },
+    { name: "wisdom", value: null },
+    { name: "charisma", value: null },
+  ]);
 
-  const handleRollComplete = (attributeName: string, total: number) => {
-    console.log('Roll completed for:', attributeName, 'with total:', total);
-    setAttributeRolls(prev => ({
-      ...prev,
-      [attributeName]: total
-    }));
+  const handleRollComplete = (attributeName: string, value: number) => {
+    setAttributeRolls(prev =>
+      prev.map(roll =>
+        roll.name === attributeName ? { ...roll, value } : roll
+      )
+    );
   };
+
+  const allAttributesRolled = attributeRolls.every(roll => roll.value !== null);
 
   const handleBack = async () => {
     try {
-      console.log('Going back to morality step');
       const { error } = await supabase
         .from('characters')
         .update({ status: 'morality' })
         .eq('id', characterId);
 
-      if (error) {
-        console.error('Error updating character status:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to go back. Please try again.",
-        });
-        return false;
-      }
+      if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error in handleBack:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-      });
+      console.error('Error updating character status:', error);
       return false;
     }
   };
 
   const handleContinue = async () => {
-    if (isSaving) return;
     setIsSaving(true);
-
     try {
-      console.log('Saving attributes:', attributeRolls);
-      
-      for (const [name, value] of Object.entries(attributeRolls)) {
-        if (value === null) continue;
-        
-        const { error } = await supabase
+      // Save all attributes
+      const attributePromises = attributeRolls.map(roll => {
+        if (roll.value === null) return Promise.resolve();
+        return supabase
           .from('character_attributes')
           .insert({
             character_id: characterId,
-            attribute_name: name,
-            value: value
+            attribute_name: roll.name,
+            value: roll.value
           });
+      });
 
-        if (error) {
-          console.error(`Error saving attribute ${name}:`, error);
-          throw error;
-        }
-      }
+      await Promise.all(attributePromises);
 
-      console.log('Attributes saved successfully, updating character status');
-
+      // Update character status
       const { error: statusError } = await supabase
         .from('characters')
-        .update({ status: 'completed' })
+        .update({ status: 'specialty' })
         .eq('id', characterId);
 
-      if (statusError) {
-        console.error('Error updating character status:', statusError);
-        throw statusError;
-      }
+      if (statusError) throw statusError;
 
-      toast({
-        title: "Success",
-        description: "Character attributes saved successfully!",
-      });
-
-      return true;
+      showSuccessToast(toast, "Attributes saved successfully");
+      onComplete();
     } catch (error) {
-      console.error('Error in handleContinue:', error);
+      console.error('Error saving attributes:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: "Failed to save attributes. Please try again.",
       });
-      return false;
     } finally {
       setIsSaving(false);
     }
   };
-
-  const allAttributesRolled = attributes.every(attr => attributeRolls[attr.name] !== undefined);
 
   return {
     attributeRolls,
