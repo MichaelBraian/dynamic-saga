@@ -1,5 +1,5 @@
 import { Progress } from "@/components/ui/progress";
-import { ArrowDown } from "lucide-react";
+import { ArrowBigDown } from "lucide-react";
 
 interface ProgressBarWithIndicatorProps {
   value: number;
@@ -31,8 +31,11 @@ export const ProgressBarWithIndicator = ({
     <div className="space-y-2">
       {showArrow && (
         <div className="relative">
-          <div style={{ marginLeft: `${normalizedValue}%` }} className="relative flex justify-center transform -translate-x-1/2">
-            <ArrowDown className="text-white" />
+          <div 
+            style={{ marginLeft: `${normalizedValue}%` }} 
+            className="relative flex justify-center transform -translate-x-1/2"
+          >
+            <ArrowBigDown className="text-white w-8 h-8" />
           </div>
         </div>
       )}
@@ -43,9 +46,13 @@ export const ProgressBarWithIndicator = ({
           className={heightClasses[height]}
           showIndicator
         />
-        <div className="flex justify-between mt-1 text-sm font-['IM_Fell_English']">
-          <span className="text-white">{leftLabel}</span>
-          <span className="text-white">{rightLabel}</span>
+        <div className="flex justify-between mt-2">
+          <span className="text-white/80 font-['IM_Fell_English'] text-lg tracking-wide hover:text-white transition-colors">
+            {leftLabel}
+          </span>
+          <span className="text-white/80 font-['IM_Fell_English'] text-lg tracking-wide hover:text-white transition-colors">
+            {rightLabel}
+          </span>
         </div>
       </div>
       

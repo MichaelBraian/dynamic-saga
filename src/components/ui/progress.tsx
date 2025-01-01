@@ -19,16 +19,15 @@ const Progress = React.forwardRef<
       <ProgressPrimitive.Indicator
         className="h-full flex-1 transition-all bg-white/10"
         style={{ 
-          width: `calc(${value || 0}% + 4px)`,
-          transform: `translateX(-4px)`
+          width: `${value || 0}%`,
         }}
       />
       {showIndicator && (
         <div 
-          className="absolute top-0 bottom-0 w-[2px] bg-white"
+          className="absolute top-0 bottom-0 w-1 bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)]"
           style={{ 
-            boxShadow: '0 0 4px rgba(255, 255, 255, 0.5)',
-            right: '0'
+            left: `${value || 0}%`,
+            transform: 'translateX(-50%)',
           }}
         />
       )}

@@ -75,7 +75,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
       <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">Your Morality Score</h2>
       
-      <div className="space-y-6 text-white">
+      <div className="space-y-8 text-white">
         <div>
           <AlignmentScore score={morality.alignment_score} />
         </div>
@@ -95,12 +95,12 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
         </div>
       </div>
 
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-center mt-8">
         <Button
           onClick={handleContinue}
-          className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+          className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm text-lg py-6 px-8 shadow-lg"
         >
-          Continue to Attributes <ArrowRight className="ml-2" />
+          Continue to Attributes <ArrowRight className="ml-2 w-6 h-6" />
         </Button>
       </div>
     </div>
