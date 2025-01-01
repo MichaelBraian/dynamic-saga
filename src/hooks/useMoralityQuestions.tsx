@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MoralityQuestion } from "@/types/morality";
-import { CharacterStatus } from "@/types/character";
 import { useToast } from "@/hooks/use-toast";
 
 export const useMoralityQuestions = (characterId: string) => {
@@ -99,13 +98,14 @@ export const useMoralityQuestions = (characterId: string) => {
 
       // If this was the last question
       if (currentQuestionIndex === questions.length - 1) {
-        // Fetch all responses in a single query
+        // Fetch all responses for this character
         const { data: responses, error: responsesError } = await supabase
           .from('character_responses')
           .select('question_id, answer')
           .eq('character_id', characterId);
 
         if (responsesError) throw responsesError;
+        
         if (!responses) {
           throw new Error('No responses found');
         }
@@ -123,7 +123,7 @@ export const useMoralityQuestions = (characterId: string) => {
         // Save morality scores
         const { error: moralityError } = await supabase
           .from('character_morality')
-          .insert({
+          .upsert({
             character_id: characterId,
             good_evil_scale: scores.goodEvilScore,
             lawful_chaotic_scale: scores.lawfulChaoticScore,
