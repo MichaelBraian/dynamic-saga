@@ -14,6 +14,15 @@ interface SpecialtyStepProps {
   onComplete: () => void;
 }
 
+interface Specialty {
+  id: string;
+  name: string;
+  description: string;
+  attribute_modifiers: Record<string, number>;
+  class_type: string;
+  created_at: string;
+}
+
 export const SpecialtyStep = ({
   characterId,
   characterClass,
@@ -45,7 +54,12 @@ export const SpecialtyStep = ({
         .eq('class_type', characterClass);
       
       if (error) throw error;
-      return data;
+      
+      // Transform the data to ensure attribute_modifiers is correctly typed
+      return (data || []).map(specialty => ({
+        ...specialty,
+        attribute_modifiers: specialty.attribute_modifiers as Record<string, number>
+      })) as Specialty[];
     },
     enabled: !!attributesCheck,
   });
