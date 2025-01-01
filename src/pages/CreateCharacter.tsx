@@ -56,6 +56,14 @@ const CreateCharacter = () => {
     };
   }, [characterId, currentStep]);
 
+  // Create a wrapper function to match the expected signature
+  const handleRaceSelectedWrapper = () => {
+    if (characterId) {
+      return handleRaceSelected(characterId);
+    }
+    return Promise.resolve();
+  };
+
   return (
     <CharacterCreationBackground currentStep={currentStep}>
       <HamburgerMenu />
@@ -69,7 +77,7 @@ const CreateCharacter = () => {
           isTransitioning={isTransitioning}
           onNameSelected={handleNameSelected}
           onGenderSelected={handleGenderSelected}
-          onRaceSelected={handleRaceSelected}
+          onRaceSelected={handleRaceSelectedWrapper}
           onAnimalTypeSelected={handleAnimalTypeSelected}
           onClassSelected={handleClassSelected}
           onClothingSelected={handleClothingSelected}
