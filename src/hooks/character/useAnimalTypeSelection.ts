@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ANIMAL_TYPES } from "@/data/animalTypeOptions";
 
 export const useAnimalTypeSelection = (
   characterId: string,
@@ -8,6 +9,10 @@ export const useAnimalTypeSelection = (
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  const validateAnimalType = (value: string): boolean => {
+    return ANIMAL_TYPES.some(type => type.value === value);
+  };
 
   const handleSelected = async (value: string) => {
     if (!value || !characterId) {
@@ -18,15 +23,19 @@ export const useAnimalTypeSelection = (
       return;
     }
 
+    if (!validateAnimalType(value)) {
+      toast({
+        variant: "destructive",
+        description: "Invalid animal type selected",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Verify character ownership
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Authentication required");
-
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id, status')
+        .select('id, race')
         .eq('id', characterId)
         .maybeSingle();
 
@@ -34,8 +43,8 @@ export const useAnimalTypeSelection = (
         throw new Error("Character not found");
       }
 
-      if (character.user_id !== user.id) {
-        throw new Error("Unauthorized");
+      if (character.race !== 'Animal') {
+        throw new Error("Only Animal race can select animal type");
       }
 
       const { error } = await supabase
@@ -44,8 +53,7 @@ export const useAnimalTypeSelection = (
           animal_type: value,
           status: 'class'
         })
-        .eq('id', characterId)
-        .eq('user_id', user.id);
+        .eq('id', characterId);
 
       if (error) throw error;
 

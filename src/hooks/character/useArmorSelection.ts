@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { showSuccessToast } from "@/utils/toast";
 
 interface UseArmorSelectionProps {
   characterId: string;
@@ -13,44 +12,43 @@ export const useArmorSelection = ({ characterId, onArmorSelected }: UseArmorSele
   const { toast } = useToast();
 
   const handleArmorSelected = async (value: string) => {
-    if (isSubmitting) return;
-    
+    if (!value || !characterId) {
+      toast({
+        variant: "destructive",
+        description: "Please select armor to continue",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     console.log('Selecting armor:', value, 'for character:', characterId);
     
     try {
-      // Verify character exists and belongs to current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Authentication required");
-
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id, class, status')
+        .select('id, class')
         .eq('id', characterId)
-        .single();
+        .maybeSingle();
 
       if (verifyError || !character) {
         throw new Error("Character not found");
       }
 
-      if (character.user_id !== user.id) {
-        throw new Error("Unauthorized");
-      }
-
-      // Update armor selection
       const { error: updateError } = await supabase
         .from('characters')
         .update({ 
           armor_type: value,
           status: 'morality'
         })
-        .eq('id', characterId)
-        .eq('user_id', user.id);
+        .eq('id', characterId);
 
       if (updateError) throw updateError;
 
       console.log('Armor selection saved successfully');
-      showSuccessToast(toast, "Armor selected successfully");
+      
+      toast({
+        description: "Armor selected successfully",
+      });
       
       if (onArmorSelected) {
         onArmorSelected();

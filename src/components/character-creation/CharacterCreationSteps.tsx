@@ -3,6 +3,7 @@ import { useCharacterSubscription } from "@/hooks/character/useCharacterSubscrip
 import { StepRenderer } from "./StepRenderer";
 import { LoadingState } from "./LoadingState";
 import { ErrorBoundary } from "../shared/ErrorBoundary";
+import { useEffect } from "react";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -39,14 +40,16 @@ export const CharacterCreationSteps = ({
 }: CharacterCreationStepsProps) => {
   useCharacterSubscription(characterId, currentStep);
 
-  console.log('CharacterCreationSteps - Props:', {
-    currentStep,
-    characterId,
-    selectedRace,
-    selectedAnimalType,
-    selectedClass,
-    isTransitioning
-  });
+  useEffect(() => {
+    console.log('CharacterCreationSteps - State Update:', {
+      currentStep,
+      characterId,
+      selectedRace,
+      selectedAnimalType,
+      selectedClass,
+      isTransitioning
+    });
+  }, [currentStep, characterId, selectedRace, selectedAnimalType, selectedClass, isTransitioning]);
 
   if (!currentStep) {
     console.error('No current step provided');

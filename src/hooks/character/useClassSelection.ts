@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { showSuccessToast } from "@/utils/toast";
+import { CLASS_OPTIONS } from "@/data/classOptions";
 import { validateClassSelection, getFallbackClass } from "@/utils/classValidation";
 import { Race, Class } from "@/types/character";
 
@@ -9,11 +9,15 @@ export const useClassSelection = (
   characterId: string,
   onClassSelected: (characterClass: string) => void
 ) => {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const validateClass = (value: string): boolean => {
+    return CLASS_OPTIONS.some(option => option.value === value);
+  };
 
   const handleSelected = async (value: string) => {
-    if (!value) {
+    if (!value || !characterId) {
       toast({
         variant: "destructive",
         description: "Please select a class to continue",
@@ -21,17 +25,19 @@ export const useClassSelection = (
       return;
     }
 
+    if (!validateClass(value)) {
+      toast({
+        variant: "destructive",
+        description: "Invalid class selected",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      console.log('Handling class selection:', { characterId, class: value });
-
-      // Verify character ownership and get race
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Authentication required");
-
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id, race')
+        .select('id, race')
         .eq('id', characterId)
         .maybeSingle();
 
@@ -39,11 +45,6 @@ export const useClassSelection = (
         throw new Error("Character not found");
       }
 
-      if (character.user_id !== user.id) {
-        throw new Error("Unauthorized");
-      }
-
-      // Validate class selection based on race
       const validation = validateClassSelection(character.race as Race, value as Class);
       
       if (!validation.isValid) {
@@ -55,7 +56,6 @@ export const useClassSelection = (
           description: `${validation.reason}. Assigning ${fallbackClass} as a fallback class.`,
         });
         
-        // Update with fallback class
         const { error: updateError } = await supabase
           .from('characters')
           .update({ 
@@ -66,12 +66,10 @@ export const useClassSelection = (
 
         if (updateError) throw updateError;
         
-        console.log('Fallback class saved successfully:', { characterId, class: fallbackClass });
-        await onClassSelected(fallbackClass);
+        onClassSelected(fallbackClass);
         return;
       }
 
-      // Update with selected class
       const { error: updateError } = await supabase
         .from('characters')
         .update({ 
@@ -82,9 +80,10 @@ export const useClassSelection = (
 
       if (updateError) throw updateError;
 
-      console.log('Class selection saved successfully:', { characterId, class: value });
-      await onClassSelected(value);
-      showSuccessToast(toast, "Class selected successfully");
+      toast({
+        description: "Class selected successfully",
+      });
+      onClassSelected(value);
     } catch (error) {
       console.error('Error selecting class:', error);
       toast({

@@ -70,18 +70,16 @@ export const useMoralityQuestions = (characterId: string) => {
     console.log('Saving response:', { characterId, questionId: questions[currentQuestionIndex].id, answer });
 
     try {
-      // First, verify character ownership
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id, status')
+        .select('id')
         .eq('id', characterId)
-        .single();
+        .maybeSingle();
 
       if (verifyError || !character) {
-        throw new Error("Character not found or unauthorized");
+        throw new Error("Character not found");
       }
 
-      // Try to insert the response first
       const { error: insertError } = await supabase
         .from('character_responses')
         .insert({
@@ -90,7 +88,6 @@ export const useMoralityQuestions = (characterId: string) => {
           answer
         });
 
-      // If insert fails due to duplicate, update instead
       if (insertError && insertError.code === '23505') {
         const { error: updateError } = await supabase
           .from('character_responses')
@@ -109,7 +106,6 @@ export const useMoralityQuestions = (characterId: string) => {
       const isLastQuestion = nextIndex >= questions.length;
 
       if (isLastQuestion) {
-        // Fetch all responses for this character
         const { data: responses, error: responsesError } = await supabase
           .from('character_responses')
           .select('*')
@@ -122,7 +118,6 @@ export const useMoralityQuestions = (characterId: string) => {
           throw new Error('Failed to calculate morality scores');
         }
 
-        // Save the final scores
         const { error: moralityError } = await supabase
           .from('character_morality')
           .upsert({
@@ -136,13 +131,16 @@ export const useMoralityQuestions = (characterId: string) => {
 
         if (moralityError) throw moralityError;
 
-        // Update character status to attributes
         const { error: statusError } = await supabase
           .from('characters')
           .update({ status: 'attributes' })
           .eq('id', characterId);
 
         if (statusError) throw statusError;
+
+        toast({
+          description: "Morality questions completed successfully",
+        });
 
         return true;
       }

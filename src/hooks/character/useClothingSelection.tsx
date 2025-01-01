@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CLOTHING_OPTIONS } from "@/data/clothingOptions";
-import { showSuccessToast } from "@/utils/toast";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
 
 interface ClothingOption {
@@ -15,9 +14,10 @@ export const useClothingSelection = (
   characterClass: string,
   onClothingSelected: () => void
 ) => {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { toast } = useToast();
 
   const options = CLOTHING_OPTIONS[characterClass] || [];
   const optionsWithInfo = options.map(option => ({
@@ -52,40 +52,24 @@ export const useClothingSelection = (
 
   const handleSelected = async (value: string) => {
     setError(null);
+    
+    if (!validateClothingSelection(value)) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Validate selection
-      if (!validateClothingSelection(value)) {
-        throw new Error("Invalid clothing selection");
-      }
-
-      // Verify character ownership
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("Authentication required");
-      }
-
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id, class')
+        .select('id, class')
         .eq('id', characterId)
         .maybeSingle();
 
-      if (verifyError) {
-        console.error('Error verifying character:', verifyError);
-        throw new Error("Failed to verify character ownership");
-      }
-
-      if (!character) {
+      if (verifyError || !character) {
         throw new Error("Character not found");
       }
 
-      if (character.user_id !== user.id) {
-        throw new Error("You don't have permission to modify this character");
-      }
-
-      // Save clothing selection
       const { error: saveError } = await supabase
         .from('character_clothing')
         .insert({
@@ -98,7 +82,6 @@ export const useClothingSelection = (
         throw new Error("Failed to save clothing selection");
       }
 
-      // Update character status
       const { error: updateError } = await supabase
         .from('characters')
         .update({ status: 'armor' })
@@ -109,8 +92,11 @@ export const useClothingSelection = (
         throw new Error("Failed to update character status");
       }
 
-      showSuccessToast(toast, "Clothing selected successfully");
-      await onClothingSelected();
+      toast({
+        description: "Clothing selected successfully",
+      });
+      
+      onClothingSelected();
     } catch (error) {
       console.error('Error in clothing selection:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to select clothing";

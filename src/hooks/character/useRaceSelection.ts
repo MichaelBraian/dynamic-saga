@@ -27,13 +27,9 @@ export const useRaceSelection = ({
     try {
       console.log('Handling race selection:', { characterId, race: value });
 
-      // Verify character ownership
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Authentication required");
-
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id')
+        .select('id')
         .eq('id', characterId)
         .maybeSingle();
 
@@ -41,11 +37,6 @@ export const useRaceSelection = ({
         throw new Error("Character not found");
       }
 
-      if (character.user_id !== user.id) {
-        throw new Error("Unauthorized");
-      }
-
-      // Update the next status based on the selected race
       const nextStatus = value === 'Animal' ? 'animal_type' : 'class';
       
       const { error: updateError } = await supabase
@@ -54,8 +45,7 @@ export const useRaceSelection = ({
           race: value, 
           status: nextStatus 
         })
-        .eq('id', characterId)
-        .eq('user_id', user.id);
+        .eq('id', characterId);
 
       if (updateError) throw updateError;
       
