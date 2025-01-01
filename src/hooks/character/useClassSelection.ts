@@ -23,6 +23,8 @@ export const useClassSelection = (
 
     setIsSubmitting(true);
     try {
+      console.log('Handling class selection:', { characterId, class: value });
+
       // Verify character ownership and get race
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Authentication required");
@@ -46,6 +48,8 @@ export const useClassSelection = (
       
       if (!validation.isValid) {
         const fallbackClass = getFallbackClass(character.race as Race);
+        console.log('Using fallback class:', { fallbackClass, reason: validation.reason });
+        
         toast({
           variant: "destructive",
           description: `${validation.reason}. Assigning ${fallbackClass} as a fallback class.`,
@@ -62,6 +66,7 @@ export const useClassSelection = (
 
         if (updateError) throw updateError;
         
+        console.log('Fallback class saved successfully:', { characterId, class: fallbackClass });
         await onClassSelected(fallbackClass);
         return;
       }
@@ -77,6 +82,7 @@ export const useClassSelection = (
 
       if (updateError) throw updateError;
 
+      console.log('Class selection saved successfully:', { characterId, class: value });
       await onClassSelected(value);
       showSuccessToast(toast, "Class selected successfully");
     } catch (error) {

@@ -26,12 +26,17 @@ export const useCharacterState = () => {
   const updateCharacterState = useCallback((updates: Partial<CharacterState>) => {
     setState(prev => {
       const newState = { ...prev, ...updates };
-      console.log('Character state updated:', newState);
+      console.log('Character state updated:', {
+        previous: prev,
+        updates,
+        newState
+      });
       return newState;
     });
   }, []);
 
   const setIsTransitioning = useCallback((isTransitioning: boolean) => {
+    console.log('Transition state updated:', { isTransitioning });
     updateCharacterState({ isTransitioning });
   }, [updateCharacterState]);
 

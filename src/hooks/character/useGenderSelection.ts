@@ -25,6 +25,8 @@ export const useGenderSelection = ({
 
     setIsSubmitting(true);
     try {
+      console.log('Handling gender selection:', { characterId, gender });
+
       // Verify character ownership
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Authentication required");
@@ -54,6 +56,8 @@ export const useGenderSelection = ({
         .eq('user_id', user.id);
 
       if (updateError) throw updateError;
+
+      console.log('Gender selection saved successfully:', { characterId, gender });
 
       toast({
         description: "Gender selected successfully",

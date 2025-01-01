@@ -25,6 +25,8 @@ export const useRaceSelection = ({
 
     setIsSubmitting(true);
     try {
+      console.log('Handling race selection:', { characterId, race: value });
+
       // Verify character ownership
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Authentication required");
@@ -57,6 +59,8 @@ export const useRaceSelection = ({
 
       if (updateError) throw updateError;
       
+      console.log('Race selection saved successfully:', { characterId, race: value, nextStatus });
+
       toast({
         description: "Race selected successfully",
       });
