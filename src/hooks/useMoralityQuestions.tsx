@@ -39,7 +39,6 @@ export const useMoralityQuestions = (characterId: string) => {
       const normalizedScore = choiceNumber <= 2 ? 1 : -1;
       const weightedScore = question.morality_weight * normalizedScore;
       
-      // Even questions affect good/evil, odd questions affect lawful/chaotic
       if (index % 2 === 0) {
         goodEvilScore += weightedScore;
       } else {
@@ -47,19 +46,21 @@ export const useMoralityQuestions = (characterId: string) => {
       }
     });
 
-    // Calculate maximum possible score based on question weights
     const maxPossibleScore = Math.floor(questions.length / 2) * Math.max(...questions.map(q => Math.abs(q.morality_weight)));
     
-    // Normalize scores to -100 to 100 range
-    const normalizedGoodEvil = Math.max(-100, Math.min(100, Math.round((goodEvilScore / maxPossibleScore) * 100)));
-    const normalizedLawfulChaotic = Math.max(-100, Math.min(100, Math.round((lawfulChaoticScore / maxPossibleScore) * 100)));
+    const normalizedGoodEvil = Math.round((goodEvilScore / maxPossibleScore) * 100);
+    const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / maxPossibleScore) * 100);
+    
+    // Ensure scores are within -100 to 100 range
+    const boundedGoodEvil = Math.max(-100, Math.min(100, normalizedGoodEvil));
+    const boundedLawfulChaotic = Math.max(-100, Math.min(100, normalizedLawfulChaotic));
     
     // Calculate overall alignment score (0-100)
-    const alignmentScore = Math.round((Math.abs(normalizedGoodEvil) + Math.abs(normalizedLawfulChaotic)) / 2);
+    const alignmentScore = Math.round((Math.abs(boundedGoodEvil) + Math.abs(boundedLawfulChaotic)) / 2);
 
     return {
-      goodEvilScore: normalizedGoodEvil,
-      lawfulChaoticScore: normalizedLawfulChaotic,
+      goodEvilScore: boundedGoodEvil,
+      lawfulChaoticScore: boundedLawfulChaotic,
       alignmentScore,
     };
   };
@@ -75,7 +76,7 @@ export const useMoralityQuestions = (characterId: string) => {
       console.log('Saving response:', { characterId, questionId, answer });
 
       // Use upsert to handle both insert and update cases
-      const { error: upsertError } = await supabase
+      const { error: responseError } = await supabase
         .from('character_responses')
         .upsert({
           character_id: characterId,
@@ -85,11 +86,11 @@ export const useMoralityQuestions = (characterId: string) => {
           onConflict: 'character_id,question_id'
         });
 
-      if (upsertError) throw upsertError;
+      if (responseError) throw responseError;
 
       // Check if this was the last question
       const nextIndex = currentQuestionIndex + 1;
-      const isLastQuestion = nextIndex >= questions.length;
+      const isLastQuestion = nextIndex >= (questions?.length || 0);
 
       if (isLastQuestion) {
         console.log('Last question answered, calculating scores...');
@@ -110,7 +111,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
         console.log('Calculated morality scores:', scores);
 
-        // Use upsert for morality scores as well
+        // Use upsert for morality scores
         const { error: moralityError } = await supabase
           .from('character_morality')
           .upsert({
