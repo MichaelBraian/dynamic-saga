@@ -1,12 +1,8 @@
-import { useState } from "react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { showSuccessToast } from "@/utils/toast";
-import { ARMOR_OPTIONS } from "@/data/armorOptions";
-import { InfoTooltip } from "./shared/InfoTooltip";
 import { SelectionLoadingState } from "./shared/SelectionLoadingState";
 import { ErrorBoundary } from "./shared/ErrorBoundary";
+import { useArmorSelection } from "@/hooks/character/useArmorSelection";
+import { ArmorOptions } from "./armor/ArmorOptions";
 
 interface ArmorSelectionProps {
   characterId: string;
@@ -21,69 +17,10 @@ export const ArmorSelection = ({
   onBack,
   onArmorSelected 
 }: ArmorSelectionProps) => {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleArmorSelected = async (value: string) => {
-    if (isSubmitting) return;
-    
-    setIsSubmitting(true);
-    console.log('Selecting armor:', value, 'for character:', characterId);
-    
-    try {
-      // Verify character exists and belongs to current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Authentication required");
-
-      const { data: character, error: verifyError } = await supabase
-        .from('characters')
-        .select('user_id, class, status')
-        .eq('id', characterId)
-        .single();
-
-      if (verifyError || !character) {
-        throw new Error("Character not found");
-      }
-
-      if (character.user_id !== user.id) {
-        throw new Error("Unauthorized");
-      }
-
-      // Validate armor selection based on class
-      if (!ARMOR_OPTIONS[character.class]?.some(option => option.value === value)) {
-        throw new Error(`Invalid armor selection for ${character.class}. Please choose a valid option.`);
-      }
-
-      // Update armor selection
-      const { error: updateError } = await supabase
-        .from('characters')
-        .update({ 
-          armor_type: value,
-          status: 'morality'
-        })
-        .eq('id', characterId)
-        .eq('user_id', user.id);
-
-      if (updateError) throw updateError;
-
-      console.log('Armor selection saved successfully');
-      showSuccessToast(toast, "Armor selected successfully");
-      
-      if (onArmorSelected) {
-        onArmorSelected();
-      }
-    } catch (error) {
-      console.error('Error saving armor selection:', error);
-      toast({
-        variant: "destructive",
-        description: error instanceof Error 
-          ? error.message 
-          : "Failed to save armor selection. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const { isSubmitting, handleArmorSelected } = useArmorSelection({
+    characterId,
+    onArmorSelected
+  });
 
   if (isSubmitting) {
     return (
@@ -92,18 +29,6 @@ export const ArmorSelection = ({
       </div>
     );
   }
-
-  const options = ARMOR_OPTIONS[characterClass] || [];
-  const optionsWithInfo = options.map(option => ({
-    value: option.value,
-    label: option.value,
-    labelComponent: (
-      <div className="flex items-center gap-2">
-        {option.value}
-        <InfoTooltip content={option.label} />
-      </div>
-    ),
-  }));
 
   return (
     <ErrorBoundary
@@ -116,7 +41,7 @@ export const ArmorSelection = ({
       <div className="pt-16">
         <CharacterSelectionScreen
           title="Choose Armor"
-          options={optionsWithInfo}
+          options={ArmorOptions({ characterClass })}
           characterId={characterId}
           onSelected={handleArmorSelected}
           onBack={onBack}
