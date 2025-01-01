@@ -34,18 +34,19 @@ export const useMoralityQuestions = (characterId: string) => {
       const questionId = questions[currentQuestionIndex].id;
       console.log('Saving response:', { characterId, questionId, answer });
 
-      // Save the response
+      // First, save the response
       const { error: responseError } = await supabase
         .from('character_responses')
-        .upsert({
+        .insert({
           character_id: characterId,
           question_id: questionId,
           answer
-        }, {
-          onConflict: 'character_id,question_id'
         });
 
-      if (responseError) throw responseError;
+      if (responseError) {
+        console.error('Error saving response:', responseError);
+        throw responseError;
+      }
 
       // Check if this was the last question
       const nextIndex = currentQuestionIndex + 1;
@@ -71,7 +72,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
   const calculateAndSaveMoralityScores = async (characterId: string) => {
     try {
-      // Fetch all responses
+      // Fetch all responses in a single query
       const { data: responses, error: responsesError } = await supabase
         .from('character_responses')
         .select('question_id, answer')
@@ -110,7 +111,7 @@ export const useMoralityQuestions = (characterId: string) => {
       const boundedLawfulChaotic = Math.max(-100, Math.min(100, normalizedLawfulChaotic));
       const alignmentScore = Math.round((Math.abs(boundedGoodEvil) + Math.abs(boundedLawfulChaotic)) / 2);
 
-      // Save morality scores
+      // Save morality scores in a single operation
       const { error: moralityError } = await supabase
         .from('character_morality')
         .upsert({
