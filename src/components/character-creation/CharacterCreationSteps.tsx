@@ -3,6 +3,7 @@ import { InitialSteps } from "./step-groups/InitialSteps";
 import { CharacterTypeSteps } from "./step-groups/CharacterTypeSteps";
 import { EquipmentSteps } from "./step-groups/EquipmentSteps";
 import { FinalSteps } from "./step-groups/FinalSteps";
+import { SpecialtyStep } from "./steps/SpecialtyStep";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -18,6 +19,7 @@ interface CharacterCreationStepsProps {
   onClothingSelected: () => void;
   onArmorSelected: () => void;
   onMoralityCompleted: () => void;
+  onSpecialtySelected: () => void;
   onBack: () => void;
 }
 
@@ -33,6 +35,7 @@ export const CharacterCreationSteps = ({
   onClothingSelected,
   onArmorSelected,
   onMoralityCompleted,
+  onSpecialtySelected,
   onBack,
 }: CharacterCreationStepsProps) => {
   // Handle initial steps (naming doesn't require characterId)
@@ -123,6 +126,14 @@ export const CharacterCreationSteps = ({
         characterId={characterId}
         onMoralityCompleted={onMoralityCompleted}
         onBack={onBack}
+      />
+    ),
+    specialty: () => (
+      <SpecialtyStep
+        characterId={characterId}
+        characterClass={selectedClass || ''}
+        onBack={onBack}
+        onComplete={onSpecialtySelected}
       />
     ),
   };

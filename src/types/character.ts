@@ -1,4 +1,4 @@
-export type CharacterStatus = 'naming' | 'gender' | 'race' | 'animal_type' | 'class' | 'clothing' | 'armor' | 'morality' | 'attributes' | 'questioning' | 'generated' | 'completed';
+export type CharacterStatus = 'naming' | 'gender' | 'race' | 'animal_type' | 'class' | 'clothing' | 'armor' | 'morality' | 'attributes' | 'specialty' | 'faith_points' | 'questioning' | 'generated' | 'completed';
 export type Gender = 'male' | 'female';
 export type Race = 'Human' | 'Dwarf' | 'Animal';
 export type Class = 'Barbarian' | 'Bard' | 'Cleric' | 'Druid' | 'Fighter' | 'Monk' | 'Paladin' | 'Ranger' | 'Rogue' | 'Sorcerer' | 'Warlock' | 'Wizard' | 'Artificer' | 'Trollslayer' | 'Berserker' | 'Dragon Trainer' | 'Politician';

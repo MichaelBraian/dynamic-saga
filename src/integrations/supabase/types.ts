@@ -243,6 +243,42 @@ export type Database = {
           },
         ]
       }
+      character_specialties: {
+        Row: {
+          character_id: string | null
+          created_at: string
+          id: string
+          specialty_id: string | null
+        }
+        Insert: {
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          specialty_id?: string | null
+        }
+        Update: {
+          character_id?: string | null
+          created_at?: string
+          id?: string
+          specialty_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_specialties_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: true
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       characters: {
         Row: {
           animal_type: string | null
@@ -309,6 +345,33 @@ export type Database = {
         }
         Relationships: []
       }
+      specialties: {
+        Row: {
+          attribute_modifiers: Json
+          class_type: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+        }
+        Insert: {
+          attribute_modifiers: Json
+          class_type: string
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+        }
+        Update: {
+          attribute_modifiers?: Json
+          class_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -321,6 +384,8 @@ export type Database = {
         | "naming"
         | "questioning"
         | "attributes"
+        | "specialty"
+        | "faith_points"
         | "generated"
         | "completed"
         | "class"

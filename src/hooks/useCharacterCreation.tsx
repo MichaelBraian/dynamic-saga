@@ -86,6 +86,14 @@ export const useCharacterCreation = () => {
     }
   };
 
+  const handleAttributesCompleted = () => {
+    setCurrentStep("specialty");
+  };
+
+  const handleSpecialtySelected = () => {
+    setCurrentStep("faith_points");
+  };
+
   return {
     characterId,
     currentStep,
@@ -100,6 +108,8 @@ export const useCharacterCreation = () => {
     handleClothingSelected,
     handleArmorSelected,
     handleMoralityCompleted,
+    handleAttributesCompleted,
+    handleSpecialtySelected,
     handleBack,
     setCurrentStep,
   };
