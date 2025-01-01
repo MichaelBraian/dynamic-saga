@@ -13,8 +13,7 @@ const CreateCharacter = () => {
     selectedRace,
     selectedAnimalType,
     selectedClass,
-    isLoading,
-    isRetrying,
+    isTransitioning,
     handleNameSelected,
     handleGenderSelected,
     handleRaceSelected,
@@ -67,8 +66,7 @@ const CreateCharacter = () => {
           selectedRace={selectedRace}
           selectedAnimalType={selectedAnimalType}
           selectedClass={selectedClass}
-          isLoading={isLoading}
-          isRetrying={isRetrying}
+          isTransitioning={isTransitioning}
           onNameSelected={handleNameSelected}
           onGenderSelected={handleGenderSelected}
           onRaceSelected={handleRaceSelected}

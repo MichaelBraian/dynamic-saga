@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { CharacterSelectionScreen } from "./CharacterSelectionScreen";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface RaceSelectionProps {
   characterId: string;
@@ -14,21 +16,45 @@ const RACE_OPTIONS = [
 ];
 
 export const RaceSelection = ({ characterId, onRaceSelected, onBack }: RaceSelectionProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
   const handleRaceSelected = async (value: string) => {
-    // Update the next status based on the selected race
-    const nextStatus = value === 'Animal' ? 'animal_type' : 'class';
-    
+    if (!value || !characterId) {
+      toast({
+        variant: "destructive",
+        description: "Please select a race to continue",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
+      // Update the next status based on the selected race
+      const nextStatus = value === 'Animal' ? 'animal_type' : 'class';
+      
       const { error } = await supabase
         .from('characters')
-        .update({ race: value, status: nextStatus })
+        .update({ 
+          race: value, 
+          status: nextStatus 
+        })
         .eq('id', characterId);
 
       if (error) throw error;
       
+      toast({
+        description: "Race selected successfully",
+      });
       onRaceSelected();
     } catch (error) {
       console.error('Error updating race:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save race selection. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -41,6 +67,7 @@ export const RaceSelection = ({ characterId, onRaceSelected, onBack }: RaceSelec
       onBack={onBack}
       updateField="race"
       nextStatus="class"
+      isSubmitting={isSubmitting}
     />
   );
 };
