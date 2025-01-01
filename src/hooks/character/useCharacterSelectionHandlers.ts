@@ -110,11 +110,49 @@ export const useCharacterSelectionHandlers = () => {
     }
   };
 
-  const handleAnimalTypeSelected = (animalType: string) => {
-    updateCharacterState({
-      currentStep: "class",
-      selectedAnimalType: animalType
-    });
+  const handleAnimalTypeSelected = async (animalType: string, characterId: string) => {
+    if (!characterId) {
+      console.error('No character ID provided for animal type selection');
+      return;
+    }
+
+    try {
+      console.log('Handling animal type selection:', { characterId, animalType });
+
+      // Update character status in database
+      const { error: updateError } = await supabase
+        .from('characters')
+        .update({ 
+          status: 'class',
+          animal_type: animalType 
+        })
+        .eq('id', characterId);
+
+      if (updateError) {
+        console.error('Error updating character status:', updateError);
+        toast({
+          variant: "destructive",
+          description: "Failed to save animal type selection. Please try again.",
+        });
+        throw updateError;
+      }
+
+      // Update UI state
+      updateCharacterState({
+        currentStep: "class",
+        selectedAnimalType: animalType
+      });
+
+      toast({
+        description: "Animal type selected successfully. Proceeding to class selection.",
+      });
+    } catch (error) {
+      console.error('Error handling animal type selection:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to proceed. Please try again.",
+      });
+    }
   };
 
   const handleClassSelected = async (characterClass: string, characterId: string, selectedRace: string) => {
