@@ -1,16 +1,7 @@
 import { CharacterStatus } from "@/types/character";
-import { NameStep } from "./steps/NameStep";
-import { GenderStep } from "./steps/GenderStep";
-import { RaceStep } from "./steps/RaceStep";
-import { AnimalTypeStep } from "./steps/AnimalTypeStep";
-import { ClassStep } from "./steps/ClassStep";
-import { ClothingStep } from "./steps/ClothingStep";
-import { ArmorStep } from "./steps/ArmorStep";
-import { MoralityStep } from "./steps/MoralityStep";
-import { AttributesStep } from "./steps/AttributesStep";
-import { LoadingSpinner } from "../shared/LoadingSpinner";
-import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useCharacterSubscription } from "@/hooks/character/useCharacterSubscription";
+import { StepRenderer } from "./StepRenderer";
+import { LoadingState } from "./LoadingState";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -32,8 +23,6 @@ interface CharacterCreationStepsProps {
 export const CharacterCreationSteps = ({
   currentStep,
   characterId,
-  selectedRace,
-  selectedAnimalType,
   selectedClass,
   isTransitioning,
   onNameSelected,
@@ -45,121 +34,27 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  useEffect(() => {
-    if (!characterId) return;
-
-    const channel = supabase
-      .channel(`character_status_${characterId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'characters',
-          filter: `id=eq.${characterId}`,
-        },
-        (payload: any) => {
-          console.log('Character status changed:', payload.new.status);
-          const newStatus = payload.new.status as CharacterStatus;
-          if (newStatus === 'attributes' && currentStep === 'morality') {
-            console.log('Transitioning from morality to attributes step');
-            window.location.reload();
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('Cleaning up character status subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [characterId, currentStep]);
+  useCharacterSubscription(characterId, currentStep);
 
   if (isTransitioning) {
-    return (
-      <div className="flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingState />;
   }
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case "naming":
-        return <NameStep onNameSelected={onNameSelected} />;
-      case "gender":
-        return (
-          <GenderStep 
-            characterId={characterId!} 
-            onGenderSelected={onGenderSelected}
-            onBack={onBack}
-          />
-        );
-      case "race":
-        return (
-          <RaceStep 
-            characterId={characterId!} 
-            onRaceSelected={onRaceSelected}
-            onBack={onBack}
-          />
-        );
-      case "animal_type":
-        return (
-          <AnimalTypeStep 
-            characterId={characterId!}
-            onBack={onBack}
-            onAnimalTypeSelected={onAnimalTypeSelected}
-          />
-        );
-      case "class":
-        return (
-          <ClassStep 
-            characterId={characterId!}
-            onBack={onBack}
-            onClassSelected={onClassSelected}
-          />
-        );
-      case "clothing":
-        return (
-          <ClothingStep
-            characterId={characterId!}
-            selectedClass={selectedClass!}
-            onBack={onBack}
-            onClothingSelected={onClothingSelected}
-          />
-        );
-      case "armor":
-        return (
-          <ArmorStep
-            characterId={characterId!}
-            selectedClass={selectedClass!}
-            onBack={onBack}
-            onArmorSelected={onArmorSelected}
-          />
-        );
-      case "morality":
-        return (
-          <MoralityStep
-            characterId={characterId!}
-            onBack={onBack}
-          />
-        );
-      case "attributes":
-        return (
-          <AttributesStep
-            characterId={characterId!}
-            onBack={onBack}
-          />
-        );
-      default:
-        console.error('Unknown step:', currentStep);
-        return null;
-    }
-  };
 
   return (
     <div className="animate-fade-in">
-      {renderStep()}
+      <StepRenderer
+        currentStep={currentStep}
+        characterId={characterId}
+        selectedClass={selectedClass}
+        onNameSelected={onNameSelected}
+        onGenderSelected={onGenderSelected}
+        onRaceSelected={onRaceSelected}
+        onAnimalTypeSelected={onAnimalTypeSelected}
+        onClassSelected={onClassSelected}
+        onClothingSelected={onClothingSelected}
+        onArmorSelected={onArmorSelected}
+        onBack={onBack}
+      />
     </div>
   );
 };
