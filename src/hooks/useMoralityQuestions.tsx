@@ -35,9 +35,11 @@ export const useMoralityQuestions = (characterId: string) => {
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       if (isNaN(choiceNumber)) return;
 
+      // Normalize choice numbers to -1 or 1
       const normalizedScore = choiceNumber <= 2 ? 1 : -1;
       const weightedScore = question.morality_weight * normalizedScore;
       
+      // Even questions affect good/evil, odd questions affect lawful/chaotic
       if (index % 2 === 0) {
         goodEvilScore += weightedScore;
       } else {
@@ -45,10 +47,14 @@ export const useMoralityQuestions = (characterId: string) => {
       }
     });
 
+    // Calculate maximum possible score based on question weights
     const maxPossibleScore = Math.floor(questions.length / 2) * Math.max(...questions.map(q => Math.abs(q.morality_weight)));
     
+    // Normalize scores to -100 to 100 range
     const normalizedGoodEvil = Math.max(-100, Math.min(100, Math.round((goodEvilScore / maxPossibleScore) * 100)));
     const normalizedLawfulChaotic = Math.max(-100, Math.min(100, Math.round((lawfulChaoticScore / maxPossibleScore) * 100)));
+    
+    // Calculate overall alignment score (0-100)
     const alignmentScore = Math.round((Math.abs(normalizedGoodEvil) + Math.abs(normalizedLawfulChaotic)) / 2);
 
     return {
@@ -66,33 +72,22 @@ export const useMoralityQuestions = (characterId: string) => {
       }
 
       const questionId = questions[currentQuestionIndex].id;
-      console.log('Saving response:', {
-        characterId,
-        questionId,
-        answer
-      });
+      console.log('Saving response:', { characterId, questionId, answer });
 
-      // Try to insert first
-      const { error: insertError } = await supabase
+      // Use upsert to handle both insert and update cases
+      const { error: upsertError } = await supabase
         .from('character_responses')
-        .insert({
+        .upsert({
           character_id: characterId,
           question_id: questionId,
           answer
+        }, {
+          onConflict: 'character_id,question_id'
         });
 
-      // If insert fails (likely due to duplicate), try update
-      if (insertError) {
-        const { error: updateError } = await supabase
-          .from('character_responses')
-          .update({ answer })
-          .eq('character_id', characterId)
-          .eq('question_id', questionId);
+      if (upsertError) throw upsertError;
 
-        if (updateError) throw updateError;
-      }
-
-      // Move to next question
+      // Check if this was the last question
       const nextIndex = currentQuestionIndex + 1;
       const isLastQuestion = nextIndex >= questions.length;
 
@@ -115,6 +110,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
         console.log('Calculated morality scores:', scores);
 
+        // Use upsert for morality scores as well
         const { error: moralityError } = await supabase
           .from('character_morality')
           .upsert({
@@ -122,9 +118,19 @@ export const useMoralityQuestions = (characterId: string) => {
             good_evil_scale: scores.goodEvilScore,
             lawful_chaotic_scale: scores.lawfulChaoticScore,
             alignment_score: scores.alignmentScore
+          }, {
+            onConflict: 'character_id'
           });
 
         if (moralityError) throw moralityError;
+
+        // Update character status to attributes
+        const { error: statusError } = await supabase
+          .from('characters')
+          .update({ status: 'attributes' })
+          .eq('id', characterId);
+
+        if (statusError) throw statusError;
 
         console.log('Morality scores saved successfully');
         return true;
