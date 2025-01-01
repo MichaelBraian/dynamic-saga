@@ -17,6 +17,7 @@ export const useCharacterSelectionHandlers = () => {
     if (isTransitioning || !characterId) return;
     
     try {
+      console.log('Handling gender selection completion');
       updateCharacterState({ currentStep: "race" });
     } catch (error) {
       console.error('Error handling gender selection:', error);

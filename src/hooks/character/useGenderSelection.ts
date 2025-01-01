@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Check } from "lucide-react";
 
 interface UseGenderSelectionProps {
   characterId: string;
-  onGenderSelected?: () => void;
+  onGenderSelected: () => void;
 }
 
 export const useGenderSelection = ({ 
@@ -45,7 +46,7 @@ export const useGenderSelection = ({
         throw new Error("Unauthorized");
       }
 
-      // Update gender
+      // Update gender and status
       const { error: updateError } = await supabase
         .from('characters')
         .update({ 
@@ -60,12 +61,17 @@ export const useGenderSelection = ({
       console.log('Gender selection saved successfully:', { characterId, gender });
 
       toast({
-        description: "Gender selected successfully",
+        description: (
+          <div className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-500" />
+            <span className="text-sm">Gender selected successfully</span>
+          </div>
+        ),
+        duration: 2000,
       });
       
-      if (onGenderSelected) {
-        onGenderSelected();
-      }
+      // Call the callback to move to next step
+      onGenderSelected();
     } catch (error) {
       console.error('Error updating gender:', error);
       toast({
