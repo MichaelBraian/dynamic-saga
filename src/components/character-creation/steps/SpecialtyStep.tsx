@@ -27,7 +27,21 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: specialties, isLoading } = useQuery({
+  // Verify attributes completion
+  const { data: attributesCheck, isLoading: checkingAttributes } = useQuery({
+    queryKey: ['attributes-check', characterId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('character_attributes')
+        .select('attribute_name')
+        .eq('character_id', characterId);
+      
+      if (error) throw error;
+      return data?.length === 6; // We expect 6 attributes to be set
+    }
+  });
+
+  const { data: specialties, isLoading: loadingSpecialties } = useQuery({
     queryKey: ['specialties', characterClass],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,7 +51,8 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
       
       if (error) throw error;
       return data as Specialty[];
-    }
+    },
+    enabled: !!attributesCheck, // Only load specialties if attributes are completed
   });
 
   const handleSpecialtySelect = async (specialtyId: string) => {
@@ -103,10 +118,21 @@ export const SpecialtyStep = ({ characterId, characterClass, onBack, onComplete 
       ), null);
   };
 
-  if (isLoading) {
+  if (checkingAttributes || loadingSpecialties) {
     return (
       <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
-        <p className="text-white text-center">Loading specialties...</p>
+        <p className="text-white text-center">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!attributesCheck) {
+    return (
+      <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
+        <p className="text-white text-center">Please complete your attributes first</p>
+        <div className="flex justify-center mt-4">
+          <Button onClick={onBack}>Go Back</Button>
+        </div>
       </div>
     );
   }
