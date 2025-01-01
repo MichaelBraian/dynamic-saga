@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useCharacterState } from "./useCharacterState";
 import { useCharacterOperations } from "./useCharacterOperations";
 
@@ -22,7 +23,7 @@ export const useCharacterSelectionHandlers = () => {
     }
   };
 
-  const handleRaceSelected = async () => {
+  const handleRaceSelected = async (characterId: string) => {
     try {
       const { data } = await supabase
         .from('characters')
