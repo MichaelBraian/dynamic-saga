@@ -19,7 +19,17 @@ export const useCharacterSelectionHandlers = () => {
     
     try {
       console.log('Handling gender selection completion');
-      updateCharacterState({ currentStep: "race" });
+      const { data: character, error } = await supabase
+        .from('characters')
+        .select('status')
+        .eq('id', characterId)
+        .single();
+
+      if (error) throw error;
+
+      updateCharacterState({ 
+        currentStep: character?.status || "race"
+      });
     } catch (error) {
       console.error('Error handling gender selection:', error);
     }
@@ -31,7 +41,7 @@ export const useCharacterSelectionHandlers = () => {
         .from('characters')
         .select('race, status')
         .eq('id', characterId)
-        .maybeSingle();
+        .single();
       
       updateCharacterState({
         currentStep: data?.status || "class",

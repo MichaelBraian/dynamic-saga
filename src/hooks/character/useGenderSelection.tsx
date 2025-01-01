@@ -28,15 +28,15 @@ export const useGenderSelection = ({
     try {
       console.log('Handling gender selection:', { characterId, gender });
 
-      // Verify character ownership
+      // First verify character ownership
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Authentication required");
 
       const { data: character, error: verifyError } = await supabase
         .from('characters')
-        .select('user_id')
+        .select('user_id, status')
         .eq('id', characterId)
-        .maybeSingle();
+        .single();
 
       if (verifyError || !character) {
         throw new Error("Character not found");
@@ -46,7 +46,7 @@ export const useGenderSelection = ({
         throw new Error("Unauthorized");
       }
 
-      // Update gender and status
+      // Update gender and status in a single transaction
       const { error: updateError } = await supabase
         .from('characters')
         .update({ 
