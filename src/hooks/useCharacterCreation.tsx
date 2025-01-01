@@ -1,9 +1,11 @@
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { CharacterStatus } from "@/types/character";
 import { useCharacterState } from "./character/useCharacterState";
 import { useCharacterDatabase } from "./character/useCharacterDatabase";
 import { useCharacterNavigation } from "./character/useCharacterNavigation";
+import { useCharacterCleanup } from "./character/useCharacterCleanup";
+import { useCharacterLogic } from "./character/useCharacterLogic";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useCharacterCreation = () => {
   const {
@@ -20,6 +22,10 @@ export const useCharacterCreation = () => {
 
   const { verifyCharacterOwnership } = useCharacterDatabase();
   const { getPreviousStep, handleNavigation } = useCharacterNavigation();
+  const { handleClassSelection } = useCharacterLogic();
+
+  // Initialize cleanup hook
+  useCharacterCleanup(characterId);
 
   useEffect(() => {
     if (!characterId) return;
@@ -130,15 +136,18 @@ export const useCharacterCreation = () => {
     }
   };
 
-  const handleClassSelected = (characterClass: string) => {
-    if (isTransitioning) return;
+  const handleClassSelected = async (characterClass: string) => {
+    if (isTransitioning || !characterId || !selectedRace) return;
     setIsTransitioning(true);
     
     try {
-      updateCharacterState({
-        currentStep: "clothing",
-        selectedClass: characterClass
-      });
+      const success = await handleClassSelection(characterId, selectedRace, characterClass);
+      if (success) {
+        updateCharacterState({
+          currentStep: "clothing",
+          selectedClass: characterClass
+        });
+      }
     } finally {
       setIsTransitioning(false);
     }
