@@ -1,20 +1,16 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "./use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { showSuccessToast } from "@/utils/toast";
-import { updateCharacterStatus } from "@/utils/characterStatus";
+
+interface AttributeRolls {
+  [key: string]: number | undefined;
+}
 
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
-  const { toast } = useToast();
+  const [attributeRolls, setAttributeRolls] = useState<AttributeRolls>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [attributeRolls, setAttributeRolls] = useState<Record<string, number | undefined>>({
-    strength: undefined,
-    dexterity: undefined,
-    constitution: undefined,
-    intelligence: undefined,
-    wisdom: undefined,
-    charisma: undefined,
-  });
+  const { toast } = useToast();
 
   const handleRollComplete = (attributeName: string, value: number) => {
     setAttributeRolls(prev => ({
@@ -23,58 +19,54 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
     }));
   };
 
-  const allAttributesRolled = Object.values(attributeRolls).every(value => value !== undefined);
-
-  const handleBack = async () => {
-    try {
-      await updateCharacterStatus(characterId, 'morality');
-      return true;
-    } catch (error) {
-      console.error('Error updating character status:', error);
-      return false;
-    }
+  const areAllAttributesRolled = () => {
+    const requiredAttributes = [
+      "strength",
+      "dexterity",
+      "constitution",
+      "intelligence",
+      "wisdom",
+      "charisma"
+    ];
+    return requiredAttributes.every(attr => attributeRolls[attr] !== undefined);
   };
 
   const handleContinue = async () => {
+    if (!areAllAttributesRolled()) {
+      toast({
+        variant: "destructive",
+        description: "Please roll all attributes before continuing.",
+      });
+      return;
+    }
+
     setIsSaving(true);
+    console.log("Starting to save all attributes...");
+
     try {
-      console.log('Starting to save all attributes...');
-      
-      // Prepare all attributes for batch insert
-      const attributesToSave = Object.entries(attributeRolls)
-        .filter(([_, value]) => value !== undefined)
-        .map(([name, value]) => ({
-          character_id: characterId,
-          attribute_name: name.toLowerCase(),
-          value: value
-        }));
+      const attributeInserts = Object.entries(attributeRolls).map(([attribute_name, value]) => ({
+        character_id: characterId,
+        attribute_name,
+        value
+      }));
 
-      // Save all attributes in one operation
-      const { error: saveError } = await supabase
+      const { error } = await supabase
         .from('character_attributes')
-        .upsert(attributesToSave);
+        .upsert(attributeInserts);
 
-      if (saveError) {
-        console.error('Error saving attributes:', saveError);
-        throw saveError;
-      }
+      if (error) throw error;
 
-      // Update character status to specialty
       const { error: statusError } = await supabase
         .from('characters')
         .update({ status: 'specialty' })
         .eq('id', characterId);
 
-      if (statusError) {
-        console.error('Error updating character status:', statusError);
-        throw statusError;
-      }
+      if (statusError) throw statusError;
 
-      console.log('Successfully saved all attributes and updated status');
       showSuccessToast(toast, "Attributes saved successfully");
       onComplete();
     } catch (error) {
-      console.error('Error in save operation:', error);
+      console.error("Error saving attributes:", error);
       toast({
         variant: "destructive",
         description: "Failed to save attributes. Please try again.",
@@ -86,10 +78,9 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
 
   return {
     attributeRolls,
-    isSaving,
-    allAttributesRolled,
     handleRollComplete,
-    handleBack,
-    handleContinue
+    handleContinue,
+    isSaving,
+    areAllAttributesRolled
   };
 };
