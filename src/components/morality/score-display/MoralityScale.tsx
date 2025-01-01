@@ -20,6 +20,7 @@ export const MoralityScale = ({ value, type }: MoralityScaleProps) => {
     }
   };
 
+  // Normalize the value from -100 to 100 scale to 0 to 100 scale
   const normalizedValue = ((value + 100) / 2);
   
   const labels = type === 'goodEvil' 
@@ -27,12 +28,14 @@ export const MoralityScale = ({ value, type }: MoralityScaleProps) => {
     : { left: "Chaotic", right: "Lawful" };
 
   return (
-    <ProgressBarWithIndicator
-      value={normalizedValue}
-      leftLabel={labels.left}
-      rightLabel={labels.right}
-      description={getScaleDescription(value, type)}
-      height="md"
-    />
+    <div className="w-full">
+      <ProgressBarWithIndicator
+        value={normalizedValue}
+        leftLabel={labels.left}
+        rightLabel={labels.right}
+        description={getScaleDescription(value, type)}
+        height="md"
+      />
+    </div>
   );
 };

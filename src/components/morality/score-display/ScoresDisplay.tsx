@@ -12,6 +12,8 @@ export const ScoresDisplay = ({
   goodEvilScale,
   lawfulChaoticScale 
 }: ScoresDisplayProps) => {
+  console.log('Rendering scores:', { alignmentScore, goodEvilScale, lawfulChaoticScale });
+  
   return (
     <div className="space-y-8 text-white">
       <div>
