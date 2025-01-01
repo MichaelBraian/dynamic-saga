@@ -38,7 +38,7 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   const handleContinue = async () => {
     setIsSaving(true);
     try {
-      // Save attributes sequentially to avoid response stream issues
+      // Save attributes one by one
       for (const [name, value] of Object.entries(attributeRolls)) {
         if (value !== undefined) {
           console.log(`Saving ${name} with value ${value}`);
@@ -57,9 +57,16 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
         }
       }
 
-      // Update character status
-      await updateCharacterStatus(characterId, 'specialty');
-      
+      // Update character status to specialty
+      const { error: statusError } = await supabase
+        .from('characters')
+        .update({ status: 'specialty' })
+        .eq('id', characterId);
+
+      if (statusError) {
+        throw statusError;
+      }
+
       showSuccessToast(toast, "Attributes saved successfully");
       onComplete();
     } catch (error) {
