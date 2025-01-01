@@ -13,7 +13,7 @@ interface MoralityScoreDisplayProps {
 export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
   
-  const { data: morality, isLoading, error } = useQuery({
+  const { data: morality, isLoading, error, refetch } = useQuery({
     queryKey: ['morality-score', characterId],
     queryFn: async () => {
       console.log('Fetching morality score for character:', characterId);
@@ -29,8 +29,9 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
       }
 
       if (!data) {
-        console.error('No morality score found for character:', characterId);
-        throw new Error('No morality score found');
+        console.log('No morality score found, retrying in 1 second...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return refetch();
       }
 
       console.log('Retrieved morality score:', data);
@@ -41,6 +42,7 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
   });
 
   if (error) {
+    console.error('Error loading morality score:', error);
     toast({
       variant: "destructive",
       description: "Failed to load morality score. Please try again.",
@@ -48,12 +50,8 @@ export const MoralityScoreDisplay = ({ characterId, onContinue }: MoralityScoreD
     return <MoralityLoadingState message="Error loading score" />;
   }
 
-  if (isLoading) {
+  if (isLoading || !morality) {
     return <MoralityLoadingState message="Loading your morality score..." />;
-  }
-
-  if (!morality) {
-    return <MoralityLoadingState message="Score not available" />;
   }
 
   return (

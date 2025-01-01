@@ -14,6 +14,23 @@ export const MoralityStep = ({ characterId, onBack }: MoralityStepProps) => {
   const handleContinue = async () => {
     console.log('Handling continue in MoralityStep');
     try {
+      // Double-check that morality scores exist before proceeding
+      const { data: morality, error: moralityError } = await supabase
+        .from('character_morality')
+        .select('*')
+        .eq('character_id', characterId)
+        .single();
+
+      if (moralityError || !morality) {
+        console.error('Morality scores not found:', moralityError);
+        toast({
+          variant: "destructive",
+          description: "Please complete all morality questions before continuing.",
+        });
+        return;
+      }
+
+      console.log('Morality scores found, proceeding to attributes');
       const success = await updateStatus(characterId, 'attributes');
       if (success) {
         console.log('Successfully updated status to attributes in MoralityStep');

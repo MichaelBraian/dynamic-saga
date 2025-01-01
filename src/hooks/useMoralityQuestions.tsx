@@ -15,7 +15,8 @@ export const useMoralityQuestions = (characterId: string) => {
       const { data, error } = await supabase
         .from('questions')
         .select('*')
-        .eq('category', 'morality');
+        .eq('category', 'morality')
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       return data as MoralityQuestion[];
@@ -27,11 +28,11 @@ export const useMoralityQuestions = (characterId: string) => {
 
     let goodEvilScore = 0;
     let lawfulChaoticScore = 0;
-    let totalResponses = responses.length;
     
-    responses.forEach((response, index) => {
-      const question = questions.find(q => q.id === response.question_id);
-      if (!question) return;
+    // Process responses in order of questions
+    questions.forEach((question, index) => {
+      const response = responses.find(r => r.question_id === question.id);
+      if (!response) return;
 
       const choiceNumber = parseInt(response.answer.split('.')[0]);
       if (isNaN(choiceNumber)) return;
@@ -46,11 +47,6 @@ export const useMoralityQuestions = (characterId: string) => {
         lawfulChaoticScore += weightedScore;
       }
     });
-
-    if (totalResponses === 0) {
-      console.error('No valid responses found');
-      return null;
-    }
 
     // Calculate normalized scores
     const maxPossibleScore = Math.floor(questions.length / 2) * Math.max(...questions.map(q => Math.abs(q.morality_weight)));
@@ -85,19 +81,40 @@ export const useMoralityQuestions = (characterId: string) => {
         answer
       });
 
-      // Save the current response
-      const { error: responseError } = await supabase
+      // Check if response already exists
+      const { data: existingResponse } = await supabase
         .from('character_responses')
-        .upsert({
-          character_id: characterId,
-          question_id: questionId,
-          answer: answer
-        });
+        .select('*')
+        .eq('character_id', characterId)
+        .eq('question_id', questionId)
+        .single();
 
-      if (responseError) throw responseError;
+      if (existingResponse) {
+        console.log('Response already exists, updating...');
+        const { error: updateError } = await supabase
+          .from('character_responses')
+          .update({ answer })
+          .eq('character_id', characterId)
+          .eq('question_id', questionId);
+
+        if (updateError) throw updateError;
+      } else {
+        console.log('Creating new response...');
+        const { error: insertError } = await supabase
+          .from('character_responses')
+          .insert({
+            character_id: characterId,
+            question_id: questionId,
+            answer: answer
+          });
+
+        if (insertError) throw insertError;
+      }
 
       // If this was the last question
       if (currentQuestionIndex === questions.length - 1) {
+        console.log('Last question answered, calculating scores...');
+        
         // Fetch all responses for this character
         const { data: responses, error: responsesError } = await supabase
           .from('character_responses')
@@ -118,20 +135,21 @@ export const useMoralityQuestions = (characterId: string) => {
           throw new Error('Failed to calculate morality scores');
         }
 
-        console.log('Saving morality scores:', scores);
+        console.log('Calculated morality scores:', scores);
 
-        // Save morality scores using upsert to handle potential duplicates
+        // Save morality scores
         const { error: moralityError } = await supabase
           .from('character_morality')
           .upsert({
             character_id: characterId,
             good_evil_scale: scores.goodEvilScore,
-            lawful_chaotic_scale: scores.lawfulChaoticScore,
+            lawful_chaotic_scale: scores.lawfulChaoticScale,
             alignment_score: scores.alignmentScore
           });
 
         if (moralityError) throw moralityError;
 
+        console.log('Morality scores saved successfully');
         return true; // Indicates completion
       }
 
