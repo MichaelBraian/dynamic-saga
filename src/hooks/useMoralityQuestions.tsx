@@ -2,11 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MoralityQuestion } from "@/types/morality";
-import { useToast } from "@/hooks/use-toast";
 
 export const useMoralityQuestions = (characterId: string) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const { toast } = useToast();
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ['morality-questions'],
@@ -23,13 +21,12 @@ export const useMoralityQuestions = (characterId: string) => {
     },
   });
 
-  const calculateMoralityScores = async (responses: { question_id: string, answer: string }[]) => {
+  const calculateMoralityScores = (responses: { question_id: string, answer: string }[]) => {
     if (!questions) return null;
 
     let goodEvilScore = 0;
     let lawfulChaoticScore = 0;
     
-    // Process responses in order of questions
     questions.forEach((question, index) => {
       const response = responses.find(r => r.question_id === question.id);
       if (!response) return;
@@ -40,7 +37,6 @@ export const useMoralityQuestions = (characterId: string) => {
       const normalizedScore = choiceNumber <= 2 ? 1 : -1;
       const weightedScore = question.morality_weight * normalizedScore;
       
-      // Alternate between good/evil and lawful/chaotic questions
       if (index % 2 === 0) {
         goodEvilScore += weightedScore;
       } else {
@@ -48,7 +44,6 @@ export const useMoralityQuestions = (characterId: string) => {
       }
     });
 
-    // Calculate normalized scores
     const maxPossibleScore = Math.floor(questions.length / 2) * Math.max(...questions.map(q => Math.abs(q.morality_weight)));
     
     const normalizedGoodEvil = Math.max(-100, Math.min(100, Math.round((goodEvilScore / maxPossibleScore) * 100)));
@@ -57,7 +52,7 @@ export const useMoralityQuestions = (characterId: string) => {
 
     return {
       goodEvilScore: normalizedGoodEvil,
-      lawfulChaoticScore,
+      lawfulChaoticScore: normalizedLawfulChaotic,
       alignmentScore,
     };
   };
@@ -65,10 +60,6 @@ export const useMoralityQuestions = (characterId: string) => {
   const saveResponse = async (answer: string) => {
     if (!questions?.[currentQuestionIndex]) {
       console.error('No question found at current index');
-      toast({
-        variant: "destructive",
-        description: "Failed to save response: Question not found",
-      });
       return false;
     }
 
@@ -81,16 +72,17 @@ export const useMoralityQuestions = (characterId: string) => {
         answer
       });
 
-      // Check if response already exists
-      const { data: existingResponse } = await supabase
+      // Insert new response
+      const { error: insertError } = await supabase
         .from('character_responses')
-        .select('*')
-        .eq('character_id', characterId)
-        .eq('question_id', questionId)
-        .single();
+        .insert({
+          character_id: characterId,
+          question_id: questionId,
+          answer: answer
+        });
 
-      if (existingResponse) {
-        console.log('Response already exists, updating...');
+      if (insertError) {
+        // If insert fails due to duplicate, try update
         const { error: updateError } = await supabase
           .from('character_responses')
           .update({ answer })
@@ -98,17 +90,6 @@ export const useMoralityQuestions = (characterId: string) => {
           .eq('question_id', questionId);
 
         if (updateError) throw updateError;
-      } else {
-        console.log('Creating new response...');
-        const { error: insertError } = await supabase
-          .from('character_responses')
-          .insert({
-            character_id: characterId,
-            question_id: questionId,
-            answer: answer
-          });
-
-        if (insertError) throw insertError;
       }
 
       // If this was the last question
@@ -130,7 +111,7 @@ export const useMoralityQuestions = (characterId: string) => {
         console.log('Retrieved responses:', responses);
 
         // Calculate scores
-        const scores = await calculateMoralityScores(responses);
+        const scores = calculateMoralityScores(responses);
         if (!scores) {
           throw new Error('Failed to calculate morality scores');
         }
@@ -157,10 +138,6 @@ export const useMoralityQuestions = (characterId: string) => {
       return false; // Indicates more questions remain
     } catch (error) {
       console.error('Error in saveResponse:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to save response. Please try again.",
-      });
       throw error;
     }
   };
