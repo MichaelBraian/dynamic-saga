@@ -26,7 +26,7 @@ const CreateCharacter = () => {
   return (
     <CharacterCreationBackground currentStep={currentStep}>
       <HamburgerMenu />
-      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-screen-xl mx-auto px-4 min-h-screen flex items-center justify-center">
         <CharacterCreationSteps
           currentStep={currentStep}
           characterId={characterId}
