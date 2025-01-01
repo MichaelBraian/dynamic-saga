@@ -38,6 +38,8 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   const handleContinue = async () => {
     setIsSaving(true);
     try {
+      console.log('Starting to save attributes...');
+      
       // Save attributes one by one
       for (const [name, value] of Object.entries(attributeRolls)) {
         if (value !== undefined) {
@@ -64,9 +66,11 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
         .eq('id', characterId);
 
       if (statusError) {
+        console.error('Error updating character status:', statusError);
         throw statusError;
       }
 
+      console.log('Successfully saved all attributes and updated status');
       showSuccessToast(toast, "Attributes saved successfully");
       onComplete();
     } catch (error) {

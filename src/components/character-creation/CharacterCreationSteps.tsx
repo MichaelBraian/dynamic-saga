@@ -27,6 +27,8 @@ interface CharacterCreationStepsProps {
 export const CharacterCreationSteps = ({
   currentStep,
   characterId,
+  selectedRace,
+  selectedAnimalType,
   selectedClass,
   onNameSelected,
   onGenderSelected,
@@ -40,6 +42,10 @@ export const CharacterCreationSteps = ({
   onSpecialtySelected,
   onBack,
 }: CharacterCreationStepsProps) => {
+  console.log('Current step:', currentStep);
+  console.log('Character ID:', characterId);
+  console.log('Selected class:', selectedClass);
+
   if (currentStep === "naming" || !characterId) {
     return (
       <InitialSteps
@@ -140,5 +146,11 @@ export const CharacterCreationSteps = ({
     ),
   };
 
-  return stepGroups[currentStep as keyof typeof stepGroups]?.() || null;
+  const StepComponent = stepGroups[currentStep as keyof typeof stepGroups];
+  if (!StepComponent) {
+    console.error('No component found for step:', currentStep);
+    return null;
+  }
+
+  return StepComponent();
 };
