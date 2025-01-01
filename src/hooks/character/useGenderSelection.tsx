@@ -56,7 +56,10 @@ export const useGenderSelection = ({
         .eq('id', characterId)
         .eq('user_id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating gender:', updateError);
+        throw updateError;
+      }
 
       console.log('Gender selection saved successfully:', { characterId, gender });
 
