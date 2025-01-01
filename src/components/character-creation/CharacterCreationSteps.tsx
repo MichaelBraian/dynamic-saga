@@ -83,6 +83,9 @@ export const CharacterCreationSteps = ({
     attributes: renderFinalSteps,
     specialty: renderSpecialtyStep,
     faith_points: () => null,
+    questioning: () => null,
+    generated: () => null,
+    completed: () => null
   };
 
   const StepRenderer = stepRenderers[currentStep];
