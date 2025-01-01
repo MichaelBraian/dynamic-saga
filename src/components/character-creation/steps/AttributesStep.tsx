@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { AttributeItem } from "./attributes/AttributeItem";
 import { attributes } from "./attributes/attributeDefinitions";
 
@@ -18,6 +18,7 @@ interface AttributeRolls {
 export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => {
   const [attributeRolls, setAttributeRolls] = useState<AttributeRolls>({});
   const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
 
   const handleBack = async () => {
     try {
@@ -63,8 +64,10 @@ export const AttributesStep = ({ characterId, onBack }: AttributesStepProps) => 
     try {
       console.log('Saving attributes:', attributeRolls);
       
-      // Save each attribute one at a time to avoid response stream issues
+      // Save each attribute one at a time
       for (const [name, value] of Object.entries(attributeRolls)) {
+        if (value === null) continue;
+        
         const { error } = await supabase
           .from('character_attributes')
           .insert({
