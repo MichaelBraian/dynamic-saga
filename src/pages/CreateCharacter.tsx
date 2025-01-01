@@ -45,11 +45,11 @@ const CreateCharacter = () => {
             isTransitioning={isTransitioning}
             onNameSelected={handleNameSelected}
             onGenderSelected={handleGenderSelected}
-            onRaceSelected={() => handleRaceSelected(characterId!)}
-            onAnimalTypeSelected={(animalType: string) => handleAnimalTypeSelected(animalType, characterId!)}
+            onRaceSelected={handleRaceSelected}
+            onAnimalTypeSelected={handleAnimalTypeSelected}
             onClassSelected={handleClassSelected}
-            onClothingSelected={() => handleClothingSelected(characterId!)}
-            onArmorSelected={() => handleArmorSelected(characterId!)}
+            onClothingSelected={handleClothingSelected}
+            onArmorSelected={handleArmorSelected}
             onBack={handleBack}
           />
         </div>

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useCharacterVerification } from "./useCharacterVerification";
 
 interface UseRaceSelectionProps {
   characterId: string;
-  onRaceSelected: () => void;
+  onRaceSelected: () => Promise<void>;
 }
 
 export const useRaceSelection = ({ 
@@ -13,6 +14,7 @@ export const useRaceSelection = ({
 }: UseRaceSelectionProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { verifyCharacter } = useCharacterVerification();
 
   const handleRaceSelected = async (value: string) => {
     if (!value || !characterId) {
@@ -27,16 +29,8 @@ export const useRaceSelection = ({
     try {
       console.log('Handling race selection:', { characterId, race: value });
 
-      const { data: character, error: verifyError } = await supabase
-        .from('characters')
-        .select('id')
-        .eq('id', characterId)
-        .maybeSingle();
-
-      if (verifyError || !character) {
-        throw new Error("Character not found");
-      }
-
+      await verifyCharacter(characterId);
+      
       const nextStatus = value === 'Animal' ? 'animal_type' : 'class';
       
       const { error: updateError } = await supabase
@@ -54,7 +48,8 @@ export const useRaceSelection = ({
       toast({
         description: "Race selected successfully",
       });
-      onRaceSelected();
+      
+      await onRaceSelected();
     } catch (error) {
       console.error('Error updating race:', error);
       toast({

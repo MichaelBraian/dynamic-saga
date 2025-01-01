@@ -38,7 +38,7 @@ export const CharacterCreationSteps = ({
   onArmorSelected,
   onBack,
 }: CharacterCreationStepsProps) => {
-  useCharacterSubscription(characterId, currentStep);
+  useCharacterSubscription(characterId);
 
   useEffect(() => {
     console.log('CharacterCreationSteps - State Update:', {
