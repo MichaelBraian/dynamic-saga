@@ -24,7 +24,7 @@ export const MoralityQuestionCard = ({
     .filter(option => option.match(/^\d\./));
 
   return (
-    <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
+    <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6 animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <Button
           variant="ghost"
