@@ -137,46 +137,14 @@ export const SpecialtyStep = ({
     
     setIsSubmitting(true);
     try {
-      const { error: specialtyError } = await supabase
-        .from('character_specialties')
-        .upsert(
-          { 
-            character_id: characterId, 
-            specialty_id: selectedSpecialty.id 
-          },
-          {
-            onConflict: 'character_id',
-            ignoreDuplicates: false
-          }
-        );
+      // Start a transaction for all database operations
+      const { error: transactionError } = await supabase.rpc('handle_specialty_selection', {
+        p_character_id: characterId,
+        p_specialty_id: selectedSpecialty.id,
+        p_attribute_modifiers: selectedSpecialty.attribute_modifiers
+      });
 
-      if (specialtyError) throw specialtyError;
-
-      // Update attributes with modifiers
-      const updatedAttributes = Object.entries(currentAttributes || {}).map(([name, value]) => ({
-        character_id: characterId,
-        attribute_name: name,
-        value: value + (selectedSpecialty.attribute_modifiers[name] || 0)
-      }));
-
-      const { error: attributesError } = await supabase
-        .from('character_attributes')
-        .upsert(
-          updatedAttributes,
-          {
-            onConflict: 'character_id,attribute_name',
-            ignoreDuplicates: false
-          }
-        );
-
-      if (attributesError) throw attributesError;
-
-      const { error: statusError } = await supabase
-        .from('characters')
-        .update({ status: 'faith_points' })
-        .eq('id', characterId);
-
-      if (statusError) throw statusError;
+      if (transactionError) throw transactionError;
 
       toast({
         description: (

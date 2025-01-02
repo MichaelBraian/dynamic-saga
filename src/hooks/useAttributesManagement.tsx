@@ -29,18 +29,27 @@ const DB_CODES: Record<ValidAttributeName, string> = {
 
 type AttributeRolls = Partial<Record<ValidAttributeName, number>>;
 
+function isValidAttributeName(name: string): name is ValidAttributeName {
+  return VALID_ATTRIBUTES.includes(name.toLowerCase() as ValidAttributeName);
+}
+
 export const useAttributesManagement = (characterId: string, onComplete: () => void) => {
   const [attributeRolls, setAttributeRolls] = useState<AttributeRolls>({});
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   const handleRollComplete = (attributeName: string, value: number) => {
-    const normalizedName = attributeName.toLowerCase() as ValidAttributeName;
-    if (!VALID_ATTRIBUTES.includes(normalizedName)) {
+    if (!isValidAttributeName(attributeName)) {
       console.error(`Invalid attribute name: ${attributeName}`);
       return;
     }
 
+    if (value < 2 || value > 12) {
+      console.error(`Invalid attribute value: ${value}`);
+      return;
+    }
+
+    const normalizedName = attributeName.toLowerCase() as ValidAttributeName;
     console.log(`Rolling complete for ${DISPLAY_NAMES[normalizedName]} with value ${value}`);
     setAttributeRolls(prev => ({
       ...prev,
@@ -49,7 +58,10 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
   };
 
   const areAllAttributesRolled = () => {
-    return VALID_ATTRIBUTES.every(attr => attributeRolls[attr] !== undefined);
+    return VALID_ATTRIBUTES.every(attr => {
+      const value = attributeRolls[attr];
+      return value !== undefined && value >= 2 && value <= 12;
+    });
   };
 
   const handleContinue = async () => {
@@ -67,8 +79,8 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
     try {
       const attributeInserts = VALID_ATTRIBUTES.map(attr => ({
         character_id: characterId,
-        attribute_name: DB_CODES[attr], // Use three-letter codes for database
-        value: attributeRolls[attr]
+        attribute_name: DB_CODES[attr],
+        value: attributeRolls[attr]!
       }));
 
       console.log("Sending to database:", JSON.stringify(attributeInserts, null, 2));

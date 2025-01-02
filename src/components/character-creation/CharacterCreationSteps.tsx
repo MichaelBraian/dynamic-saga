@@ -99,4 +99,4 @@ export const CharacterCreationSteps = ({
   }
 
   return StepRenderer();
-};
+}
