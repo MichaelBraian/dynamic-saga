@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
 import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -18,16 +19,46 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
     questionNumber,
     totalQuestions,
     isLoading,
-    saveResponse,
-    previousResponse,
+    handleResponse,
     goToQuestion,
+    previousResponses,
   } = useMoralityQuestions(characterId);
+
+  const updateCharacterStatus = async () => {
+    const { error } = await supabase
+      .from('characters')
+      .update({ status: 'completed' })
+      .eq('id', characterId);
+
+    if (error) {
+      console.error('Error updating character status:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to update character status. Please try again.",
+      });
+      return false;
+    }
+    return true;
+  };
 
   const handleAnswerSelected = async (answer: string) => {
     try {
-      const complete = await saveResponse(answer);
+      if (!currentQuestion) {
+        console.error('No current question available');
+        toast({
+          variant: "destructive",
+          description: "No question available. Please try again.",
+        });
+        return;
+      }
+
+      const complete = await handleResponse(answer);
       if (complete) {
-        setIsComplete(true);
+        // Wait for the status update before showing completion
+        const statusUpdated = await updateCharacterStatus();
+        if (statusUpdated) {
+          setIsComplete(true);
+        }
       }
     } catch (error) {
       console.error('Error handling answer:', error);
@@ -85,7 +116,8 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
         totalQuestions={totalQuestions}
         onAnswerSelected={handleAnswerSelected}
         onBack={handleBack}
-        previousResponse={previousResponse}
+        characterId={characterId}
+        previousResponses={previousResponses}
       />
     </div>
   );
