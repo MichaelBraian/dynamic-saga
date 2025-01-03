@@ -7,94 +7,135 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
-      character_analysis: {
-        Row: {
-          character_id: string | null
-          created_at: string
-          id: string
-          personality_text: string
-          traits_json: Json
-        }
-        Insert: {
-          character_id?: string | null
-          created_at?: string
-          id?: string
-          personality_text: string
-          traits_json: Json
-        }
-        Update: {
-          character_id?: string | null
-          created_at?: string
-          id?: string
-          personality_text?: string
-          traits_json?: Json
-        }
-        Relationships: [
-          {
-            foreignKeyName: "character_analysis_character_id_fkey"
-            columns: ["character_id"]
-            isOneToOne: false
-            referencedRelation: "characters"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       character_attributes: {
         Row: {
-          attribute_name: string
-          character_id: string | null
+          character_id: string
+          charisma: number
+          charisma_modifier: number
+          constitution: number
+          constitution_modifier: number
           created_at: string
+          dexterity: number
+          dexterity_modifier: number
           id: string
-          value: number
+          intelligence: number
+          intelligence_modifier: number
+          strength: number
+          strength_modifier: number
+          updated_at: string
+          wisdom: number
+          wisdom_modifier: number
         }
         Insert: {
-          attribute_name: string
-          character_id?: string | null
+          character_id: string
+          charisma?: number
+          charisma_modifier?: number
+          constitution?: number
+          constitution_modifier?: number
           created_at?: string
+          dexterity?: number
+          dexterity_modifier?: number
           id?: string
-          value: number
+          intelligence?: number
+          intelligence_modifier?: number
+          strength?: number
+          strength_modifier?: number
+          updated_at?: string
+          wisdom?: number
+          wisdom_modifier?: number
         }
         Update: {
-          attribute_name?: string
-          character_id?: string | null
+          character_id?: string
+          charisma?: number
+          charisma_modifier?: number
+          constitution?: number
+          constitution_modifier?: number
           created_at?: string
+          dexterity?: number
+          dexterity_modifier?: number
           id?: string
-          value?: number
+          intelligence?: number
+          intelligence_modifier?: number
+          strength?: number
+          strength_modifier?: number
+          updated_at?: string
+          wisdom?: number
+          wisdom_modifier?: number
         }
         Relationships: [
           {
             foreignKeyName: "character_attributes_character_id_fkey"
             columns: ["character_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "characters"
             referencedColumns: ["id"]
           },
         ]
       }
-      character_clothing: {
+      character_cards: {
         Row: {
-          character_id: string | null
-          clothing_type: string
+          card_data: Json
+          character_id: string
           created_at: string
+          error_message: string | null
           id: string
+          image_url: string | null
+          status: string
+          updated_at: string
+          version: number
         }
         Insert: {
-          character_id?: string | null
-          clothing_type: string
+          card_data?: Json
+          character_id: string
           created_at?: string
+          error_message?: string | null
           id?: string
+          image_url?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
         }
         Update: {
-          character_id?: string | null
-          clothing_type?: string
+          card_data?: Json
+          character_id?: string
           created_at?: string
+          error_message?: string | null
           id?: string
+          image_url?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
         }
         Relationships: [
           {
-            foreignKeyName: "character_clothing_character_id_fkey"
+            foreignKeyName: "character_cards_character_id_fkey"
             columns: ["character_id"]
             isOneToOne: false
             referencedRelation: "characters"
@@ -102,36 +143,42 @@ export type Database = {
           },
         ]
       }
-      character_images: {
+      character_faith_points: {
         Row: {
-          character_id: string | null
+          available_points: number | null
+          character_id: string
           created_at: string
+          faith_abilities: Json
           id: string
-          image_url: string
-          is_selected: boolean | null
-          prompt_used: string
+          spent_points: number
+          total_points: number
+          updated_at: string
         }
         Insert: {
-          character_id?: string | null
+          available_points?: number | null
+          character_id: string
           created_at?: string
+          faith_abilities?: Json
           id?: string
-          image_url: string
-          is_selected?: boolean | null
-          prompt_used: string
+          spent_points?: number
+          total_points?: number
+          updated_at?: string
         }
         Update: {
-          character_id?: string | null
+          available_points?: number | null
+          character_id?: string
           created_at?: string
+          faith_abilities?: Json
           id?: string
-          image_url?: string
-          is_selected?: boolean | null
-          prompt_used?: string
+          spent_points?: number
+          total_points?: number
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "character_images_character_id_fkey"
+            foreignKeyName: "character_faith_points_character_id_fkey"
             columns: ["character_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "characters"
             referencedColumns: ["id"]
           },
@@ -139,30 +186,43 @@ export type Database = {
       }
       character_morality: {
         Row: {
-          alignment_score: number
-          character_id: string | null
+          alignment_id: string
+          alignment_justification: string | null
+          character_id: string
           created_at: string
-          good_evil_scale: number
+          good_evil_points: number
           id: string
-          lawful_chaotic_scale: number
+          law_chaos_points: number
+          updated_at: string
         }
         Insert: {
-          alignment_score: number
-          character_id?: string | null
+          alignment_id: string
+          alignment_justification?: string | null
+          character_id: string
           created_at?: string
-          good_evil_scale: number
+          good_evil_points?: number
           id?: string
-          lawful_chaotic_scale: number
+          law_chaos_points?: number
+          updated_at?: string
         }
         Update: {
-          alignment_score?: number
-          character_id?: string | null
+          alignment_id?: string
+          alignment_justification?: string | null
+          character_id?: string
           created_at?: string
-          good_evil_scale?: number
+          good_evil_points?: number
           id?: string
-          lawful_chaotic_scale?: number
+          law_chaos_points?: number
+          updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "character_morality_alignment_id_fkey"
+            columns: ["alignment_id"]
+            isOneToOne: false
+            referencedRelation: "morality_alignments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "character_morality_character_id_fkey"
             columns: ["character_id"]
@@ -172,101 +232,30 @@ export type Database = {
           },
         ]
       }
-      character_prompts: {
-        Row: {
-          character_id: string | null
-          created_at: string
-          dalle_prompt: string
-          id: string
-          personality_prompt: string
-        }
-        Insert: {
-          character_id?: string | null
-          created_at?: string
-          dalle_prompt: string
-          id?: string
-          personality_prompt: string
-        }
-        Update: {
-          character_id?: string | null
-          created_at?: string
-          dalle_prompt?: string
-          id?: string
-          personality_prompt?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "character_prompts_character_id_fkey"
-            columns: ["character_id"]
-            isOneToOne: false
-            referencedRelation: "characters"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      character_responses: {
-        Row: {
-          answer: string
-          character_id: string | null
-          created_at: string
-          id: string
-          question_id: string | null
-        }
-        Insert: {
-          answer: string
-          character_id?: string | null
-          created_at?: string
-          id?: string
-          question_id?: string | null
-        }
-        Update: {
-          answer?: string
-          character_id?: string | null
-          created_at?: string
-          id?: string
-          question_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "character_responses_character_id_fkey"
-            columns: ["character_id"]
-            isOneToOne: false
-            referencedRelation: "characters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "character_responses_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       character_specialties: {
         Row: {
-          character_id: string | null
-          created_at: string
+          acquired_at: string
+          character_id: string
           id: string
-          specialty_id: string | null
+          specialty_id: string
         }
         Insert: {
-          character_id?: string | null
-          created_at?: string
+          acquired_at?: string
+          character_id: string
           id?: string
-          specialty_id?: string | null
+          specialty_id: string
         }
         Update: {
-          character_id?: string | null
-          created_at?: string
+          acquired_at?: string
+          character_id?: string
           id?: string
-          specialty_id?: string | null
+          specialty_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "character_specialties_character_id_fkey"
             columns: ["character_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "characters"
             referencedColumns: ["id"]
           },
@@ -282,120 +271,278 @@ export type Database = {
       characters: {
         Row: {
           animal_type: string | null
-          armor_type: string | null
+          character_card_generated_at: string | null
+          character_card_url: string | null
           class: string | null
           created_at: string
-          gender: string | null
+          gender: Database["public"]["Enums"]["character_gender"] | null
           id: string
           name: string
           race: string | null
-          status: Database["public"]["Enums"]["character_status"] | null
+          status: Database["public"]["Enums"]["character_creation_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
           animal_type?: string | null
-          armor_type?: string | null
+          character_card_generated_at?: string | null
+          character_card_url?: string | null
           class?: string | null
           created_at?: string
-          gender?: string | null
+          gender?: Database["public"]["Enums"]["character_gender"] | null
           id?: string
           name: string
           race?: string | null
-          status?: Database["public"]["Enums"]["character_status"] | null
+          status?: Database["public"]["Enums"]["character_creation_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
           animal_type?: string | null
-          armor_type?: string | null
+          character_card_generated_at?: string | null
+          character_card_url?: string | null
           class?: string | null
           created_at?: string
-          gender?: string | null
+          gender?: Database["public"]["Enums"]["character_gender"] | null
           id?: string
           name?: string
           race?: string | null
-          status?: Database["public"]["Enums"]["character_status"] | null
+          status?: Database["public"]["Enums"]["character_creation_status"]
           updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
-      questions: {
+      faith_abilities: {
         Row: {
-          category: Database["public"]["Enums"]["question_category"]
+          cost: number
           created_at: string
+          description: string
+          effects: Json
           id: string
-          morality_weight: number
-          question_text: string
+          name: string
+          required_faith_points: number | null
+          required_level: number | null
+          updated_at: string
         }
         Insert: {
-          category: Database["public"]["Enums"]["question_category"]
+          cost: number
           created_at?: string
+          description: string
+          effects?: Json
           id?: string
-          morality_weight: number
-          question_text: string
+          name: string
+          required_faith_points?: number | null
+          required_level?: number | null
+          updated_at?: string
         }
         Update: {
-          category?: Database["public"]["Enums"]["question_category"]
+          cost?: number
           created_at?: string
+          description?: string
+          effects?: Json
           id?: string
-          morality_weight?: number
-          question_text?: string
+          name?: string
+          required_faith_points?: number | null
+          required_level?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      morality_alignments: {
+        Row: {
+          created_at: string
+          description: string
+          effects: Json | null
+          ethical_axis: string
+          id: string
+          moral_axis: string
+          name: string
+          restrictions: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          effects?: Json | null
+          ethical_axis: string
+          id?: string
+          moral_axis: string
+          name: string
+          restrictions?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          effects?: Json | null
+          ethical_axis?: string
+          id?: string
+          moral_axis?: string
+          name?: string
+          restrictions?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
       specialties: {
         Row: {
-          attribute_modifiers: Json
-          class_type: string
+          charisma_bonus: number | null
+          constitution_bonus: number | null
           created_at: string
           description: string
+          dexterity_bonus: number | null
           id: string
+          intelligence_bonus: number | null
           name: string
+          required_charisma: number | null
+          required_constitution: number | null
+          required_dexterity: number | null
+          required_intelligence: number | null
+          required_strength: number | null
+          required_wisdom: number | null
+          strength_bonus: number | null
+          updated_at: string
+          wisdom_bonus: number | null
         }
         Insert: {
-          attribute_modifiers: Json
-          class_type: string
+          charisma_bonus?: number | null
+          constitution_bonus?: number | null
           created_at?: string
           description: string
+          dexterity_bonus?: number | null
           id?: string
+          intelligence_bonus?: number | null
           name: string
+          required_charisma?: number | null
+          required_constitution?: number | null
+          required_dexterity?: number | null
+          required_intelligence?: number | null
+          required_strength?: number | null
+          required_wisdom?: number | null
+          strength_bonus?: number | null
+          updated_at?: string
+          wisdom_bonus?: number | null
         }
         Update: {
-          attribute_modifiers?: Json
-          class_type?: string
+          charisma_bonus?: number | null
+          constitution_bonus?: number | null
           created_at?: string
           description?: string
+          dexterity_bonus?: number | null
           id?: string
+          intelligence_bonus?: number | null
           name?: string
+          required_charisma?: number | null
+          required_constitution?: number | null
+          required_dexterity?: number | null
+          required_intelligence?: number | null
+          required_strength?: number | null
+          required_wisdom?: number | null
+          strength_bonus?: number | null
+          updated_at?: string
+          wisdom_bonus?: number | null
         }
         Relationships: []
+      }
+      character_responses: {
+        Row: {
+          id: string;
+          character_id: string;
+          question_id: string;
+          answer: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          character_id: string;
+          question_id: string;
+          answer: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          character_id?: string;
+          question_id?: string;
+          answer?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "character_responses_character_id_fkey";
+            columns: ["character_id"];
+            isOneToOne: false;
+            referencedRelation: "characters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "character_responses_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          }
+        ];
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_alignment: {
+        Args: {
+          p_good_evil: number
+          p_law_chaos: number
+        }
+        Returns: {
+          moral_axis: string
+          ethical_axis: string
+        }[]
+      }
+      check_specialty_eligibility: {
+        Args: {
+          p_character_id: string
+          p_specialty_id: string
+        }
+        Returns: boolean
+      }
+      compile_character_card_data: {
+        Args: {
+          p_character_id: string
+        }
+        Returns: Json
+      }
+      generate_character_card: {
+        Args: {
+          p_character_id: string
+        }
+        Returns: string
+      }
+      get_total_attributes: {
+        Args: {
+          p_character_id: string
+        }
+        Returns: Json
+      }
+      purchase_faith_ability: {
+        Args: {
+          p_character_id: string
+          p_ability_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      character_status:
-        | "naming"
-        | "questioning"
+      character_creation_status:
+        | "initiated"
+        | "demographics"
         | "attributes"
+        | "morality"
         | "specialty"
         | "faith_points"
-        | "generated"
+        | "character_card"
         | "completed"
-        | "class"
-        | "gender"
-        | "race"
-        | "animal_type"
-        | "clothing"
-        | "armor"
-        | "morality"
-      question_category: "personality" | "background" | "morality"
+      character_gender: "Male" | "Female"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -499,3 +646,4 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+

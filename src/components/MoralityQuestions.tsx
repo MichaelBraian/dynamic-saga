@@ -3,7 +3,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
 import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
-import { useCharacterCreation } from "@/hooks/useCharacterCreation";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -20,6 +19,8 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
     totalQuestions,
     isLoading,
     saveResponse,
+    previousResponse,
+    goToQuestion,
   } = useMoralityQuestions(characterId);
 
   const handleAnswerSelected = async (answer: string) => {
@@ -34,6 +35,14 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
         variant: "destructive",
         description: "Failed to save your response. Please try again.",
       });
+    }
+  };
+
+  const handleBack = () => {
+    if (questionNumber > 1) {
+      goToQuestion(questionNumber - 2); // -2 because questionNumber is 1-indexed and we want the previous question
+    } else {
+      onBack();
     }
   };
 
@@ -75,7 +84,8 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
         questionNumber={questionNumber}
         totalQuestions={totalQuestions}
         onAnswerSelected={handleAnswerSelected}
-        onBack={onBack}
+        onBack={handleBack}
+        previousResponse={previousResponse}
       />
     </div>
   );

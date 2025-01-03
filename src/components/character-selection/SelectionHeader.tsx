@@ -14,7 +14,7 @@ export const SelectionHeader = ({ title, onBack, showBackButton = true }: Select
         variant="ghost"
         size="icon"
         onClick={onBack}
-        className="text-white hover:bg-white/20"
+        className="text-white hover:bg-transparent hover:text-white/80 h-10 w-10 p-0 transition-colors"
       >
         <ArrowLeft className="h-6 w-6" />
       </Button>

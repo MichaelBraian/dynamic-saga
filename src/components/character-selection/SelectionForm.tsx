@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
@@ -33,13 +33,33 @@ export const SelectionForm = ({
 }: SelectionFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentValue, setCurrentValue] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCurrentValue = async () => {
+      const { data, error } = await supabase
+        .from('characters')
+        .select(updateField)
+        .eq('id', characterId)
+        .single();
+
+      if (!error && data) {
+        setCurrentValue(data[updateField]);
+      }
+    };
+
+    fetchCurrentValue();
+  }, [characterId, updateField]);
 
   const handleSubmit = async (value: string) => {
     setIsSubmitting(true);
     try {
       const { error } = await supabase
         .from('characters')
-        .update({ [updateField]: value, status: nextStatus })
+        .update({ 
+          [updateField]: value,
+          status: nextStatus 
+        })
         .eq('id', characterId);
 
       if (error) throw error;
@@ -49,7 +69,7 @@ export const SelectionForm = ({
         description: (
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
-            <span className="text-sm">{`${updateField} updated`}</span>
+            <span className="text-sm">Selection saved</span>
           </div>
         ),
         duration: 2000,
@@ -57,11 +77,10 @@ export const SelectionForm = ({
 
       onSelected(value);
     } catch (error) {
-      console.error(`Error updating ${updateField}:`, error);
+      console.error('Error updating selection:', error);
       toast({
         variant: "destructive",
-        description: `Failed to save ${updateField} selection. Please try again.`,
-        className: "inline-flex max-w-fit rounded-md bg-destructive px-3 py-2",
+        description: "Failed to save selection. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -79,6 +98,7 @@ export const SelectionForm = ({
         options={options}
         onValueChange={handleSubmit}
         isDisabled={isSubmitting}
+        initialValue={currentValue || undefined}
       />
     </div>
   );

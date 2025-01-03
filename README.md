@@ -4,224 +4,269 @@ A modern, mobile-first web application for creating and managing role-playing ga
 
 ## Project Overview
 
-This application provides a step-by-step character creation system with the following features:
-
-- Progressive character creation flow
-- Mobile-first responsive design
-- Real-time database integration with Supabase
-- Modern UI components using shadcn/ui
-- Tailwind CSS for styling
-- Animated dice rolling system
-- Interactive character customization
+This application provides a step-by-step character creation system with real-time database synchronization and a seamless user experience.
 
 ## Technical Stack
 
 - **Frontend Framework**: React 18 with TypeScript 5
 - **Build Tool**: Vite 5
-- **Database**: Supabase
+- **Database**: Supabase (PostgreSQL)
 - **UI Components**: shadcn/ui
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **State Management**: React Context + Custom Hooks
-- **Routing**: React Router v6
-- **Animation**: Framer Motion
-- **Form Handling**: React Hook Form
 - **Type Safety**: Zod + TypeScript
 
-## Project Structure
+## Database Synchronization
 
-```
-src/
-├── components/
-│   ├── character-creation/
-│   │   ├── steps/                  # Individual creation steps
-│   │   │   ├── attributes/         # Character attributes management
-│   │   │   ├── specialty/          # Character specialty selection
-│   │   │   └── faith-points/       # Faith Points system
-│   │   ├── step-groups/            # Grouped step components
-│   │   └── CharacterCreationBackground.tsx  # Background animations
-│   ├── shared/                     # Shared components
-│   │   └── InfoTooltip.tsx        # Enhanced mobile-friendly tooltips
-│   └── ui/                         # shadcn/ui components
-│       └── tooltip.tsx            # Base tooltip with portal support
-├── hooks/                          # Custom React hooks
-│   └── useMediaQuery.ts           # Responsive design hook
-├── config/                         # Configuration files
-├── lib/                           # Utility functions
-├── types/                         # TypeScript definitions
-└── integrations/
-    └── supabase/                  # Supabase integration
-```
+### Character Creation Flow & Database States
 
-## Key Features
+Each step in the character creation process is tightly coupled with database state management:
 
-### Character Creation Flow
+1. **Character Initialization**
+   ```typescript
+   // Database State: characters.status = 'naming'
+   // Required Fields: name, user_id
+   interface Character {
+     id: string;
+     name: string;
+     status: CharacterStatus;
+     user_id: string;
+   }
+   ```
 
-1. **Basic Information**
-   - Character name with validation
-   - Gender selection with custom icons
-   - Race selection with descriptions
-   - Class selection with specialties
+2. **Gender Selection**
+   ```typescript
+   // Database State: characters.status = 'gender'
+   // New Fields: gender (enum: 'male' | 'female')
+   // Validation: Enforced through database enum constraint
+   ```
 
-2. **Enhanced Attributes System**
-   - Six core attributes with animated icons:
-     - Strength (STR) - Swords icon
-     - Dexterity (DEX) - Move icon
-     - Constitution (CON) - Heart icon
-     - Intelligence (INT) - Brain icon
-     - Wisdom (WIS) - Eye icon
-     - Charisma (CHA) - Users icon
-   - Improved 2d6 dice rolling with physics animation
-   - Real-time validation and error handling
-   - Enhanced tooltips with detailed descriptions
-   - Visual feedback with sound effects
+3. **Race Selection**
+   ```typescript
+   // Database State: characters.status = 'race'
+   // New Fields: race (enum: 'Human' | 'Dwarf' | 'Animal')
+   // Triggers: On Animal selection, sets next status to 'animal_type'
+   ```
 
-3. **Advanced Specialty Selection**
-   - Dynamic class-specific specialties
-   - Real-time attribute modification preview
-   - Interactive comparison view
-   - Specialty-specific bonuses
-   - Detailed specialty descriptions
+4. **Class Selection**
+   ```typescript
+   // Database State: characters.status = 'class'
+   // New Fields: class (references available_classes)
+   // Constraints: Certain classes restricted by race
+   ```
 
-4. **Faith Points System**
-   - Enhanced d6 dice roll animation
-   - Three-tier Faith Points system:
-     - Roll 1-2: 1 Faith Point
-     - Roll 3-4: 2 Faith Points
-     - Roll 5-6: 3 Faith Points
-   - Persistent results with visual effects
-   - Faith point usage tracking
+5. **Clothing Selection**
+   ```typescript
+   // Database State: characters.status = 'clothing'
+   // Table: character_clothing
+   // Relations: One-to-one with characters
+   ```
 
-### Mobile-First Design
+6. **Armor Selection**
+   ```typescript
+   // Database State: characters.status = 'armor'
+   // Table: character_armor
+   // Relations: One-to-one with characters
+   ```
 
-- Optimized touch interactions
-- Responsive layouts with breakpoint optimization
-- Enhanced mobile tooltips with:
-  - Single-tap interaction
-  - Proper positioning relative to trigger
-  - Overlay system to prevent unwanted interactions
-  - Portal-based rendering for better stacking
-- Gesture-based navigation
-- Adaptive UI elements
+7. **Morality Questions**
+   ```typescript
+   // Database State: characters.status = 'morality'
+   // Tables: 
+   //   - character_responses (stores question answers)
+   //   - character_morality (stores calculated alignment)
+   // Flow:
+   //   1. Load questions from questions table
+   //   2. Save responses in character_responses
+   //   3. Calculate alignment on completion
+   ```
+
+8. **Attributes**
+   ```typescript
+   // Database State: characters.status = 'attributes'
+   // Table: character_attributes
+   // Structure: Stores STR, DEX, CON, INT, WIS, CHA
+   ```
 
 ### Database Schema
 
-Updated Supabase schema with new tables:
-
-- `characters`: Core character information
-- `character_attributes`: Attribute values
-- `character_specialties`: Specialty selections
-- `character_faith_points`: Faith point tracking
-- `character_equipment`: Equipment loadout
-- `character_progress`: Creation progress tracking
-
-## Component Details
-
-### Enhanced Mobile Tooltips
-- Single-tap interaction model
-- Portal-based rendering
-- Collision detection and boundary handling
-- Safe zone implementation
-- Proper z-index management
-- Touch event optimization
-- Responsive positioning
-- Overlay system for interaction control
-
-### Attribute System
-- Enhanced attribute components with:
-  - Animated icons
-  - Interactive tooltips
-  - Real-time validation
-  - Sound effects
-  - Progress tracking
-
-### Faith Points System
-- Improved animation system
-- Enhanced visual feedback
-- Progress persistence
-- Usage tracking
-- Effect visualization
-
-### Background System
-- Dynamic particle effects
-- Theme-based animations
-- Performance optimization
-- Mobile-friendly rendering
-
-## State Management
-
-- Context-based state management
-- Custom hooks for specific features:
-  - `useMediaQuery` for responsive design
-  - Enhanced tooltip state management
-- Real-time synchronization
-- Progress persistence
-- Error handling
-
-## Development Practices
-
-- TypeScript strict mode
-- Component composition
-- Custom hook abstractions
-- Mobile-first development
-- Real-time updates
-- Error boundary implementation
-- Performance optimization
-- Portal-based UI elements for better stacking
-- Safe zone implementation for UI elements
-
-## Known Issues and Solutions
-
-1. **Mobile Performance**: Optimized animations for mobile devices
-2. **State Persistence**: Enhanced local storage handling
-3. **Loading States**: Improved loading indicators
-4. **Error Handling**: Comprehensive error boundaries
-5. **Form Validation**: Enhanced validation with Zod
-6. **Mobile Tooltips**: Implemented portal-based solution with proper positioning
-7. **Touch Interactions**: Enhanced overlay system to prevent unwanted selections
-8. **Specialty Selection**: Implemented transaction-based specialty application
-9. **Attribute Updates**: Enhanced real-time attribute modification system
-10. **Status Progression**: Improved character status tracking and updates
-
-## Recent Updates
-
-1. **Specialty System Enhancement**
-   - Added `handle_specialty_selection` database function for managing specialty selection
-   - Implemented attribute modification preview system
-   - Real-time attribute updates based on specialty choices
-   - Automatic status progression to faith points after selection
-   - Transaction-based specialty application for data consistency
-
-2. **Database Schema Updates**
-   - Enhanced `character_attributes` table structure
-   - Added `character_specialties` table for tracking specialty selections
-   - Implemented attribute modifiers system using JSONB
-   - Added database functions for specialty management
-   - Updated character status tracking
-
-3. **Character Creation Flow Improvements**
-   - Streamlined progression through creation steps
-   - Enhanced attribute modification preview
-   - Added specialty selection validation
-   - Improved error handling and user feedback
-   - Real-time status updates
-
-4. **Technical Improvements**
-   - Added database function for handling specialty selection
-   - Implemented transaction-based updates
-   - Enhanced error handling and validation
-   - Improved state management for character creation
-   - Added real-time attribute updates
-
-## Database Functions
-
-### handle_specialty_selection
 ```sql
-Function: handle_specialty_selection(p_character_id UUID, p_specialty_id UUID, p_attribute_modifiers JSONB)
-Purpose: Manages the specialty selection process including:
-- Updates character status to 'faith_points'
-- Applies attribute modifiers to character attributes
-- Records specialty selection in character_specialties table
+-- Core character table
+CREATE TABLE characters (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  status character_status NOT NULL DEFAULT 'naming',
+  gender gender_type,
+  race race_type,
+  class TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Morality responses
+CREATE TABLE character_responses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  character_id UUID REFERENCES characters(id),
+  question_id UUID REFERENCES questions(id),
+  answer TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Character morality
+CREATE TABLE character_morality (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  character_id UUID REFERENCES characters(id),
+  alignment_id UUID REFERENCES morality_alignments(id),
+  good_evil_points INTEGER NOT NULL,
+  law_chaos_points INTEGER NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 ```
 
-This README will be updated as the project evolves.
+### State Management & Database Sync
+
+Each component in the creation flow follows these principles:
+
+1. **State Initialization**
+   ```typescript
+   // Load initial state from database
+   const { data: character } = await supabase
+     .from('characters')
+     .select()
+     .eq('id', characterId)
+     .single();
+   ```
+
+2. **State Updates**
+   ```typescript
+   // Update database before local state
+   const { error } = await supabase
+     .from('characters')
+     .update({ status: nextStatus })
+     .eq('id', characterId);
+
+   if (!error) {
+     setCurrentStep(nextStatus);
+   }
+   ```
+
+3. **Error Handling**
+   ```typescript
+   try {
+     // Database operation
+   } catch (error) {
+     toast({
+       variant: "destructive",
+       description: "Failed to save. Please try again.",
+     });
+   }
+   ```
+
+### Navigation & State Management
+
+The application uses a robust navigation system that ensures database and UI state consistency:
+
+```typescript
+const handleBack = useCallback(() => {
+  switch (currentStep) {
+    case "morality":
+      // Update database first
+      await updateStatus(characterId, 'armor');
+      // Then update UI
+      setCurrentStep("armor");
+      break;
+    // ... other cases
+  }
+}, [currentStep, characterId]);
+```
+
+### Production Database Considerations
+
+1. **Migration Strategy**
+   - All schema changes are versioned in `supabase/migrations/`
+   - Migrations are applied in order using timestamp prefixes
+   - Each migration includes both up and down scripts
+
+2. **Data Integrity**
+   - Foreign key constraints ensure referential integrity
+   - Enum types enforce valid status values
+   - Triggers maintain updated_at timestamps
+
+3. **Performance**
+   - Indexes on frequently queried columns
+   - Materialized views for complex calculations
+   - Connection pooling for optimal resource usage
+
+4. **Security**
+   - Row Level Security (RLS) policies
+   - Proper role-based access control
+   - Prepared statements to prevent SQL injection
+
+## Development Setup
+
+1. **Environment Configuration**
+   ```bash
+   # .env.local
+   VITE_SUPABASE_URL=your_production_url
+   VITE_SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+2. **Database Migration**
+   ```bash
+   supabase db push
+   ```
+
+3. **Development Server**
+   ```bash
+   npm run dev
+   ```
+
+## Production Deployment
+
+1. **Pre-deployment Checks**
+   - Run migration dry-run
+   - Verify RLS policies
+   - Check for breaking changes
+
+2. **Database Migration**
+   ```bash
+   supabase db push --db-url=$PRODUCTION_DB_URL
+   ```
+
+3. **Frontend Deployment**
+   ```bash
+   npm run build
+   # Deploy dist/ to your hosting service
+   ```
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Database Sync Issues**
+   - Check network connectivity
+   - Verify Supabase credentials
+   - Check RLS policies
+
+2. **State Management Issues**
+   - Verify character status in database
+   - Check for race conditions in updates
+   - Validate step transitions
+
+3. **Navigation Issues**
+   - Confirm current step in database
+   - Verify navigation conditions
+   - Check for missing status updates
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+MIT License - see LICENSE.md for details

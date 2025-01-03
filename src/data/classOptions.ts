@@ -2,6 +2,7 @@ interface ClassOption {
   value: string;
   label: string;
   description: string;
+  allowedRaces?: string[];
 }
 
 export const CLASS_OPTIONS: ClassOption[] = [
@@ -73,7 +74,8 @@ export const CLASS_OPTIONS: ClassOption[] = [
   {
     value: 'Trollslayer',
     label: 'Trollslayer',
-    description: 'A fearless warrior dedicated to hunting and slaying trolls. Known for their unmatched courage and resilience, they often seek redemption or glory through dangerous battles against monstrous foes.'
+    description: 'A fearless Dwarven warrior dedicated to hunting and slaying trolls. Known for their unmatched courage and resilience, they often seek redemption or glory through dangerous battles against monstrous foes.',
+    allowedRaces: ['Dwarf']
   },
   {
     value: 'Berserker',

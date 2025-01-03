@@ -1,8 +1,18 @@
+import { Database } from "@/integrations/supabase/types";
+
+// Character status enum matching the database
 export type CharacterStatus = 'naming' | 'gender' | 'race' | 'animal_type' | 'class' | 'clothing' | 'armor' | 'morality' | 'attributes' | 'specialty' | 'faith_points' | 'questioning' | 'generated' | 'completed';
+
+// Gender type with database constraint
 export type Gender = 'male' | 'female';
+
+// Race type with database constraint
 export type Race = 'Human' | 'Dwarf' | 'Animal';
+
+// Class type
 export type Class = 'Barbarian' | 'Bard' | 'Cleric' | 'Druid' | 'Fighter' | 'Monk' | 'Paladin' | 'Ranger' | 'Rogue' | 'Sorcerer' | 'Warlock' | 'Wizard' | 'Artificer' | 'Trollslayer' | 'Berserker' | 'Dragon Trainer' | 'Politician';
 
+// Character interface matching database schema
 export interface Character {
   id: string;
   name: string;
@@ -13,4 +23,13 @@ export interface Character {
   animal_type?: string;
   created_at: string;
   updated_at: string;
+  user_id: string;
+  has_rolled_attributes: boolean;
+  has_rolled_faith_points: boolean;
 }
+
+// Export database types for direct database operations
+export type { Database } from "@/integrations/supabase/types";
+export type CharacterRow = Database["public"]["Tables"]["characters"]["Row"];
+export type CharacterInsert = Database["public"]["Tables"]["characters"]["Insert"];
+export type CharacterUpdate = Database["public"]["Tables"]["characters"]["Update"];

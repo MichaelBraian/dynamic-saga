@@ -1,25 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
 import { MoralityQuestion } from "@/types/morality";
 import { useCharacterStatusUpdate } from "@/utils/characterStatus";
+import { Database } from "@/integrations/supabase/types";
+
+type CharacterMorality = Database['public']['Tables']['character_morality']['Row'];
+type CharacterMoralityInsert = Database['public']['Tables']['character_morality']['Insert'];
+type CharacterResponse = Database['public']['Tables']['character_responses']['Row'];
 
 export const useMoralityCalculation = (characterId: string) => {
   const { updateStatus } = useCharacterStatusUpdate();
-
-  const calculateAlignmentScore = (goodEvil: number, lawfulChaotic: number): number => {
-    // Convert from -100 to 100 scale to 0 to 100 scale
-    const normalizedGoodEvil = (goodEvil + 100) / 2;
-    const normalizedLawfulChaotic = (lawfulChaotic + 100) / 2;
-    
-    // Weight both axes equally
-    return Math.round((normalizedGoodEvil + normalizedLawfulChaotic) / 2);
-  };
 
   const calculateAndSaveMoralityScores = async (questions: MoralityQuestion[]) => {
     try {
       const { data: responses, error: responsesError } = await supabase
         .from('character_responses')
-        .select('question_id, answer')
-        .eq('character_id', characterId);
+        .select('id, character_id, question_id, answer, created_at')
+        .eq('character_id', characterId)
+        .returns<CharacterResponse[]>();
 
       if (responsesError) throw responsesError;
 
@@ -52,18 +49,39 @@ export const useMoralityCalculation = (characterId: string) => {
       const normalizedLawfulChaotic = Math.round((lawfulChaoticScore / maxPossibleScore) * 100);
       const boundedGoodEvil = Math.max(-100, Math.min(100, normalizedGoodEvil));
       const boundedLawfulChaotic = Math.max(-100, Math.min(100, normalizedLawfulChaotic));
-      
-      // Calculate alignment score using the new method
-      const alignmentScore = calculateAlignmentScore(boundedGoodEvil, boundedLawfulChaotic);
+
+      // Get the alignment ID based on the scores
+      const { data: alignmentData, error: alignmentError } = await supabase
+        .rpc('calculate_alignment', {
+          p_good_evil: boundedGoodEvil,
+          p_law_chaos: boundedLawfulChaotic
+        })
+        .single();
+
+      if (alignmentError) throw alignmentError;
+
+      const { data: alignmentId } = await supabase
+        .from('morality_alignments')
+        .select('id')
+        .eq('moral_axis', alignmentData.moral_axis)
+        .eq('ethical_axis', alignmentData.ethical_axis)
+        .single();
+
+      if (!alignmentId) {
+        throw new Error('Could not find matching alignment');
+      }
+
+      const moralityData: CharacterMoralityInsert = {
+        character_id: characterId,
+        good_evil_points: boundedGoodEvil,
+        law_chaos_points: boundedLawfulChaotic,
+        alignment_id: alignmentId.id,
+        alignment_justification: null
+      };
 
       const { error: moralityError } = await supabase
         .from('character_morality')
-        .upsert({
-          character_id: characterId,
-          good_evil_scale: boundedGoodEvil,
-          lawful_chaotic_scale: boundedLawfulChaotic,
-          alignment_score: alignmentScore
-        }, {
+        .upsert(moralityData, {
           onConflict: 'character_id'
         });
 

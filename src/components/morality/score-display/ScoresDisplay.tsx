@@ -12,17 +12,15 @@ export const ScoresDisplay = ({
   goodEvilScale,
   lawfulChaoticScale 
 }: ScoresDisplayProps) => {
-  console.log('Rendering scores:', { alignmentScore, goodEvilScale, lawfulChaoticScale });
-  
   return (
     <div className="space-y-8 text-white">
       <div>
-        <h3 className="text-lg font-semibold mb-2">Overall Alignment</h3>
+        <h3 className="text-lg font-['Cinzel'] mb-2">Overall Alignment</h3>
         <AlignmentScore score={alignmentScore} />
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold mb-2">Good vs Evil</h3>
+        <h3 className="text-lg font-['Cinzel'] mb-2">Good vs Evil</h3>
         <MoralityScale 
           value={goodEvilScale} 
           type="goodEvil" 
@@ -30,7 +28,7 @@ export const ScoresDisplay = ({
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold mb-2">Law vs Chaos</h3>
+        <h3 className="text-lg font-['Cinzel'] mb-2">Law vs Chaos</h3>
         <MoralityScale 
           value={lawfulChaoticScale} 
           type="lawfulChaotic" 
