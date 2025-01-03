@@ -14,7 +14,7 @@ export const MoralityStep = ({ characterId, onBack, onComplete }: MoralityStepPr
 
   const handleBack = async () => {
     try {
-      const success = await updateStatus(characterId, 'armor');
+      const success = await updateStatus(characterId, 'clothing');
       if (success) {
         onBack();
       } else {

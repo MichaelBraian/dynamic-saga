@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
@@ -28,40 +28,37 @@ export const ClothingForm = ({
 }: ClothingFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previousSelection, setPreviousSelection] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPreviousSelection = async () => {
+      const { data, error } = await supabase
+        .from('characters')
+        .select('clothing_type')
+        .eq('id', characterId)
+        .single();
+
+      if (!error && data?.clothing_type) {
+        console.log('Previous clothing selection:', data.clothing_type);
+        setPreviousSelection(data.clothing_type);
+      }
+    };
+
+    fetchPreviousSelection();
+  }, [characterId]);
 
   const handleSubmit = async (value: string) => {
     setIsSubmitting(true);
     try {
-      const { data: existingClothing, error: queryError } = await supabase
-        .from('character_clothing')
-        .select()
-        .eq('character_id', characterId)
-        .maybeSingle();
-
-      if (queryError) throw queryError;
-
-      let clothingError;
-      if (existingClothing) {
-        const { error } = await supabase
-          .from('character_clothing')
-          .update({ clothing_type: value })
-          .eq('character_id', characterId);
-        clothingError = error;
-      } else {
-        const { error } = await supabase
-          .from('character_clothing')
-          .insert({ character_id: characterId, clothing_type: value });
-        clothingError = error;
-      }
-
-      if (clothingError) throw clothingError;
-
-      const { error: statusError } = await supabase
+      const { error: updateError } = await supabase
         .from('characters')
-        .update({ status: 'armor' })
+        .update({ 
+          clothing_type: value,
+          status: 'morality'
+        })
         .eq('id', characterId);
 
-      if (statusError) throw statusError;
+      if (updateError) throw updateError;
 
       toast({
         className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
@@ -98,6 +95,7 @@ export const ClothingForm = ({
         options={options}
         onValueChange={handleSubmit}
         isDisabled={isSubmitting}
+        initialValue={previousSelection}
       />
     </div>
   );

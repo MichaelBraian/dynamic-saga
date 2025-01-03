@@ -96,7 +96,70 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "characters"
             referencedColumns: ["id"]
+          }
+        ]
+      }
+      questions: {
+        Row: {
+          id: string
+          question_text: string
+          morality_weight: number
+          category: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          question_text: string
+          morality_weight: number
+          category: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          question_text?: string
+          morality_weight?: number
+          category?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      character_responses: {
+        Row: {
+          id: string
+          character_id: string
+          question_id: string
+          answer: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          character_id: string
+          question_id: string
+          answer: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          character_id?: string
+          question_id?: string
+          answer?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_responses_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "character_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          }
         ]
       }
       character_cards: {
@@ -186,50 +249,40 @@ export type Database = {
       }
       character_morality: {
         Row: {
-          alignment_id: string
-          alignment_justification: string | null
-          character_id: string
-          created_at: string
-          good_evil_points: number
           id: string
-          law_chaos_points: number
+          character_id: string
+          good_evil_scale: number
+          lawful_chaotic_scale: number
+          alignment_score: number
+          created_at: string
           updated_at: string
         }
         Insert: {
-          alignment_id: string
-          alignment_justification?: string | null
-          character_id: string
-          created_at?: string
-          good_evil_points?: number
           id?: string
-          law_chaos_points?: number
+          character_id: string
+          good_evil_scale: number
+          lawful_chaotic_scale: number
+          alignment_score: number
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          alignment_id?: string
-          alignment_justification?: string | null
-          character_id?: string
-          created_at?: string
-          good_evil_points?: number
           id?: string
-          law_chaos_points?: number
+          character_id?: string
+          good_evil_scale?: number
+          lawful_chaotic_scale?: number
+          alignment_score?: number
+          created_at?: string
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "character_morality_alignment_id_fkey"
-            columns: ["alignment_id"]
-            isOneToOne: false
-            referencedRelation: "morality_alignments"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "character_morality_character_id_fkey"
             columns: ["character_id"]
             isOneToOne: true
             referencedRelation: "characters"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       character_specialties: {
@@ -282,6 +335,7 @@ export type Database = {
           status: Database["public"]["Enums"]["character_creation_status"]
           updated_at: string
           user_id: string
+          clothing_type: string | null
         }
         Insert: {
           animal_type?: string | null
@@ -296,6 +350,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["character_creation_status"]
           updated_at?: string
           user_id: string
+          clothing_type?: string | null
         }
         Update: {
           animal_type?: string | null
@@ -310,6 +365,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["character_creation_status"]
           updated_at?: string
           user_id?: string
+          clothing_type?: string | null
         }
         Relationships: []
       }
@@ -444,45 +500,6 @@ export type Database = {
           wisdom_bonus?: number | null
         }
         Relationships: []
-      }
-      character_responses: {
-        Row: {
-          id: string;
-          character_id: string;
-          question_id: string;
-          answer: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          character_id: string;
-          question_id: string;
-          answer: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          character_id?: string;
-          question_id?: string;
-          answer?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "character_responses_character_id_fkey";
-            columns: ["character_id"];
-            isOneToOne: false;
-            referencedRelation: "characters";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "character_responses_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "questions";
-            referencedColumns: ["id"];
-          }
-        ];
       }
     }
     Views: {

@@ -4,6 +4,7 @@ import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
 import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
 import { supabase } from "@/integrations/supabase/client";
+import { useMoralityCalculation } from "@/hooks/morality/useMoralityCalculation";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -22,16 +23,33 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
     handleResponse,
     goToQuestion,
     previousResponses,
+    allResponses,
   } = useMoralityQuestions(characterId);
+  const { calculateMoralityScore } = useMoralityCalculation();
 
   const updateCharacterStatus = async () => {
     const { error } = await supabase
       .from('characters')
+      .select('*')
+      .eq('id', characterId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching character:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to update character status. Please try again.",
+      });
+      return false;
+    }
+
+    const { error: updateError } = await supabase
+      .from('characters')
       .update({ status: 'completed' })
       .eq('id', characterId);
 
-    if (error) {
-      console.error('Error updating character status:', error);
+    if (updateError) {
+      console.error('Error updating character status:', updateError);
       toast({
         variant: "destructive",
         description: "Failed to update character status. Please try again.",
@@ -57,6 +75,16 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
         // Wait for the status update before showing completion
         const statusUpdated = await updateCharacterStatus();
         if (statusUpdated) {
+          // Recalculate morality score before showing completion
+          const { data: character } = await supabase
+            .from('characters')
+            .select('*')
+            .eq('id', characterId)
+            .single();
+          
+          if (character) {
+            await calculateMoralityScore(allResponses, character);
+          }
           setIsComplete(true);
         }
       }
@@ -75,6 +103,20 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
     } else {
       onBack();
     }
+  };
+
+  const handleScoreBack = async () => {
+    // Recalculate score when going back from score display
+    const { data: character } = await supabase
+      .from('characters')
+      .select('*')
+      .eq('id', characterId)
+      .single();
+    
+    if (character) {
+      await calculateMoralityScore(allResponses, character);
+    }
+    setIsComplete(false);
   };
 
   if (isLoading) {
@@ -103,6 +145,7 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
         <MoralityScoreDisplay 
           characterId={characterId}
           onContinue={onComplete}
+          onBack={handleScoreBack}
         />
       </div>
     );

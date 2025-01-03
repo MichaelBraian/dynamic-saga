@@ -51,12 +51,6 @@ export const backgroundImages: Partial<Record<CharacterStatus, BackgroundImage>>
     desktop: "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp",
     alt: "Clothing selection background"
   },
-  armor: {
-    mobile: "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp",
-    tablet: "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp",
-    desktop: "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/Class.webp",
-    alt: "Armor selection background"
-  },
   morality: {
     mobile: "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/moral.webp",
     tablet: "https://xbmqwevifguswnqktnnj.supabase.co/storage/v1/object/public/character_creation/moral.webp",

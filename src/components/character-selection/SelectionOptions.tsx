@@ -14,19 +14,20 @@ interface SelectionOptionsProps {
   options: SelectionOption[];
   onValueChange: (value: string) => void;
   isDisabled: boolean;
-  initialValue?: string;
+  initialValue?: string | null;
 }
 
-export const SelectionOptions = ({ 
-  options, 
-  onValueChange, 
+export const SelectionOptions = ({
+  options,
+  onValueChange,
   isDisabled,
-  initialValue 
+  initialValue,
 }: SelectionOptionsProps) => {
   const [selectedValue, setSelectedValue] = useState<string | null>(initialValue || null);
 
   useEffect(() => {
     if (initialValue) {
+      console.log('Setting initial value:', initialValue);
       setSelectedValue(initialValue);
     }
   }, [initialValue]);
@@ -46,9 +47,9 @@ export const SelectionOptions = ({
   return (
     <div className="space-y-6">
       <RadioGroup
-        className="space-y-4"
         onValueChange={handleValueChange}
         value={selectedValue || undefined}
+        className="space-y-4"
       >
         {options.map((option) => (
           <div key={option.value} className="w-full">

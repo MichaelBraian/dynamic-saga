@@ -18,7 +18,6 @@ interface StepRendererProps {
   onAnimalTypeSelected: (animalType: string) => void;
   onClassSelected: (characterClass: string) => void;
   onClothingSelected: () => void;
-  onArmorSelected: () => void;
   onMoralityCompleted: () => void;
   onAttributesCompleted: () => void;
   onSpecialtySelected: () => void;
@@ -49,7 +48,6 @@ export const useStepRenderer = (props: StepRendererProps) => {
     characterId: props.characterId,
     selectedClass: props.selectedClass,
     onClothingSelected: props.onClothingSelected,
-    onArmorSelected: props.onArmorSelected,
     onBack: props.onBack,
   });
 

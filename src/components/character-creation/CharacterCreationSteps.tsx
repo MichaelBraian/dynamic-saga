@@ -13,7 +13,6 @@ interface CharacterCreationStepsProps {
   onAnimalTypeSelected: (animalType: string) => void;
   onClassSelected: (characterClass: string) => void;
   onClothingSelected: () => void;
-  onArmorSelected: () => void;
   onMoralityCompleted: () => void;
   onAttributesCompleted: () => void;
   onSpecialtySelected: () => void;
@@ -33,7 +32,6 @@ export const CharacterCreationSteps = ({
   onAnimalTypeSelected,
   onClassSelected,
   onClothingSelected,
-  onArmorSelected,
   onMoralityCompleted,
   onAttributesCompleted,
   onSpecialtySelected,
@@ -63,7 +61,6 @@ export const CharacterCreationSteps = ({
     onAnimalTypeSelected,
     onClassSelected,
     onClothingSelected,
-    onArmorSelected,
     onMoralityCompleted,
     onAttributesCompleted,
     onSpecialtySelected,
@@ -82,7 +79,6 @@ export const CharacterCreationSteps = ({
     animal_type: renderCharacterTypeSteps,
     class: renderCharacterTypeSteps,
     clothing: renderEquipmentSteps,
-    armor: renderEquipmentSteps,
     morality: renderFinalSteps,
     attributes: renderFinalSteps,
     specialty: renderSpecialtyStep,

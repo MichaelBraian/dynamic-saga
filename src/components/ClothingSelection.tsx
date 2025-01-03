@@ -36,7 +36,7 @@ export const ClothingSelection = ({
         onSelected={onClothingSelected}
         onBack={onBack}
         updateField="clothing_type"
-        nextStatus="armor"
+        nextStatus="morality"
       />
     </div>
   );

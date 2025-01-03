@@ -6,6 +6,19 @@ export const updateCharacterStatus = async (characterId: string, status: Charact
   console.log(`Attempting to update character status to ${status}`);
   
   try {
+    // First, fetch the current character data
+    const { data: character, error: fetchError } = await supabase
+      .from('characters')
+      .select('clothing_type, class')
+      .eq('id', characterId)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching character:', fetchError);
+      throw fetchError;
+    }
+
+    // Update the character status
     const { error } = await supabase
       .from('characters')
       .update({ status })

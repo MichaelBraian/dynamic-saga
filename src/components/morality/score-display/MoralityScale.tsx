@@ -8,24 +8,26 @@ interface MoralityScaleProps {
 export const MoralityScale = ({ value, type }: MoralityScaleProps) => {
   const getScaleDescription = (value: number, type: 'goodEvil' | 'lawfulChaotic') => {
     if (type === 'goodEvil') {
-      if (value >= 50) return "Strongly Good - You prioritize helping others";
-      if (value >= 0) return "Somewhat Good - You tend to do the right thing";
-      if (value >= -50) return "Somewhat Evil - You're willing to harm others for gain";
-      return "Strongly Evil - You actively pursue destructive goals";
+      if (value >= 75) return "Pure Good - You embody virtue and compassion";
+      if (value >= 25) return "Somewhat Good - You tend to do the right thing";
+      if (value >= -25) return "Neutral - You balance between good and evil";
+      if (value >= -75) return "Somewhat Evil - You're willing to harm others for gain";
+      return "Pure Evil - You actively pursue destruction and suffering";
     } else {
-      if (value >= 50) return "Highly Lawful - You strictly follow rules and tradition";
-      if (value >= 0) return "Somewhat Lawful - You respect order but can be flexible";
-      if (value >= -50) return "Somewhat Chaotic - You follow your own path";
-      return "Highly Chaotic - You reject all constraints and order";
+      if (value >= 75) return "Pure Lawful - You strictly follow rules and honor";
+      if (value >= 25) return "Somewhat Lawful - You respect order but can be flexible";
+      if (value >= -25) return "Neutral - You balance between order and chaos";
+      if (value >= -75) return "Somewhat Chaotic - You follow your own path";
+      return "Pure Chaotic - You reject all constraints and order";
     }
   };
-
-  // Normalize the value from -100 to 100 scale to 0 to 100 scale
-  const normalizedValue = ((value + 100) / 2);
   
   const labels = type === 'goodEvil' 
     ? { left: "Evil", right: "Good" }
     : { left: "Chaotic", right: "Lawful" };
+
+  // Normalize the value from -100 to 100 scale to 0 to 100 scale for the progress bar
+  const normalizedValue = ((value + 100) / 2);
 
   return (
     <div className="w-full">

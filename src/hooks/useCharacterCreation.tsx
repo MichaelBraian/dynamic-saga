@@ -64,11 +64,6 @@ export const useCharacterCreation = () => {
   };
 
   const handleClothingSelected = () => {
-    setCurrentStep("armor");
-  };
-
-  const handleArmorSelected = () => {
-    console.log("Armor selected, transitioning to morality");
     setCurrentStep("morality");
   };
 
@@ -164,7 +159,6 @@ export const useCharacterCreation = () => {
     handleAnimalTypeSelected,
     handleClassSelected,
     handleClothingSelected,
-    handleArmorSelected,
     handleMoralityCompleted,
     handleAttributesCompleted,
     handleSpecialtySelected,

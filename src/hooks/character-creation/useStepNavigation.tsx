@@ -33,11 +33,8 @@ export const useStepNavigation = (
         setCurrentStep("class");
         setSelectedClass(null);
         break;
-      case "armor":
-        setCurrentStep("clothing");
-        break;
       case "morality":
-        setCurrentStep("armor");
+        setCurrentStep("clothing");
         break;
       case "attributes":
         setCurrentStep("morality");

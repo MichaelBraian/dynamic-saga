@@ -1,7 +1,7 @@
 import { Database } from "@/integrations/supabase/types";
 
 // Character status enum matching the database
-export type CharacterStatus = 'naming' | 'gender' | 'race' | 'animal_type' | 'class' | 'clothing' | 'armor' | 'morality' | 'attributes' | 'specialty' | 'faith_points' | 'questioning' | 'generated' | 'completed';
+export type CharacterStatus = 'naming' | 'questioning' | 'attributes' | 'specialty' | 'faith_points' | 'generated' | 'completed' | 'class' | 'gender' | 'race' | 'animal_type' | 'clothing' | 'morality';
 
 // Gender type with database constraint
 export type Gender = 'male' | 'female';
@@ -21,6 +21,7 @@ export interface Character {
   race?: Race;
   class?: Class;
   animal_type?: string;
+  clothing_type?: string;
   created_at: string;
   updated_at: string;
   user_id: string;
