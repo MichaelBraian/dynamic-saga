@@ -24,8 +24,29 @@ const Index = () => {
 
   // Check if user has any characters
   useEffect(() => {
-    // TODO: Replace this with actual character check once we implement the characters table
-    setHasCharacter(false);
+    const checkForCharacters = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: characters, error } = await supabase
+          .from('characters')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        if (error) {
+          console.error('Error checking for characters:', error);
+          return;
+        }
+
+        setHasCharacter(characters && characters.length > 0);
+      } catch (error) {
+        console.error('Error checking for characters:', error);
+      }
+    };
+
+    checkForCharacters();
   }, []);
 
   const handleDisabledClick = () => {
@@ -51,7 +72,7 @@ const Index = () => {
     {
       icon: <Users2 className="h-5 w-5" />,
       label: "Character List",
-      action: handleDisabledClick,
+      action: () => navigate('/character-list'),
       disabled: !hasCharacter
     }
   ];

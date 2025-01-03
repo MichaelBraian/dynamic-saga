@@ -7,6 +7,7 @@ import { AuthLayout } from "./components/AuthLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import CreateCharacter from "./pages/CreateCharacter";
+import CharacterList from "./pages/CharacterList";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/create-character" element={<AuthLayout><CreateCharacter /></AuthLayout>} />
+          <Route path="/character-list" element={<AuthLayout><CharacterList /></AuthLayout>} />
           <Route path="/" element={<AuthLayout><Index /></AuthLayout>} />
         </Routes>
       </BrowserRouter>
