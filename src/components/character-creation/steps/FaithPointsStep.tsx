@@ -186,11 +186,30 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
           </div>
 
           {/* Faith Points Section */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold text-white text-center w-full flex items-center justify-center gap-2">
               Faith Points
               <InfoTooltip content="Faith Points represent your character's connection to divine power, granting them the ability to temporarily channel their deity's strength or blessings. Use Faith Points to activate divine abilities, such as powerful attacks, healing, or protective auras, providing a short-term boost in critical moments." />
             </h2>
+          </div>
+
+          {/* Faith Points Rules */}
+          <div className="bg-black/30 p-4 rounded-lg mb-6">
+            <h3 className="text-white/80 text-sm mb-2">Faith Points Rules:</h3>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-black/20 p-2 rounded">
+                <div className="text-yellow-400 font-bold">Roll 1-2</div>
+                <div className="text-white text-sm">1 Faith Point</div>
+              </div>
+              <div className="bg-black/20 p-2 rounded">
+                <div className="text-yellow-400 font-bold">Roll 3-4</div>
+                <div className="text-white text-sm">2 Faith Points</div>
+              </div>
+              <div className="bg-black/20 p-2 rounded">
+                <div className="text-yellow-400 font-bold">Roll 5-6</div>
+                <div className="text-white text-sm">3 Faith Points</div>
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col items-center space-y-6">
