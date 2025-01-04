@@ -25,12 +25,12 @@ const Login = () => {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat px-4 py-6 sm:px-6 lg:px-8"
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
-      <div className="w-full max-w-sm sm:max-w-md p-4 sm:p-8 bg-black/50 backdrop-blur-sm rounded-lg shadow-lg">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl font-['Cinzel'] text-center text-white">
+      <div className="w-full max-w-md p-6 bg-black/50 backdrop-blur-sm rounded-lg shadow-lg">
+        <div className="mb-6">
+          <h1 className="text-3xl font-['Cinzel'] text-center text-white">
             Welcome to DynamicSaga
           </h1>
           <p className="mt-2 text-center text-sm text-white/80">

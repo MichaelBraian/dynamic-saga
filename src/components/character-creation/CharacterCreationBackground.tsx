@@ -60,8 +60,21 @@ export const CharacterCreationBackground = ({ currentStep, children }: Character
     updateBackground();
   }, [currentStep, updateBackground]);
 
+  // Prevent elastic scroll on iOS
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.height = '100%';
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.height = '';
+    };
+  }, []);
+
   return (
-    <div className="relative min-h-screen">
+    <div className="fixed inset-0 overflow-y-auto overscroll-none bg-black">
       {/* Loading state */}
       {isLoading && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
@@ -83,9 +96,11 @@ export const CharacterCreationBackground = ({ currentStep, children }: Character
       {/* Gradient overlay */}
       <div className="fixed top-0 left-0 w-full h-24 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
       
-      {/* Content */}
-      <div className="pt-16">
-        {children}
+      {/* Scrollable content */}
+      <div className="min-h-full">
+        <div className="pt-16">
+          {children}
+        </div>
       </div>
     </div>
   );

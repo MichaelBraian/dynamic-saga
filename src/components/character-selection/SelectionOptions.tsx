@@ -2,7 +2,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface SelectionOption {
   value: string;
@@ -24,13 +24,25 @@ export const SelectionOptions = ({
   initialValue,
 }: SelectionOptionsProps) => {
   const [selectedValue, setSelectedValue] = useState<string | null>(initialValue || null);
+  const selectedOptionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (initialValue) {
-      console.log('Setting initial value:', initialValue);
       setSelectedValue(initialValue);
     }
   }, [initialValue]);
+
+  useEffect(() => {
+    if (selectedValue && selectedOptionRef.current) {
+      // Wait for the animation to start
+      setTimeout(() => {
+        selectedOptionRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
+    }
+  }, [selectedValue]);
 
   const handleValueChange = (value: string) => {
     setSelectedValue(value);
@@ -52,7 +64,11 @@ export const SelectionOptions = ({
         className="space-y-4"
       >
         {options.map((option) => (
-          <div key={option.value} className="w-full">
+          <div 
+            key={option.value} 
+            className="w-full"
+            ref={selectedValue === option.value ? selectedOptionRef : null}
+          >
             <RadioGroupItem
               value={option.value}
               id={option.value}
