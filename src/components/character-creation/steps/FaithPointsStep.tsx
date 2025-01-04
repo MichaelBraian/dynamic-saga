@@ -4,11 +4,22 @@ import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
+import { attributes } from './attributes/attributeDefinitions';
 
 interface FaithPointsStepProps {
   characterId: string;
   onBack: () => void;
   onComplete: () => void;
+}
+
+interface DatabaseCharacterAttribute {
+  id: string;
+  character_id: string;
+  attribute_name: 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA' | 'FTH';
+  base_value: number;
+  modifier: number;
+  value: number;
+  created_at: string;
 }
 
 export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPointsStepProps) => {
@@ -18,15 +29,40 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
   const [faithPoints, setFaithPoints] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Fetch character attributes
+  const { data: characterAttributes, isLoading: loadingAttributes } = useQuery({
+    queryKey: ['character-attributes', characterId],
+    queryFn: async () => {
+      const { data: rawData, error } = await supabase
+        .from('character_attributes')
+        .select('*')
+        .eq('character_id', characterId);
+
+      if (error) throw error;
+      
+      const dbAttributes = rawData as unknown as DatabaseCharacterAttribute[];
+      const formattedAttributes: Record<string, { base: number; modifier: number; total: number }> = {};
+      
+      dbAttributes.forEach(attr => {
+        formattedAttributes[attr.attribute_name] = {
+          base: attr.base_value,
+          modifier: attr.modifier,
+          total: attr.value
+        };
+      });
+      
+      return formattedAttributes;
+    }
+  });
+
   // Fetch existing faith points
-  const { data: existingFaithPoints, isLoading } = useQuery({
+  const { data: existingFaithPoints, isLoading: loadingFaith } = useQuery({
     queryKey: ['faith-points', characterId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('character_attributes')
-        .select('value')
+      const { data: rawData, error } = await supabase
+        .from('character_faith_points')
+        .select('faith_points')
         .eq('character_id', characterId)
-        .eq('attribute_name', 'FTH')
         .single();
 
       if (error) {
@@ -34,7 +70,8 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
         return null;
       }
 
-      return data?.value || null;
+      const data = rawData as unknown as { faith_points: number } | null;
+      return data?.faith_points || null;
     }
   });
 
@@ -75,19 +112,18 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
     setIsRolling(false);
     setHasRolled(true);
 
-    // Save to database
+    // Save to the new faith points table
     setIsSaving(true);
     try {
       const { error } = await supabase
-        .from('character_attributes')
+        .from('character_faith_points')
         .upsert(
           {
             character_id: characterId,
-            attribute_name: 'FTH',
-            value: points
+            faith_points: points
           },
           {
-            onConflict: 'character_id,attribute_name',
+            onConflict: 'character_id',
             ignoreDuplicates: false
           }
         );
@@ -104,7 +140,7 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
     }
   };
 
-  if (isLoading) {
+  if (loadingAttributes || loadingFaith) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="text-white text-xl">Loading...</div>
@@ -116,6 +152,40 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
     <div className="fixed inset-0 flex flex-col items-center justify-center">
       <div className="w-full max-w-md px-4">
         <div className="relative bg-black/60 backdrop-blur-md rounded-lg p-6">
+          {/* Attributes Display */}
+          <div className="mb-8">
+            <h3 className="text-xl font-['Cinzel'] text-white mb-4">Final Attributes</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {attributes.map((attr) => {
+                const attrValues = characterAttributes?.[attr.name];
+                const hasModifier = attrValues?.modifier !== 0;
+                
+                return (
+                  <div key={attr.name} className="flex items-center gap-2 bg-black/30 p-3 rounded-lg">
+                    <attr.icon className="h-5 w-5 text-white/80" />
+                    <div>
+                      <div className="text-sm text-white/60">{attr.name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-xl font-bold text-white">
+                          {attrValues?.total || 0}
+                        </div>
+                        {hasModifier && (
+                          <div className={cn(
+                            "text-sm",
+                            attrValues?.modifier > 0 ? "text-green-400" : "text-red-400"
+                          )}>
+                            ({attrValues?.base} {attrValues?.modifier > 0 ? "+" : ""}{attrValues?.modifier})
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Faith Points Section */}
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-semibold text-white text-center w-full flex items-center justify-center gap-2">
               Faith Points

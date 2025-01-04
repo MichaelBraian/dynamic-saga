@@ -1,150 +1,112 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { Check } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { SpecialtyStateDisplay } from "./specialty/SpecialtyStateDisplay";
-import { SpecialtyList } from "./specialty/SpecialtyList";
-import { SpecialtyHeader } from "./specialty/SpecialtyHeader";
-import { ModifiedAttributesDisplay } from "./specialty/ModifiedAttributesDisplay";
-
-// Add attribute code mapping
-const ATTRIBUTE_CODES: Record<string, string> = {
-  strength: "STR",
-  dexterity: "DEX",
-  constitution: "CON",
-  intelligence: "INT",
-  wisdom: "WIS",
-  charisma: "CHA"
-};
-
-const REVERSE_ATTRIBUTE_CODES: Record<string, string> = {
-  STR: "strength",
-  DEX: "dexterity",
-  CON: "constitution",
-  INT: "intelligence",
-  WIS: "wisdom",
-  CHA: "charisma"
-};
+import { cn } from "@/lib/utils";
+import { CharacterSelectionScreen } from "@/components/CharacterSelectionScreen";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/lib/database.types";
 
 interface SpecialtyStepProps {
   characterId: string;
-  onBack: () => void;
   onComplete: () => void;
+  onBack: () => void;
 }
 
 interface Specialty {
   id: string;
   name: string;
   description: string;
-  attribute_modifiers: Record<string, number>;
   class_type: string;
   created_at: string;
+  attribute_modifiers: Record<string, number>;
 }
 
-export const SpecialtyStep = ({
-  characterId,
-  onBack,
-  onComplete,
-}: SpecialtyStepProps) => {
+export function SpecialtyStep({ characterId, onComplete, onBack }: SpecialtyStepProps) {
   const { toast } = useToast();
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedSpecialty, setSelectedSpecialty] = useState<Specialty | null>(null);
-  const [showModifiedAttributes, setShowModifiedAttributes] = useState(false);
 
-  // First, fetch the character's class
-  const { data: characterClass, isLoading: loadingClass } = useQuery({
-    queryKey: ['character-class', characterId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('characters')
-        .select('class')
-        .eq('id', characterId)
-        .single();
-      
-      if (error) throw error;
-      return data?.class;
-    }
-  });
-
-  // Fetch current attributes
-  const { data: currentAttributes, isLoading: loadingAttributes } = useQuery({
-    queryKey: ['character-attributes', characterId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('character_attributes')
-        .select('attribute_name, value')
-        .eq('character_id', characterId);
-      
-      if (error) throw error;
-      
-      // Convert three-letter codes to full names for display
-      return data.reduce((acc, curr) => ({
-        ...acc,
-        [curr.attribute_name]: curr.value
-      }), {} as Record<string, number>);
-    }
-  });
-
-  const { data: attributesCheck, isLoading: checkingAttributes } = useQuery({
-    queryKey: ['attributes-check', characterId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('character_attributes')
-        .select('attribute_name')
-        .eq('character_id', characterId);
-      
-      if (error) throw error;
-      return data?.length === 6;
-    }
-  });
-
-  const { data: specialties, isLoading: loadingSpecialties } = useQuery({
-    queryKey: ['specialties', characterClass],
-    queryFn: async () => {
-      if (!characterClass) return [];
-      
+  useEffect(() => {
+    const fetchSpecialties = async () => {
       const { data, error } = await supabase
         .from('specialties')
         .select('*')
-        .eq('class_type', characterClass);
-      
-      if (error) throw error;
-      
-      return (data || []).map(specialty => ({
-        ...specialty,
-        // Convert specialty modifiers to use three-letter codes
-        attribute_modifiers: Object.entries(specialty.attribute_modifiers as Record<string, number>)
-          .reduce((acc, [key, value]) => ({
-            ...acc,
-            [ATTRIBUTE_CODES[key.toLowerCase()]]: value
-          }), {})
-      })) as Specialty[];
-    },
-    enabled: !!characterClass && !!attributesCheck,
-  });
+        .eq('class_type', 'Druid');
 
-  const handleSpecialtySelect = async (specialtyId: string) => {
-    const specialty = specialties?.find(s => s.id === specialtyId);
-    if (!specialty) return;
-    
-    setSelectedSpecialty(specialty);
-    setShowModifiedAttributes(true);
+      if (error) {
+        console.error('Error fetching specialties:', error);
+        return;
+      }
+
+      setSpecialties(data as unknown as Specialty[]);
+    };
+
+    fetchSpecialties();
+  }, []);
+
+  const getAttributeModifiers = (specialty: Specialty): Record<string, number> => {
+    return specialty.attribute_modifiers || {};
   };
 
-  const handleConfirmSpecialty = async () => {
-    if (!selectedSpecialty) return;
-    
+  const formatModifier = (value: number | undefined) => {
+    if (!value || value === 0) return '';
+    return value > 0 ? `+${value}` : value.toString();
+  };
+
+  const formatModifiersText = (modifiers: Record<string, number>) => {
+    const formattedModifiers = Object.entries(modifiers)
+      .filter(([_, value]) => value !== 0)
+      .map(([attr, value]) => {
+        const formattedValue = formatModifier(value);
+        return `${formattedValue} ${attr}`;
+      })
+      .join(', ');
+
+    return formattedModifiers;
+  };
+
+  const specialtyOptions = specialties?.map((specialty) => {
+    const modifiers = getAttributeModifiers(specialty);
+    return {
+      value: specialty.id,
+      label: specialty.name,
+      labelComponent: (
+        <div className="flex flex-col gap-1">
+          <div className="font-semibold">{specialty.name}</div>
+          <div className="text-sm text-gray-500">{specialty.description}</div>
+          <div className="text-sm">
+            {Object.entries(modifiers)
+              .filter(([_, value]) => value !== 0)
+              .map(([attr, value]) => (
+                <span
+                  key={attr}
+                  className={cn(
+                    "inline-block mr-2",
+                    value > 0 ? "text-green-500" : "text-red-500"
+                  )}
+                >
+                  {formatModifier(value)} {attr}
+                </span>
+              ))}
+          </div>
+        </div>
+      ),
+    };
+  });
+
+  const handleSpecialtySelected = async (specialtyId: string) => {
     setIsSubmitting(true);
+
     try {
-      // Start a transaction for all database operations
-      const { error: transactionError } = await supabase.rpc('handle_specialty_selection', {
+      const specialty = specialties?.find(s => s.id === specialtyId);
+      if (!specialty) throw new Error("Selected specialty not found");
+
+      const { error } = await supabase.rpc('handle_specialty_selection', {
         p_character_id: characterId,
-        p_specialty_id: selectedSpecialty.id,
-        p_attribute_modifiers: selectedSpecialty.attribute_modifiers
+        p_specialty_id: specialtyId
       });
 
-      if (transactionError) throw transactionError;
+      if (error) throw error;
 
       toast({
         description: (
@@ -167,53 +129,17 @@ export const SpecialtyStep = ({
     }
   };
 
-  const handleBackToSpecialties = () => {
-    setSelectedSpecialty(null);
-    setShowModifiedAttributes(false);
-  };
-
-  const getModifiedAttributes = () => {
-    if (!currentAttributes || !selectedSpecialty) return {};
-    
-    return Object.entries(currentAttributes).reduce((acc, [name, value]) => ({
-      ...acc,
-      [name]: value + (selectedSpecialty.attribute_modifiers[name] || 0)
-    }), {});
-  };
-
-  const isLoading = loadingClass || checkingAttributes || loadingSpecialties || loadingAttributes;
-
-  if (showModifiedAttributes && selectedSpecialty && currentAttributes) {
-    return (
-      <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
-        <ModifiedAttributesDisplay
-          originalAttributes={currentAttributes}
-          modifiedAttributes={getModifiedAttributes()}
-          onBack={handleBackToSpecialties}
-          onContinue={handleConfirmSpecialty}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
-      <SpecialtyStateDisplay
-        isLoading={isLoading}
-        attributesIncomplete={!attributesCheck}
+    <div className="pt-16">
+      <CharacterSelectionScreen
+        title="Choose Your Specialty"
+        options={specialtyOptions || []}
+        characterId={characterId}
+        onSelected={handleSpecialtySelected}
         onBack={onBack}
+        updateField="specialty"
+        nextStatus="faith_points"
       />
-      
-      {attributesCheck && specialties && characterClass && (
-        <>
-          <SpecialtyHeader onBack={onBack} />
-          <SpecialtyList
-            specialties={specialties}
-            onSelect={handleSpecialtySelect}
-            isSubmitting={isSubmitting}
-          />
-        </>
-      )}
     </div>
   );
-};
+}

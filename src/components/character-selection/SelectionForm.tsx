@@ -37,14 +37,26 @@ export const SelectionForm = ({
 
   useEffect(() => {
     const fetchCurrentValue = async () => {
-      const { data, error } = await supabase
-        .from('characters')
-        .select(updateField)
-        .eq('id', characterId)
-        .single();
+      if (updateField === 'specialty') {
+        const { data, error } = await supabase
+          .from('character_specialties')
+          .select('specialty_id')
+          .eq('character_id', characterId)
+          .single();
 
-      if (!error && data) {
-        setCurrentValue(data[updateField]);
+        if (!error && data) {
+          setCurrentValue(data.specialty_id);
+        }
+      } else {
+        const { data, error } = await supabase
+          .from('characters')
+          .select(updateField)
+          .eq('id', characterId)
+          .single();
+
+        if (!error && data) {
+          setCurrentValue(data[updateField]);
+        }
       }
     };
 
@@ -54,15 +66,22 @@ export const SelectionForm = ({
   const handleSubmit = async (value: string) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from('characters')
-        .update({ 
-          [updateField]: value,
-          status: nextStatus 
-        })
-        .eq('id', characterId);
-
-      if (error) throw error;
+      if (updateField === 'specialty') {
+        const { error } = await supabase.rpc('handle_specialty_selection', {
+          p_character_id: characterId,
+          p_specialty_id: value
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('characters')
+          .update({ 
+            [updateField]: value,
+            status: nextStatus 
+          })
+          .eq('id', characterId);
+        if (error) throw error;
+      }
 
       toast({
         className: "inline-flex h-8 items-center gap-2 rounded-md bg-background/60 px-3 backdrop-blur-sm",
