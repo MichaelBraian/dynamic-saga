@@ -1,21 +1,16 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MoralityLoadingState } from "./score-display/MoralityLoadingState";
-import { ScoresDisplay } from "./score-display/ScoresDisplay";
-import { ContinueButton } from "./score-display/ContinueButton";
 import { useToast } from "@/hooks/use-toast";
 import { SelectionHeader } from "../character-selection/SelectionHeader";
-import { Database } from "@/integrations/supabase/types";
-import { useEffect } from "react";
-import { Query } from "@tanstack/react-query";
+import { MoralityDisplay } from "../shared/morality/MoralityDisplay";
+import { Button } from "../ui/button";
+import { ArrowRight } from "lucide-react";
 
 interface MoralityScoreDisplayProps {
   characterId: string;
   onContinue: () => void;
   onBack: () => void;
 }
-
-type CharacterMorality = Database['public']['Tables']['character_morality']['Row'];
 
 const getAlignmentName = (goodEvil: number, lawChaos: number): string => {
   const moralAxis = goodEvil >= 33 ? 'good' : goodEvil <= -33 ? 'evil' : 'neutral';
@@ -63,66 +58,47 @@ const getAlignmentEffects = (alignmentName: string): string => {
 
 export const MoralityScoreDisplay = ({ characterId, onContinue, onBack }: MoralityScoreDisplayProps) => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  const { data: morality, isLoading: isMoralityLoading, error: moralityError, refetch } = useQuery<CharacterMorality>({
+
+  const { data: morality, isLoading } = useQuery({
     queryKey: ['morality-score', characterId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('character_morality')
         .select('*')
         .eq('character_id', characterId)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error fetching morality score:', error);
+        toast({
+          variant: "destructive",
+          description: "Failed to load morality score. Please try again.",
+        });
         throw error;
-      }
-
-      if (!data) {
-        throw new Error('No morality score found');
       }
 
       return data;
     },
-    retry: 3,
-    retryDelay: 1000,
-    // Always refetch on mount and window focus
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: 'always',
-    // Don't cache the data
-    gcTime: 0
   });
 
-  useEffect(() => {
-    if (moralityError) {
-      console.error('Error loading morality score:', moralityError);
-      toast({
-        variant: "destructive",
-        description: "Failed to load morality score. Retrying...",
-      });
-      
-      // Retry after a delay
-      const timer = setTimeout(() => {
-        refetch();
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [moralityError, refetch, toast]);
-
-  const handleBack = () => {
-    // Invalidate the morality score query before going back
-    queryClient.invalidateQueries({ queryKey: ['morality-score', characterId] });
-    onBack();
-  };
-
-  if (isMoralityLoading) {
-    return <MoralityLoadingState message="Calculating your morality score..." />;
+  if (isLoading) {
+    return (
+      <div className="max-w-md w-full mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
+        <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">
+          Calculating your morality score...
+        </h2>
+      </div>
+    );
   }
 
-  if (moralityError || !morality) {
-    return <MoralityLoadingState message="Retrying score calculation..." />;
+  if (!morality) {
+    return (
+      <div className="max-w-md w-full mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg">
+        <h2 className="text-2xl font-['IM_Fell_English'] text-white text-center mb-6">
+          Failed to load morality score
+        </h2>
+      </div>
+    );
   }
 
   const alignmentName = getAlignmentName(morality.good_evil_scale, morality.lawful_chaotic_scale);
@@ -131,11 +107,11 @@ export const MoralityScoreDisplay = ({ characterId, onContinue, onBack }: Morali
     <div className="max-w-md w-full bg-black/50 backdrop-blur-sm rounded-lg shadow-md p-6">
       <SelectionHeader 
         title="Your Morality Score"
-        onBack={handleBack}
+        onBack={onBack}
         showBackButton={true}
       />
       
-      <ScoresDisplay 
+      <MoralityDisplay 
         alignmentScore={morality.alignment_score}
         goodEvilScale={morality.good_evil_scale}
         lawfulChaoticScale={morality.lawful_chaotic_scale}
@@ -148,7 +124,14 @@ export const MoralityScoreDisplay = ({ characterId, onContinue, onBack }: Morali
         </div>
       </div>
 
-      <ContinueButton onClick={onContinue} />
+      <div className="mt-8">
+        <Button
+          onClick={onContinue}
+          className="w-full bg-white/10 hover:bg-white/20 text-white"
+        >
+          Continue to Attributes <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
-};
+}; 
