@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 
@@ -98,11 +98,11 @@ export const useMoralityQuestions = (characterId: string) => {
     }
   };
 
-  const goToQuestion = (index: number) => {
+  const goToQuestion = useCallback((index: number) => {
     if (index >= 0 && index < questions.length) {
       setCurrentQuestionIndex(index);
     }
-  };
+  }, [questions.length]);
 
   return {
     currentQuestion: questions[currentQuestionIndex],

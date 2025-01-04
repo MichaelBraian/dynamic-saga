@@ -45,29 +45,29 @@ export const AttributeItem = ({
   };
 
   return (
-    <div className="flex items-center justify-between p-3 bg-black/60 backdrop-blur-sm rounded-lg">
-      <div className="flex flex-col flex-1 mr-4">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-white/60 text-sm">{code}</span>
-          {icon}
-          <h3 className="text-xl font-['Cinzel'] text-white">{name}</h3>
+    <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg min-h-[5rem] relative z-0">
+      <div className="flex flex-col w-full">
+        <div className="flex items-center gap-4 mb-1">
+          <div className="w-5 flex-shrink-0">
+            {icon}
+          </div>
+          <span className="text-white/60 text-sm w-8">{code}</span>
+          <h3 className="text-lg font-['Cinzel'] text-white">{name}</h3>
           <InfoTooltip content={description} />
         </div>
-        <div className="flex items-center">
-          {(currentRoll || value !== undefined) && (
-            <p className={cn(
-              "text-3xl font-bold transition-all duration-200",
-              isRolling ? "text-yellow-400 animate-bounce" : "text-white"
-            )}>
-              {isRolling ? currentRoll : value}
-            </p>
-          )}
-        </div>
+        {(currentRoll || value !== undefined) && (
+          <p className={cn(
+            "text-2xl font-bold transition-all duration-200 ml-[3.25rem] relative",
+            isRolling ? "text-yellow-400 animate-bounce" : "text-white"
+          )}>
+            {isRolling ? currentRoll : value}
+          </p>
+        )}
       </div>
       <Button
         onClick={handleRoll}
         disabled={value !== undefined || isRolling}
-        className="bg-black/40 hover:bg-black/60 text-white/80 hover:text-white px-6 shrink-0"
+        className="bg-white/10 hover:bg-white/20 text-white border border-white/20 min-w-[80px] flex-shrink-0"
         variant="ghost"
       >
         {isRolling ? "Rolling..." : "Roll"}

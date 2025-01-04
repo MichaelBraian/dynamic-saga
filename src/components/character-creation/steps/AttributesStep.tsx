@@ -19,19 +19,27 @@ export const AttributesStep = ({ characterId, onBack, onComplete }: AttributesSt
   } = useAttributesManagement(characterId, onComplete);
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
-      <AttributesHeader onBack={onBack} />
-      <AttributesList
-        attributeRolls={attributeRolls}
-        onRollComplete={handleRollComplete}
-      />
-      {areAllAttributesRolled() && (
-        <ContinueButton
-          onClick={handleContinue}
-          disabled={isSaving}
-          isSaving={isSaving}
-        />
-      )}
+    <div className="fixed inset-0 flex flex-col items-center justify-center">
+      <div className="w-full max-w-2xl px-4">
+        <div className="relative bg-black/60 backdrop-blur-md rounded-lg p-6">
+          <div className="relative z-10">
+            <AttributesHeader onBack={onBack} />
+          </div>
+          <div className="relative z-0">
+            <AttributesList
+              attributeRolls={attributeRolls}
+              onRollComplete={handleRollComplete}
+            />
+            {areAllAttributesRolled() && (
+              <ContinueButton
+                onClick={handleContinue}
+                disabled={isSaving}
+                isSaving={isSaving}
+              />
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

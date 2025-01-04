@@ -6,12 +6,12 @@ interface AttributesHeaderProps {
 }
 
 export const AttributesHeader = ({ onBack }: AttributesHeaderProps) => (
-  <div className="flex items-center mb-6">
+  <div className="flex items-center mb-6 relative z-50">
     <Button
       variant="ghost"
       size="icon"
       onClick={onBack}
-      className="text-white hover:bg-white/20 mr-2"
+      className="text-white hover:bg-white/20 mr-2 relative z-50"
     >
       <ArrowLeft className="h-6 w-6" />
     </Button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMoralityQuestions } from "@/hooks/useMoralityQuestions";
 import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
@@ -10,9 +10,15 @@ interface MoralityQuestionsProps {
   characterId: string;
   onBack: () => void;
   onComplete: () => void;
+  startAtLastQuestion?: boolean;
 }
 
-export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQuestionsProps) => {
+export const MoralityQuestions = ({ 
+  characterId, 
+  onBack, 
+  onComplete,
+  startAtLastQuestion = false 
+}: MoralityQuestionsProps) => {
   const { toast } = useToast();
   const [isComplete, setIsComplete] = useState(false);
   const {
@@ -26,6 +32,13 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
     allResponses,
   } = useMoralityQuestions(characterId);
   const { calculateMoralityScore } = useMoralityCalculation();
+
+  // If startAtLastQuestion is true, go to the last question
+  useEffect(() => {
+    if (startAtLastQuestion && totalQuestions > 0) {
+      goToQuestion(totalQuestions - 1);
+    }
+  }, [startAtLastQuestion, totalQuestions, goToQuestion]);
 
   const updateCharacterStatus = async () => {
     const { error } = await supabase
@@ -71,20 +84,25 @@ export const MoralityQuestions = ({ characterId, onBack, onComplete }: MoralityQ
       }
 
       const complete = await handleResponse(answer);
+      
+      // Only calculate morality score if we have at least one saved response
+      if (allResponses.length > 0) {
+        // Recalculate morality score after each answer change
+        const { data: character } = await supabase
+          .from('characters')
+          .select('*')
+          .eq('id', characterId)
+          .single();
+        
+        if (character) {
+          await calculateMoralityScore(allResponses, character);
+        }
+      }
+
       if (complete) {
         // Wait for the status update before showing completion
         const statusUpdated = await updateCharacterStatus();
         if (statusUpdated) {
-          // Recalculate morality score before showing completion
-          const { data: character } = await supabase
-            .from('characters')
-            .select('*')
-            .eq('id', characterId)
-            .single();
-          
-          if (character) {
-            await calculateMoralityScore(allResponses, character);
-          }
           setIsComplete(true);
         }
       }
