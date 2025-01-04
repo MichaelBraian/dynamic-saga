@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { Check } from "lucide-react";
+import { Check, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CharacterSelectionScreen } from "@/components/CharacterSelectionScreen";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/lib/database.types";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface SpecialtyStepProps {
   characterId: string;
@@ -72,8 +77,17 @@ export function SpecialtyStep({ characterId, onComplete, onBack }: SpecialtyStep
       label: specialty.name,
       labelComponent: (
         <div className="flex flex-col gap-1">
-          <div className="font-semibold">{specialty.name}</div>
-          <div className="text-sm text-gray-500">{specialty.description}</div>
+          <div className="flex items-center gap-2">
+            <div className="font-semibold">{specialty.name}</div>
+            <HoverCard>
+              <HoverCardTrigger>
+                <HelpCircle className="h-4 w-4 text-white/60 hover:text-white/80 transition-colors" />
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 bg-black/90 border-white/20 text-white backdrop-blur-sm">
+                <p className="text-sm">{specialty.description}</p>
+              </HoverCardContent>
+            </HoverCard>
+          </div>
           <div className="text-sm">
             {Object.entries(modifiers)
               .filter(([_, value]) => value !== 0)
