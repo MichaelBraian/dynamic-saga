@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { attributes } from './attributes/attributeDefinitions';
+import { ArrowLeft } from 'lucide-react';
 
 interface FaithPointsStepProps {
   characterId: string;
@@ -152,9 +153,21 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
     <div className="fixed inset-0 flex flex-col items-center justify-center">
       <div className="w-full max-w-md px-4">
         <div className="relative bg-black/60 backdrop-blur-md rounded-lg p-6">
+          {/* Header with Back Button */}
+          <div className="flex items-center mb-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="text-white hover:bg-white/20 mr-2"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <h2 className="text-2xl font-['Cinzel'] text-white">Final Attributes</h2>
+          </div>
+
           {/* Attributes Display */}
           <div className="mb-8">
-            <h3 className="text-xl font-['Cinzel'] text-white mb-4">Final Attributes</h3>
             <div className="grid grid-cols-2 gap-4">
               {attributes.map((attr) => {
                 const attrValues = characterAttributes?.[attr.name];
