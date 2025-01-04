@@ -16,40 +16,34 @@ interface SpecialtyListProps {
 }
 
 export const SpecialtyList = ({ specialties, onSelect, isSubmitting }: SpecialtyListProps) => {
-  const formatModifier = (value: number) => {
-    if (value > 0) return `+${value}`;
-    return value.toString();
-  };
-
   const formatModifiersText = (modifiers: Record<string, number>) => {
+    if (!modifiers) return null;
+
     return Object.entries(modifiers)
-      .map(([attr, mod]) => {
-        const modifierValue = formatModifier(mod);
-        const modifierClass = mod > 0 ? 'text-emerald-400' : 'text-rose-400';
+      .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])) // Sort by absolute value
+      .map(([attr, value], index) => {
+        const prefix = value > 0 ? '+' : '';
+        const modifierClass = value > 0 ? 'text-emerald-400' : 'text-rose-400';
+        
         return (
-          <span key={attr} className="inline-flex items-center gap-1">
-            <span className={`${modifierClass} font-bold`}>{modifierValue}</span>
-            <span className="text-white/80">{attr.charAt(0).toUpperCase() + attr.slice(1)}</span>
+          <span key={attr}>
+            {index > 0 && <span className="text-white/50">, </span>}
+            <span className={modifierClass}>
+              {prefix}{value} {attr}
+            </span>
           </span>
         );
-      })
-      .reduce((prev, curr) => (
-        <>
-          {prev}
-          {prev && <span className="mx-2 text-white/50">/</span>}
-          {curr}
-        </>
-      ), null);
+      });
   };
 
   return (
     <RadioGroup
-      className="space-y-4"
+      className="space-y-4 animate-fade-in"
       onValueChange={onSelect}
       disabled={isSubmitting}
     >
       {specialties?.map((specialty) => (
-        <div key={specialty.id}>
+        <div key={specialty.id} className="transition-all duration-200">
           <RadioGroupItem
             value={specialty.id}
             id={specialty.id}
@@ -57,14 +51,16 @@ export const SpecialtyList = ({ specialties, onSelect, isSubmitting }: Specialty
           />
           <Label
             htmlFor={specialty.id}
-            className="flex w-full cursor-pointer rounded-lg border-2 border-white/20 bg-white/10 p-4 hover:bg-white/20 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/20"
+            className="flex w-full cursor-pointer rounded-lg border-2 border-white/20 bg-black/30 p-4 transition-all duration-200 hover:bg-white/10 hover:border-white/30 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white/20"
           >
-            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="font-['Cinzel'] text-2xl text-white">{specialty.name}</span>
+                <span className="font-['Cinzel'] text-2xl text-white">
+                  {specialty.name}
+                </span>
                 <InfoTooltip content={specialty.description} />
               </div>
-              <div className="text-base font-normal">
+              <div className="text-base font-medium">
                 {formatModifiersText(specialty.attribute_modifiers)}
               </div>
             </div>

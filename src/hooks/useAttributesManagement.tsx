@@ -141,26 +141,8 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
     }
 
     setIsSaving(true);
-    console.log("Current attribute rolls:", attributeRolls);
 
     try {
-      const attributeInserts = VALID_ATTRIBUTES.map(attr => ({
-        character_id: characterId,
-        attribute_name: DB_CODES[attr],
-        value: attributeRolls[attr]!
-      }));
-
-      console.log("Sending to database:", JSON.stringify(attributeInserts, null, 2));
-
-      const { error } = await supabase
-        .from('character_attributes')
-        .upsert(attributeInserts);
-
-      if (error) {
-        console.error("Database error details:", error);
-        throw error;
-      }
-
       const { error: statusError } = await supabase
         .from('characters')
         .update({ status: 'specialty' })
@@ -168,13 +150,13 @@ export const useAttributesManagement = (characterId: string, onComplete: () => v
 
       if (statusError) throw statusError;
 
-      showSuccessToast(toast, "Attributes saved successfully");
+      showSuccessToast(toast, "Moving to specialty selection");
       onComplete();
     } catch (error) {
-      console.error("Error saving attributes:", error);
+      console.error("Error updating character status:", error);
       toast({
         variant: "destructive",
-        description: "Failed to save attributes. Please try again.",
+        description: "Failed to proceed to next step. Please try again.",
       });
     } finally {
       setIsSaving(false);

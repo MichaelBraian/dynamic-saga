@@ -29,6 +29,15 @@ export interface Character {
   has_rolled_faith_points: boolean;
 }
 
+export interface Specialty {
+  id: string;
+  name: string;
+  description: string;
+  class_type: string;
+  attribute_modifiers: Record<string, number>;
+  created_at: string;
+}
+
 // Export database types for direct database operations
 export type { Database } from "@/integrations/supabase/types";
 export type CharacterRow = Database["public"]["Tables"]["characters"]["Row"];

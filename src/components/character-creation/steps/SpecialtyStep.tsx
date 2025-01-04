@@ -2,30 +2,14 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { SpecialtyStateDisplay } from "./specialty/SpecialtyStateDisplay";
-import { SpecialtyList } from "./specialty/SpecialtyList";
 import { SpecialtyHeader } from "./specialty/SpecialtyHeader";
 import { ModifiedAttributesDisplay } from "./specialty/ModifiedAttributesDisplay";
-
-// Add attribute code mapping
-const ATTRIBUTE_CODES: Record<string, string> = {
-  strength: "STR",
-  dexterity: "DEX",
-  constitution: "CON",
-  intelligence: "INT",
-  wisdom: "WIS",
-  charisma: "CHA"
-};
-
-const REVERSE_ATTRIBUTE_CODES: Record<string, string> = {
-  STR: "strength",
-  DEX: "dexterity",
-  CON: "constitution",
-  INT: "intelligence",
-  WIS: "wisdom",
-  CHA: "charisma"
-};
+import { InfoTooltip } from "@/components/shared/InfoTooltip";
+import { useQuery } from "@tanstack/react-query";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 interface SpecialtyStepProps {
   characterId: string;
@@ -37,66 +21,125 @@ interface Specialty {
   id: string;
   name: string;
   description: string;
-  attribute_modifiers: Record<string, number>;
   class_type: string;
+  attribute_modifiers: Record<string, number>;
   created_at: string;
 }
+
+interface SpecialtyListProps {
+  specialties: Specialty[];
+  onSelect: (specialty: Specialty) => void;
+  selectedId: string | null;
+  onContinue: () => void;
+}
+
+const formatModifiersText = (modifiers: Record<string, number>) => {
+  if (!modifiers) return null;
+
+  return Object.entries(modifiers)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])) // Sort by absolute value
+    .map(([attr, value], index) => {
+      const prefix = value > 0 ? '+' : '';
+      const modifierClass = value > 0 ? 'text-emerald-400' : 'text-rose-400';
+      
+      return (
+        <span key={attr} className="whitespace-nowrap">
+          {index > 0 && <span className="text-white/50">, </span>}
+          <span className={modifierClass}>
+            {prefix}{value} {attr}
+          </span>
+        </span>
+      );
+    });
+};
+
+const SpecialtyList = ({ specialties, onSelect, selectedId, onContinue }: SpecialtyListProps) => {
+  const glowStyles = "shadow-[0_0_15px_rgba(255,255,255,0.5)] border-2 border-white bg-white/20 backdrop-blur-sm";
+
+  return (
+    <div className="space-y-4">
+      <RadioGroup
+        className="space-y-4 animate-fade-in"
+        onValueChange={(value) => {
+          const specialty = specialties.find(s => s.id === value);
+          if (specialty) onSelect(specialty);
+        }}
+        value={selectedId || undefined}
+      >
+        {specialties?.map((specialty) => (
+          <div key={specialty.id} className="w-full">
+            <RadioGroupItem
+              value={specialty.id}
+              id={specialty.id}
+              className="peer sr-only"
+            />
+            <div className="flex items-center gap-4 group">
+              <Label
+                htmlFor={specialty.id}
+                className={`flex-1 flex items-center justify-between rounded-lg border-2 border-white/20 bg-white/20 p-4 hover:bg-white/30 cursor-pointer text-2xl font-['Cinzel'] text-white transition-all duration-300 ease-in-out ${
+                  selectedId === specialty.id ? glowStyles : ''
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-['Cinzel'] text-2xl text-white">
+                    {specialty.name}
+                  </span>
+                  <InfoTooltip content={specialty.description} />
+                </div>
+                <div className="text-base font-medium">
+                  {formatModifiersText(specialty.attribute_modifiers)}
+                </div>
+              </Label>
+              {selectedId === specialty.id && (
+                <Button
+                  onClick={onContinue}
+                  className={`animate-fade-in h-full py-4 px-6 font-['Cinzel'] transition-all duration-300 text-white hover:bg-white/30 ${glowStyles}`}
+                >
+                  <ArrowRight className="w-6 h-6" />
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </RadioGroup>
+    </div>
+  );
+};
 
 export const SpecialtyStep = ({
   characterId,
   onBack,
   onComplete,
 }: SpecialtyStepProps) => {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSpecialty, setSelectedSpecialty] = useState<Specialty | null>(null);
-  const [showModifiedAttributes, setShowModifiedAttributes] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const { toast } = useToast();
 
-  // First, fetch the character's class
-  const { data: characterClass, isLoading: loadingClass } = useQuery({
-    queryKey: ['character-class', characterId],
+  const { data: characterClass } = useQuery({
+    queryKey: ['character', characterId, 'class'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('characters')
         .select('class')
         .eq('id', characterId)
-        .single();
-      
+        .maybeSingle();
+
       if (error) throw error;
-      return data?.class;
-    }
+      return (data as unknown as { class: string })?.class;
+    },
   });
 
-  // Fetch current attributes
-  const { data: currentAttributes, isLoading: loadingAttributes } = useQuery({
-    queryKey: ['character-attributes', characterId],
+  const { data: attributesCheck } = useQuery({
+    queryKey: ['character', characterId, 'attributes'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('character_attributes')
         .select('attribute_name, value')
         .eq('character_id', characterId);
-      
-      if (error) throw error;
-      
-      // Convert three-letter codes to full names for display
-      return data.reduce((acc, curr) => ({
-        ...acc,
-        [curr.attribute_name]: curr.value
-      }), {} as Record<string, number>);
-    }
-  });
 
-  const { data: attributesCheck, isLoading: checkingAttributes } = useQuery({
-    queryKey: ['attributes-check', characterId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('character_attributes')
-        .select('attribute_name')
-        .eq('character_id', characterId);
-      
       if (error) throw error;
-      return data?.length === 6;
-    }
+      return data.length === 6;
+    },
   });
 
   const { data: specialties, isLoading: loadingSpecialties } = useQuery({
@@ -106,91 +149,75 @@ export const SpecialtyStep = ({
       
       const { data, error } = await supabase
         .from('specialties')
-        .select('*')
-        .eq('class_type', characterClass);
+        .select('id, name, description, class_type, attribute_modifiers, created_at')
+        .ilike('class_type', characterClass);
       
       if (error) throw error;
-      
-      return (data || []).map(specialty => ({
-        ...specialty,
-        // Convert specialty modifiers to use three-letter codes
-        attribute_modifiers: Object.entries(specialty.attribute_modifiers as Record<string, number>)
-          .reduce((acc, [key, value]) => ({
-            ...acc,
-            [ATTRIBUTE_CODES[key.toLowerCase()]]: value
-          }), {})
-      })) as Specialty[];
+      return data as unknown as Specialty[];
     },
     enabled: !!characterClass && !!attributesCheck,
   });
 
-  const handleSpecialtySelect = async (specialtyId: string) => {
-    const specialty = specialties?.find(s => s.id === specialtyId);
-    if (!specialty) return;
-    
+  const handleSpecialtySelect = (specialty: Specialty) => {
     setSelectedSpecialty(specialty);
-    setShowModifiedAttributes(true);
+  };
+
+  const handleContinue = () => {
+    if (!selectedSpecialty) {
+      toast({
+        title: "Error",
+        description: "Please select a specialty first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowConfirmation(true);
   };
 
   const handleConfirmSpecialty = async () => {
     if (!selectedSpecialty) return;
-    
-    setIsSubmitting(true);
+
     try {
-      // Start a transaction for all database operations
-      const { error: transactionError } = await supabase.rpc('handle_specialty_selection', {
+      const { error } = await (supabase.rpc as any)('handle_specialty_selection', {
         p_character_id: characterId,
         p_specialty_id: selectedSpecialty.id,
-        p_attribute_modifiers: selectedSpecialty.attribute_modifiers
+        p_attribute_modifiers: selectedSpecialty.attribute_modifiers,
       });
 
-      if (transactionError) throw transactionError;
+      if (error) throw error;
 
       toast({
-        description: (
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
-            <span className="text-sm">Specialty selected successfully</span>
-          </div>
-        ),
+        title: "Success",
+        description: "Specialty selected successfully!",
+        action: <Check className="h-4 w-4" />,
       });
 
       onComplete();
-    } catch (error) {
-      console.error('Error selecting specialty:', error);
+    } catch (error: any) {
       toast({
+        title: "Error",
+        description: error.message,
         variant: "destructive",
-        description: "Failed to select specialty. Please try again.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleBackToSpecialties = () => {
-    setSelectedSpecialty(null);
-    setShowModifiedAttributes(false);
+  const handleBack = () => {
+    if (showConfirmation) {
+      setShowConfirmation(false);
+    } else {
+      onBack();
+    }
   };
 
-  const getModifiedAttributes = () => {
-    if (!currentAttributes || !selectedSpecialty) return {};
-    
-    return Object.entries(currentAttributes).reduce((acc, [name, value]) => ({
-      ...acc,
-      [name]: value + (selectedSpecialty.attribute_modifiers[name] || 0)
-    }), {});
-  };
-
-  const isLoading = loadingClass || checkingAttributes || loadingSpecialties || loadingAttributes;
-
-  if (showModifiedAttributes && selectedSpecialty && currentAttributes) {
+  if (showConfirmation && selectedSpecialty) {
     return (
       <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
         <ModifiedAttributesDisplay
-          originalAttributes={currentAttributes}
-          modifiedAttributes={getModifiedAttributes()}
-          onBack={handleBackToSpecialties}
-          onContinue={handleConfirmSpecialty}
+          characterId={characterId}
+          modifiers={selectedSpecialty.attribute_modifiers}
+          onBack={handleBack}
+          onConfirm={handleConfirmSpecialty}
         />
       </div>
     );
@@ -198,21 +225,19 @@ export const SpecialtyStep = ({
 
   return (
     <div className="w-full max-w-2xl mx-auto p-6 bg-black/50 backdrop-blur-sm rounded-lg animate-fade-in">
-      <SpecialtyStateDisplay
-        isLoading={isLoading}
-        attributesIncomplete={!attributesCheck}
-        onBack={onBack}
-      />
+      <SpecialtyHeader onBack={handleBack} />
       
-      {attributesCheck && specialties && characterClass && (
-        <>
-          <SpecialtyHeader onBack={onBack} />
-          <SpecialtyList
-            specialties={specialties}
-            onSelect={handleSpecialtySelect}
-            isSubmitting={isSubmitting}
-          />
-        </>
+      {loadingSpecialties ? (
+        <div>Loading specialties...</div>
+      ) : specialties && specialties.length > 0 ? (
+        <SpecialtyList
+          specialties={specialties}
+          selectedId={selectedSpecialty?.id || null}
+          onSelect={handleSpecialtySelect}
+          onContinue={handleContinue}
+        />
+      ) : (
+        <div>No specialties available for your class.</div>
       )}
     </div>
   );
