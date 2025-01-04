@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/shared/InfoTooltip";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,13 @@ export const AttributeItem = ({
 }: AttributeItemProps) => {
   const [isRolling, setIsRolling] = useState(false);
   const [currentRoll, setCurrentRoll] = useState<number | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (currentRoll && !isRolling && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [currentRoll, isRolling]);
 
   const handleRoll = async () => {
     setIsRolling(true);
@@ -45,7 +52,7 @@ export const AttributeItem = ({
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg min-h-[5rem] relative z-0">
+    <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg min-h-[5rem] relative z-0" ref={resultRef}>
       <div className="flex flex-col w-full">
         <div className="flex items-center gap-4 mb-1">
           <div className="w-5 flex-shrink-0">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { attributes } from './attributes/attributeDefinitions';
 import { ArrowLeft } from 'lucide-react';
+import { ContinueButton } from './attributes/ContinueButton';
 
 interface FaithPointsStepProps {
   characterId: string;
@@ -29,6 +30,7 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
   const [diceResult, setDiceResult] = useState<number | null>(null);
   const [faithPoints, setFaithPoints] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   // Fetch character attributes
   const { data: characterAttributes, isLoading: loadingAttributes } = useQuery({
@@ -82,6 +84,12 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
       setHasRolled(true);
     }
   }, [existingFaithPoints]);
+
+  useEffect(() => {
+    if (diceResult && !isRolling && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [diceResult, isRolling]);
 
   const calculateFaithPoints = (roll: number) => {
     if (roll <= 2) return 1;
@@ -150,125 +158,136 @@ export const FaithPointsStep = ({ characterId, onBack, onComplete }: FaithPoints
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center">
-      <div className="w-full max-w-md px-4">
-        <div className="relative bg-black/60 backdrop-blur-md rounded-lg p-6">
-          {/* Header with Back Button */}
-          <div className="flex items-center mb-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onBack}
-              className="text-white hover:bg-white/20 mr-2"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-            <h2 className="text-2xl font-['Cinzel'] text-white">Final Attributes</h2>
-          </div>
+    <div className="fixed inset-0 flex flex-col">
+      <div className="flex-1 overflow-y-auto">
+        <div className="min-h-full flex items-center justify-center py-6">
+          <div className="w-full max-w-md px-4">
+            <div className="relative bg-black/60 backdrop-blur-md rounded-lg p-6">
+              {/* Header with Back Button */}
+              <div className="flex items-center mb-6">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onBack}
+                  className="text-white hover:bg-white/20 mr-2"
+                >
+                  <ArrowLeft className="h-6 w-6" />
+                </Button>
+                <h2 className="text-2xl font-['Cinzel'] text-white">Final Attributes</h2>
+              </div>
 
-          {/* Attributes Display */}
-          <div className="mb-8">
-            <div className="grid grid-cols-2 gap-4">
-              {attributes.map((attr) => {
-                const attrValues = characterAttributes?.[attr.name];
-                const hasModifier = attrValues?.modifier !== 0;
-                
-                return (
-                  <div key={attr.name} className="flex items-center gap-2 bg-black/30 p-3 rounded-lg">
-                    <attr.icon className="h-5 w-5 text-white/80" />
-                    <div>
-                      <div className="text-sm text-white/60">{attr.name}</div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-xl font-bold text-white">
-                          {attrValues?.total || 0}
-                        </div>
-                        {hasModifier && (
-                          <div className={cn(
-                            "text-sm",
-                            attrValues?.modifier > 0 ? "text-green-400" : "text-red-400"
-                          )}>
-                            ({attrValues?.base} {attrValues?.modifier > 0 ? "+" : ""}{attrValues?.modifier})
+              {/* Attributes Display */}
+              <div className="mb-8">
+                <div className="grid grid-cols-2 gap-4">
+                  {attributes.map((attr) => {
+                    const attrValues = characterAttributes?.[attr.name];
+                    const hasModifier = attrValues?.modifier !== 0;
+                    
+                    return (
+                      <div key={attr.name} className="bg-black/30 p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-5 flex-shrink-0">
+                            <attr.icon className="h-5 w-5 text-white/80" />
                           </div>
-                        )}
+                          <span className="text-white/60 text-sm w-8">{attr.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 ml-[2.8rem]">
+                          <div className="text-xl font-bold text-white">
+                            {attrValues?.total || 0}
+                          </div>
+                          {hasModifier && (
+                            <div className={cn(
+                              "text-sm",
+                              attrValues?.modifier > 0 ? "text-green-400" : "text-red-400"
+                            )}>
+                              ({attrValues?.base} {attrValues?.modifier > 0 ? "+" : ""}{attrValues?.modifier})
+                            </div>
+                          )}
+                        </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Faith Points Section */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-white text-center w-full flex items-center justify-center gap-2">
+                  Faith Points
+                  <InfoTooltip content="Faith Points represent your character's connection to divine power, granting them the ability to temporarily channel their deity's strength or blessings. Use Faith Points to activate divine abilities, such as powerful attacks, healing, or protective auras, providing a short-term boost in critical moments." />
+                </h2>
+              </div>
+
+              {/* Faith Points Rules */}
+              <div className="bg-black/30 p-4 rounded-lg mb-6">
+                <h3 className="text-white/80 text-sm mb-2">Faith Points Rules:</h3>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-black/20 p-2 rounded">
+                    <div className="text-yellow-400 font-bold">Roll 1-2</div>
+                    <div className="text-white text-sm">1 Faith Point</div>
+                  </div>
+                  <div className="bg-black/20 p-2 rounded">
+                    <div className="text-yellow-400 font-bold">Roll 3-4</div>
+                    <div className="text-white text-sm">2 Faith Points</div>
+                  </div>
+                  <div className="bg-black/20 p-2 rounded">
+                    <div className="text-yellow-400 font-bold">Roll 5-6</div>
+                    <div className="text-white text-sm">3 Faith Points</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center space-y-6">
+                {diceResult && !existingFaithPoints && (
+                  <div className="min-h-[8rem] flex items-center justify-center" ref={resultRef}>
+                    <div className={cn(
+                      "text-7xl font-bold transition-all duration-200",
+                      isRolling ? "animate-bounce text-yellow-400" : "text-white"
+                    )}>
+                      {diceResult}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                )}
 
-          {/* Faith Points Section */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-white text-center w-full flex items-center justify-center gap-2">
-              Faith Points
-              <InfoTooltip content="Faith Points represent your character's connection to divine power, granting them the ability to temporarily channel their deity's strength or blessings. Use Faith Points to activate divine abilities, such as powerful attacks, healing, or protective auras, providing a short-term boost in critical moments." />
-            </h2>
-          </div>
-
-          {/* Faith Points Rules */}
-          <div className="bg-black/30 p-4 rounded-lg mb-6">
-            <h3 className="text-white/80 text-sm mb-2">Faith Points Rules:</h3>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-black/20 p-2 rounded">
-                <div className="text-yellow-400 font-bold">Roll 1-2</div>
-                <div className="text-white text-sm">1 Faith Point</div>
-              </div>
-              <div className="bg-black/20 p-2 rounded">
-                <div className="text-yellow-400 font-bold">Roll 3-4</div>
-                <div className="text-white text-sm">2 Faith Points</div>
-              </div>
-              <div className="bg-black/20 p-2 rounded">
-                <div className="text-yellow-400 font-bold">Roll 5-6</div>
-                <div className="text-white text-sm">3 Faith Points</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center space-y-6">
-            {diceResult && !existingFaithPoints && (
-              <div className={cn(
-                "text-7xl font-bold transition-all duration-200",
-                isRolling ? "animate-bounce text-yellow-400" : "text-white"
-              )}>
-                {diceResult}
-              </div>
-            )}
-
-            {faithPoints && !isRolling && (
-              <div className="text-center">
-                <div className="text-2xl text-white mb-2">
-                  Faith Points Awarded: <span className="text-yellow-400 font-bold">{faithPoints}</span>
-                </div>
-                {existingFaithPoints !== null && (
-                  <div className="text-sm text-white/60">
-                    (This roll is locked and cannot be changed)
+                {faithPoints && !isRolling && (
+                  <div className="min-h-[8rem] flex flex-col items-center justify-center">
+                    <div className="text-2xl text-white mb-2">
+                      Faith Points Awarded: <span className="text-yellow-400 font-bold">{faithPoints}</span>
+                    </div>
+                    {existingFaithPoints !== null && (
+                      <div className="text-sm text-white/60">
+                        (This roll is locked and cannot be changed)
+                      </div>
+                    )}
                   </div>
                 )}
+
+                {(!hasRolled || (!existingFaithPoints && !faithPoints)) && (
+                  <Button
+                    onClick={rollDice}
+                    disabled={isRolling || (hasRolled && existingFaithPoints !== null) || isSaving}
+                    className="w-full h-14 text-lg bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                  >
+                    {isRolling ? "Rolling..." : "Roll for Faith Points"}
+                  </Button>
+                )}
               </div>
-            )}
-
-            {(!hasRolled || (!existingFaithPoints && !faithPoints)) && (
-              <Button
-                onClick={rollDice}
-                disabled={isRolling || (hasRolled && existingFaithPoints !== null) || isSaving}
-                className="w-full h-14 text-lg bg-white/10 hover:bg-white/20 text-white border border-white/20"
-              >
-                {isRolling ? "Rolling..." : "Roll for Faith Points"}
-              </Button>
-            )}
-
-            {(hasRolled || existingFaithPoints !== null) && !isRolling && !isSaving && (
-              <Button
-                onClick={onComplete}
-                className="w-full h-14 text-lg bg-white/10 hover:bg-white/20 text-white border border-white/20"
-              >
-                Continue
-              </Button>
-            )}
+            </div>
           </div>
         </div>
       </div>
+
+      {(hasRolled || existingFaithPoints !== null) && !isRolling && !isSaving && (
+        <div className="sticky bottom-0 w-full bg-gradient-to-t from-black via-black/80 to-transparent py-4 px-4">
+          <div className="max-w-md mx-auto">
+            <ContinueButton
+              onClick={onComplete}
+              disabled={isSaving}
+              isSaving={isSaving}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }; 
