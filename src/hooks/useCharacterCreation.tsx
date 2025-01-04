@@ -128,11 +128,11 @@ export const useCharacterCreation = () => {
   };
 
   const handleFaithPointsCompleted = async () => {
-    console.log("Faith points completed, transitioning to questioning");
+    console.log("Faith points completed, transitioning to character card");
     if (characterId) {
       const { error } = await supabase
         .from('characters')
-        .update({ status: 'questioning' })
+        .update({ status: 'character_card' })
         .eq('id', characterId);
 
       if (error) {
@@ -143,7 +143,7 @@ export const useCharacterCreation = () => {
         });
         return;
       }
-      setCurrentStep("questioning");
+      setCurrentStep("character_card");
     }
   };
 

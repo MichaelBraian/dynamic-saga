@@ -5,6 +5,9 @@ import { useEquipmentStepsRenderer } from "./step-renderers/useEquipmentStepsRen
 import { useFinalStepsRenderer } from "./step-renderers/useFinalStepsRenderer";
 import { useSpecialtyStepRenderer } from "./step-renderers/useSpecialtyStepRenderer";
 import { useFaithPointsStepRenderer } from "./step-renderers/useFaithPointsStepRenderer";
+import { FaithPointsStep } from "@/components/character-creation/steps/FaithPointsStep";
+import { CharacterCardStep } from "@/components/character-creation/steps/CharacterCardStep";
+import { updateCharacterStatus } from "@/utils/characterStatus";
 
 interface StepRendererProps {
   currentStep: CharacterStatus;
@@ -25,52 +28,85 @@ interface StepRendererProps {
   onBack: () => void;
 }
 
-export const useStepRenderer = (props: StepRendererProps) => {
+export const useStepRenderer = ({
+  currentStep,
+  characterId,
+  selectedRace,
+  selectedAnimalType,
+  selectedClass,
+  onNameSelected,
+  onGenderSelected,
+  onRaceSelected,
+  onAnimalTypeSelected,
+  onClassSelected,
+  onClothingSelected,
+  onMoralityCompleted,
+  onAttributesCompleted,
+  onSpecialtySelected,
+  onFaithPointsCompleted,
+  onBack,
+}: StepRendererProps) => {
   const { renderInitialSteps } = useInitialStepsRenderer({
-    currentStep: props.currentStep,
-    characterId: props.characterId,
-    onNameSelected: props.onNameSelected,
-    onGenderSelected: props.onGenderSelected,
-    onRaceSelected: props.onRaceSelected,
-    onBack: props.onBack,
+    currentStep: currentStep,
+    characterId: characterId,
+    onNameSelected: onNameSelected,
+    onGenderSelected: onGenderSelected,
+    onRaceSelected: onRaceSelected,
+    onBack: onBack,
   });
 
   const { renderCharacterTypeSteps } = useCharacterTypeStepsRenderer({
-    currentStep: props.currentStep,
-    characterId: props.characterId,
-    onAnimalTypeSelected: props.onAnimalTypeSelected,
-    onClassSelected: props.onClassSelected,
-    onBack: props.onBack,
+    currentStep: currentStep,
+    characterId: characterId,
+    onAnimalTypeSelected: onAnimalTypeSelected,
+    onClassSelected: onClassSelected,
+    onBack: onBack,
   });
 
   const { renderEquipmentSteps } = useEquipmentStepsRenderer({
-    currentStep: props.currentStep,
-    characterId: props.characterId,
-    selectedClass: props.selectedClass,
-    onClothingSelected: props.onClothingSelected,
-    onBack: props.onBack,
+    currentStep,
+    characterId,
+    selectedClass,
+    onClothingSelected,
+    onBack,
+    onArmorSelected: () => {},
   });
 
   const { renderFinalSteps } = useFinalStepsRenderer({
-    currentStep: props.currentStep,
-    characterId: props.characterId,
-    onMoralityCompleted: props.onMoralityCompleted,
-    onAttributesCompleted: props.onAttributesCompleted,
-    onBack: props.onBack,
+    currentStep: currentStep,
+    characterId: characterId,
+    onMoralityCompleted: onMoralityCompleted,
+    onAttributesCompleted: onAttributesCompleted,
+    onBack: onBack,
   });
 
   const { renderSpecialtyStep } = useSpecialtyStepRenderer({
-    characterId: props.characterId,
-    selectedClass: props.selectedClass,
-    onSpecialtySelected: props.onSpecialtySelected,
-    onBack: props.onBack,
+    characterId: characterId,
+    selectedClass: selectedClass,
+    onSpecialtySelected: onSpecialtySelected,
+    onBack: onBack,
   });
 
-  const { renderFaithPointsStep } = useFaithPointsStepRenderer({
-    characterId: props.characterId,
-    onFaithPointsCompleted: props.onFaithPointsCompleted,
-    onBack: props.onBack,
-  });
+  const renderFaithPointsStep = () => {
+    return (
+      <FaithPointsStep
+        characterId={characterId}
+        onBack={onBack}
+        onComplete={async () => {
+          await updateCharacterStatus(characterId, 'character_card');
+          onFaithPointsCompleted();
+        }}
+      />
+    );
+  };
+
+  const renderCharacterCardStep = () => {
+    return (
+      <CharacterCardStep
+        characterId={characterId}
+      />
+    );
+  };
 
   return {
     renderInitialSteps,
@@ -79,5 +115,6 @@ export const useStepRenderer = (props: StepRendererProps) => {
     renderFinalSteps,
     renderSpecialtyStep,
     renderFaithPointsStep,
+    renderCharacterCardStep,
   };
 };

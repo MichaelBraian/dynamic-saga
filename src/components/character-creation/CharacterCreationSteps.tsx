@@ -1,5 +1,6 @@
 import { CharacterStatus } from "@/types/character";
 import { useStepRenderer } from "@/hooks/character-creation/useStepRenderer";
+import { CharacterCardStep } from "./steps/CharacterCardStep";
 
 interface CharacterCreationStepsProps {
   currentStep: CharacterStatus;
@@ -49,6 +50,7 @@ export const CharacterCreationSteps = ({
     renderFinalSteps,
     renderSpecialtyStep,
     renderFaithPointsStep,
+    renderCharacterCardStep,
   } = useStepRenderer({
     currentStep,
     characterId: characterId || "",
@@ -83,6 +85,7 @@ export const CharacterCreationSteps = ({
     attributes: renderFinalSteps,
     specialty: renderSpecialtyStep,
     faith_points: renderFaithPointsStep,
+    character_card: renderCharacterCardStep,
     questioning: () => null,
     generated: () => null,
     completed: () => null
