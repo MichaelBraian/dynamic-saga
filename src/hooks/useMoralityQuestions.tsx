@@ -1,17 +1,48 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { useQueryClient } from '@tanstack/react-query';
 
 type Question = Database['public']['Tables']['questions']['Row'];
 type CharacterResponse = Database['public']['Tables']['character_responses']['Row'];
 
 export const useMoralityQuestions = (characterId: string) => {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [previousResponses, setPreviousResponses] = useState<CharacterResponse[]>([]);
   const [allResponses, setAllResponses] = useState<CharacterResponse[]>([]);
+  const queryClient = useQueryClient();
+
+  const fetchLatestResponses = async () => {
+    try {
+      const { data: responses, error: responsesError } = await supabase
+        .from('character_responses')
+        .select('*')
+        .eq('character_id', characterId)
+        .order('created_at', { ascending: false });
+
+      if (responsesError) throw responsesError;
+      
+      if (responses) {
+        // Get unique responses (latest response for each question)
+        const uniqueResponses = Object.values(
+          responses.reduce((acc: Record<string, CharacterResponse>, curr: CharacterResponse) => {
+            if (!acc[curr.question_id] || new Date(curr.created_at) > new Date(acc[curr.question_id].created_at)) {
+              acc[curr.question_id] = curr;
+            }
+            return acc;
+          }, {})
+        ) as CharacterResponse[];
+
+        setPreviousResponses(uniqueResponses);
+        setAllResponses(uniqueResponses);
+      }
+    } catch (err) {
+      console.error('Error fetching responses:', err);
+      throw err;
+    }
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -27,18 +58,8 @@ export const useMoralityQuestions = (characterId: string) => {
 
         setQuestions(questionsData);
 
-        // Fetch previous responses
-        const { data: responsesData, error: responsesError } = await supabase
-          .from('character_responses')
-          .select('*')
-          .eq('character_id', characterId);
-
-        if (responsesError) throw responsesError;
-        
-        if (responsesData) {
-          setPreviousResponses(responsesData);
-          setAllResponses(responsesData);
-        }
+        // Fetch latest responses
+        await fetchLatestResponses();
 
         setIsLoading(false);
       } catch (err) {
@@ -50,27 +71,21 @@ export const useMoralityQuestions = (characterId: string) => {
     fetchQuestions();
   }, [characterId]);
 
-  const handleResponse = async (answer: string): Promise<boolean> => {
+  const handleResponse = async (answer: string, questionId: string): Promise<boolean> => {
     try {
-      if (!questions[currentQuestionIndex]) {
-        throw new Error('No current question available');
-      }
-
-      const currentQuestionId = questions[currentQuestionIndex].id;
-
       // First, delete any existing response for this question
       await supabase
         .from('character_responses')
         .delete()
         .eq('character_id', characterId)
-        .eq('question_id', currentQuestionId);
+        .eq('question_id', questionId);
 
       // Then insert the new response
       const { data: newResponse, error: responseError } = await supabase
         .from('character_responses')
         .insert({
           character_id: characterId,
-          question_id: currentQuestionId,
+          question_id: questionId,
           answer: answer,
         })
         .select()
@@ -79,17 +94,11 @@ export const useMoralityQuestions = (characterId: string) => {
       if (responseError) throw responseError;
       if (!newResponse) throw new Error('Failed to create response');
 
-      // Update the responses in state, replacing any existing response for this question
-      const updatedResponses = allResponses.filter(r => r.question_id !== currentQuestionId);
-      const newResponses = [...updatedResponses, newResponse];
-      setPreviousResponses(newResponses);
-      setAllResponses(newResponses);
+      // Fetch latest responses to ensure we have the most up-to-date data
+      await fetchLatestResponses();
 
-      // Move to next question
-      if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-        return false;
-      }
+      // Invalidate the morality score query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['morality-score', characterId] });
 
       return true;
     } catch (err) {
@@ -98,20 +107,12 @@ export const useMoralityQuestions = (characterId: string) => {
     }
   };
 
-  const goToQuestion = useCallback((index: number) => {
-    if (index >= 0 && index < questions.length) {
-      setCurrentQuestionIndex(index);
-    }
-  }, [questions.length]);
-
   return {
-    currentQuestion: questions[currentQuestionIndex],
-    questionNumber: currentQuestionIndex + 1,
+    questions,
     totalQuestions: questions.length,
     isLoading,
     error,
     handleResponse,
-    goToQuestion,
     previousResponses,
     allResponses,
   };

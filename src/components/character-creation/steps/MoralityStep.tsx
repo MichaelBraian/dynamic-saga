@@ -1,10 +1,10 @@
-import { MoralityQuestions } from "../../MoralityQuestions";
+import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useCharacterStatusUpdate } from "@/utils/characterStatus";
+import { MoralityQuestions } from "../../MoralityQuestions";
 import { MoralityScoreDisplay } from "../../morality/MoralityScoreDisplay";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
 
 interface MoralityStepProps {
   characterId: string;
@@ -15,35 +15,69 @@ interface MoralityStepProps {
 export const MoralityStep = ({ characterId, onBack, onComplete }: MoralityStepProps) => {
   const { toast } = useToast();
   const { updateStatus } = useCharacterStatusUpdate();
-  const [showQuestions, setShowQuestions] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(true);
+  const [returningFromClothing, setReturningFromClothing] = useState(false);
 
   // Check if morality score exists (meaning questions were already answered)
-  const { data: morality, isLoading } = useQuery({
+  const { data: morality, isLoading, refetch } = useQuery({
     queryKey: ['morality-score', characterId],
     queryFn: async () => {
       const { data: responses } = await supabase
         .from('character_responses')
         .select('*')
-        .eq('character_id', characterId);
+        .eq('character_id', characterId)
+        .order('created_at', { ascending: false }); // Get latest responses first
 
-      // If we have all 10 responses, show the score display
-      if (responses && responses.length === 10) {
+      // If we have responses, show the score display
+      if (responses && responses.length > 0) {
+        // Get unique responses (latest response for each question)
+        const uniqueResponses = Object.values(
+          responses.reduce((acc: any, curr) => {
+            if (!acc[curr.question_id] || new Date(curr.created_at) > new Date(acc[curr.question_id].created_at)) {
+              acc[curr.question_id] = curr;
+            }
+            return acc;
+          }, {})
+        );
+
         const { data } = await supabase
           .from('character_morality')
           .select('*')
           .eq('character_id', characterId)
           .maybeSingle();
 
-        return data;
+        return {
+          morality: data,
+          hasResponses: true,
+          responses: uniqueResponses
+        };
       }
 
-      return null;
-    }
+      return {
+        morality: null,
+        hasResponses: false,
+        responses: []
+      };
+    },
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+    gcTime: 0
   });
 
+  // Reset states when returning from clothing
+  useEffect(() => {
+    if (returningFromClothing) {
+      setShowQuestions(true);
+      setReturningFromClothing(false);
+      // Refetch to ensure we have the latest data
+      refetch();
+    }
+  }, [returningFromClothing, refetch]);
+
   const handleBack = async () => {
-    // If we're showing the score display and haven't clicked back yet
-    if (morality && !showQuestions) {
+    // If we're showing the score display, go back to questions
+    if (!showQuestions && morality?.morality) {
       setShowQuestions(true);
       return;
     }
@@ -51,6 +85,7 @@ export const MoralityStep = ({ characterId, onBack, onComplete }: MoralityStepPr
     try {
       const success = await updateStatus(characterId, 'clothing');
       if (success) {
+        setReturningFromClothing(true);
         onBack();
       } else {
         toast({
@@ -79,7 +114,7 @@ export const MoralityStep = ({ characterId, onBack, onComplete }: MoralityStepPr
 
   return (
     <div className="animate-fade-in">
-      {morality && !showQuestions ? (
+      {!showQuestions && morality?.morality ? (
         <MoralityScoreDisplay
           characterId={characterId}
           onBack={handleBack}
@@ -89,10 +124,13 @@ export const MoralityStep = ({ characterId, onBack, onComplete }: MoralityStepPr
         <MoralityQuestions
           characterId={characterId}
           onBack={handleBack}
-          onComplete={onComplete}
-          startAtLastQuestion={!!morality}
+          onComplete={() => {
+            setShowQuestions(false);
+            onComplete();
+          }}
+          startAtLastQuestion={false}
         />
       )}
     </div>
   );
-};
+}

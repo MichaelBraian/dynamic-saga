@@ -87,14 +87,11 @@ export const MoralityScoreDisplay = ({ characterId, onContinue, onBack }: Morali
     },
     retry: 3,
     retryDelay: 1000,
-    refetchInterval: (query: Query<CharacterMorality, Error>) => {
-      // If we have data, stop polling
-      if (query.state.data) return false;
-      // If we've retried 3 times, stop polling
-      if (query.state.dataUpdatedAt && Date.now() - query.state.dataUpdatedAt > 10000) return false;
-      // Otherwise, poll every 2 seconds
-      return 2000;
-    }
+    // Always refetch on mount and window focus
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
+    // Don't cache the data
+    gcTime: 0
   });
 
   useEffect(() => {

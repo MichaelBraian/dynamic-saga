@@ -5,6 +5,7 @@ import { MoralityQuestionCard } from "./morality/MoralityQuestionCard";
 import { MoralityScoreDisplay } from "./morality/MoralityScoreDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import { useMoralityCalculation } from "@/hooks/morality/useMoralityCalculation";
+import { useMoralityNavigation } from "@/hooks/morality/useMoralityNavigation";
 
 interface MoralityQuestionsProps {
   characterId: string;
@@ -21,24 +22,25 @@ export const MoralityQuestions = ({
 }: MoralityQuestionsProps) => {
   const { toast } = useToast();
   const [isComplete, setIsComplete] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const {
-    currentQuestion,
-    questionNumber,
+    questions,
     totalQuestions,
     isLoading,
     handleResponse,
-    goToQuestion,
     previousResponses,
     allResponses,
   } = useMoralityQuestions(characterId);
+
+  const navigation = useMoralityNavigation(totalQuestions);
   const { calculateMoralityScore } = useMoralityCalculation();
 
   // If startAtLastQuestion is true, go to the last question
   useEffect(() => {
     if (startAtLastQuestion && totalQuestions > 0) {
-      goToQuestion(totalQuestions - 1);
+      navigation.goToQuestion(totalQuestions - 1);
     }
-  }, [startAtLastQuestion, totalQuestions, goToQuestion]);
+  }, [startAtLastQuestion, totalQuestions, navigation]);
 
   const updateCharacterStatus = async () => {
     const { error } = await supabase
@@ -74,6 +76,7 @@ export const MoralityQuestions = ({
 
   const handleAnswerSelected = async (answer: string) => {
     try {
+      const currentQuestion = questions[navigation.currentIndex];
       if (!currentQuestion) {
         console.error('No current question available');
         toast({
@@ -83,27 +86,31 @@ export const MoralityQuestions = ({
         return;
       }
 
-      const complete = await handleResponse(answer);
+      const success = await handleResponse(answer, currentQuestion.id);
+      setHasChanges(true);
       
-      // Only calculate morality score if we have at least one saved response
-      if (allResponses.length > 0) {
-        // Recalculate morality score after each answer change
-        const { data: character } = await supabase
-          .from('characters')
-          .select('*')
-          .eq('id', characterId)
-          .single();
-        
-        if (character) {
-          await calculateMoralityScore(allResponses, character);
+      if (success) {
+        // If we have responses and changes, recalculate score
+        if (allResponses.length > 0) {
+          const { data: character } = await supabase
+            .from('characters')
+            .select('*')
+            .eq('id', characterId)
+            .single();
+          
+          if (character) {
+            await calculateMoralityScore(allResponses, character);
+          }
         }
-      }
 
-      if (complete) {
-        // Wait for the status update before showing completion
-        const statusUpdated = await updateCharacterStatus();
-        if (statusUpdated) {
-          setIsComplete(true);
+        if (navigation.currentIndex === totalQuestions - 1) {
+          // Wait for the status update before showing completion
+          const statusUpdated = await updateCharacterStatus();
+          if (statusUpdated) {
+            setIsComplete(true);
+          }
+        } else {
+          navigation.goForward();
         }
       }
     } catch (error) {
@@ -116,8 +123,8 @@ export const MoralityQuestions = ({
   };
 
   const handleBack = () => {
-    if (questionNumber > 1) {
-      goToQuestion(questionNumber - 2); // -2 because questionNumber is 1-indexed and we want the previous question
+    if (navigation.canGoBack) {
+      navigation.goBack();
     } else {
       onBack();
     }
@@ -125,14 +132,17 @@ export const MoralityQuestions = ({
 
   const handleScoreBack = async () => {
     // Recalculate score when going back from score display
-    const { data: character } = await supabase
-      .from('characters')
-      .select('*')
-      .eq('id', characterId)
-      .single();
-    
-    if (character) {
-      await calculateMoralityScore(allResponses, character);
+    if (hasChanges) {
+      const { data: character } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('id', characterId)
+        .single();
+      
+      if (character) {
+        await calculateMoralityScore(allResponses, character);
+      }
+      setHasChanges(false);
     }
     setIsComplete(false);
   };
@@ -146,6 +156,8 @@ export const MoralityQuestions = ({
       </div>
     );
   }
+
+  const currentQuestion = questions[navigation.currentIndex];
 
   if (!currentQuestion && !isComplete) {
     return (
@@ -173,7 +185,7 @@ export const MoralityQuestions = ({
     <div className="pt-16">
       <MoralityQuestionCard
         question={currentQuestion}
-        questionNumber={questionNumber}
+        questionNumber={navigation.currentIndex + 1}
         totalQuestions={totalQuestions}
         onAnswerSelected={handleAnswerSelected}
         onBack={handleBack}
