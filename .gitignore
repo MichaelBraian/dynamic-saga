@@ -26,20 +26,24 @@ dist-ssr
 
 # Environment files
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Build files
-.netlify
+# Build output
+build
+out
+.next
+
+# Cache
 .cache
-public/build
-
-# Testing
-coverage
-
-# TypeScript
-*.tsbuildinfo
+.mf
+.rollup.cache
+tsconfig.tsbuildinfo
 
 # Misc
-.DS_Store
-Thumbs.db
+coverage
+*.pem
+.vercel
+.netlify

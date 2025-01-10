@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  pg-client:
+    image: postgres:15
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    command: sleep infinity
+    networks:
+      - pg-network
+
+networks:
+  pg-network:
+    driver: bridge 
