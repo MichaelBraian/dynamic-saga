@@ -5,7 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const genderSchema = z.object({
-  gender: z.string().min(1, 'Please select a gender'),
+  gender: z.enum(['male', 'female'], {
+    required_error: 'Please select a gender',
+    invalid_type_error: 'Gender must be either Male or Female',
+  }),
   pronouns: z.string().min(1, 'Please specify pronouns'),
 });
 
@@ -14,15 +17,11 @@ type GenderFormData = z.infer<typeof genderSchema>;
 const genderOptions = [
   { value: 'male', label: 'Male' },
   { value: 'female', label: 'Female' },
-  { value: 'non-binary', label: 'Non-binary' },
-  { value: 'other', label: 'Other' },
 ] as const;
 
 const defaultPronouns = {
   male: 'he/him',
   female: 'she/her',
-  'non-binary': 'they/them',
-  other: '',
 };
 
 export function GenderSelection() {
@@ -37,19 +36,16 @@ export function GenderSelection() {
   } = useForm<GenderFormData>({
     resolver: zodResolver(genderSchema),
     defaultValues: {
-      gender: formData.gender || '',
+      gender: formData.gender as 'male' | 'female' || '',
       pronouns: formData.pronouns || '',
     },
   });
 
   const selectedGender = watch('gender');
 
-  const onGenderChange = (value: string) => {
+  const onGenderChange = (value: 'male' | 'female') => {
     setValue('gender', value);
-    // Set default pronouns when gender changes
-    if (value in defaultPronouns) {
-      setValue('pronouns', defaultPronouns[value as keyof typeof defaultPronouns]);
-    }
+    setValue('pronouns', defaultPronouns[value]);
   };
 
   const onSubmit = (data: GenderFormData) => {
@@ -98,19 +94,20 @@ export function GenderSelection() {
 
       <div className="space-y-2">
         <Text as="label" size="2" weight="medium">
-          Preferred Pronouns
+          Pronouns
         </Text>
         <TextField.Root>
           <TextField.Input
-            placeholder="e.g., they/them"
+            placeholder="e.g., he/him, she/her"
             {...register('pronouns')}
+            readOnly
           />
         </TextField.Root>
         {errors.pronouns && (
           <Text color="red" size="2">{errors.pronouns.message}</Text>
         )}
         <Text as="p" size="2" className="text-gray-500">
-          Enter your character's preferred pronouns. These will be used throughout the story.
+          Pronouns are automatically set based on your character's gender.
         </Text>
       </div>
     </form>
