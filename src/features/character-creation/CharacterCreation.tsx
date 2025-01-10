@@ -1,10 +1,11 @@
 import { useCharacterCreation } from '@/store/useCharacterCreation';
 import { NameSelection } from './steps/NameSelection';
+import { GenderSelection } from './steps/GenderSelection';
 import { Button } from '@radix-ui/themes';
 
 const steps = {
   name: NameSelection,
-  gender: () => <div>Gender Selection (Coming Soon)</div>,
+  gender: GenderSelection,
   race: () => <div>Race Selection (Coming Soon)</div>,
   animalType: () => <div>Animal Type Selection (Coming Soon)</div>,
   class: () => <div>Class Selection (Coming Soon)</div>,
