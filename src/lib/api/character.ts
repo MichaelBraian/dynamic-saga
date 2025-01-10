@@ -62,7 +62,15 @@ export const characterApi = {
     list: async () => {
       const { data, error } = await supabase
         .from('character_classes')
-        .select('*, specialties(*)');
+        .select(`
+          *,
+          specialties (
+            id,
+            name,
+            description,
+            abilities
+          )
+        `);
       if (error) throw error;
       return data;
     },

@@ -7,6 +7,7 @@ interface CharacterFormState {
   pronouns: string;
   raceId: string | null;
   animalTypeId: string | null;
+  classId: string | null;
 }
 
 interface CharacterCreationStore {
@@ -43,6 +44,8 @@ const STEPS: CharacterCreationStep[] = [
   'generated',
 ];
 
+const SHAPESHIFTER_RACE_ID = '4'; // ID of the Shapeshifter race
+
 export const useCharacterCreation = create<CharacterCreationStore>((set, get) => ({
   currentStep: 'name',
   formData: {
@@ -51,6 +54,7 @@ export const useCharacterCreation = create<CharacterCreationStore>((set, get) =>
     pronouns: '',
     raceId: null,
     animalTypeId: null,
+    classId: null,
   },
   errors: {},
   updateFormData: (data) =>
@@ -69,19 +73,42 @@ export const useCharacterCreation = create<CharacterCreationStore>((set, get) =>
   goToNextStep: () => {
     const currentIndex = STEPS.indexOf(get().currentStep);
     if (currentIndex < STEPS.length - 1) {
-      set({ currentStep: STEPS[currentIndex + 1] });
+      const nextStep = STEPS[currentIndex + 1];
+      
+      // Skip animal type selection if not a shapeshifter
+      if (nextStep === 'animalType' && get().formData.raceId !== SHAPESHIFTER_RACE_ID) {
+        set({ currentStep: STEPS[currentIndex + 2] });
+      } else {
+        set({ currentStep: nextStep });
+      }
     }
   },
   goToPreviousStep: () => {
     const currentIndex = STEPS.indexOf(get().currentStep);
     if (currentIndex > 0) {
-      set({ currentStep: STEPS[currentIndex - 1] });
+      const previousStep = STEPS[currentIndex - 1];
+      
+      // Skip animal type selection if not a shapeshifter
+      if (previousStep === 'animalType' && get().formData.raceId !== SHAPESHIFTER_RACE_ID) {
+        set({ currentStep: STEPS[currentIndex - 2] });
+      } else {
+        set({ currentStep: previousStep });
+      }
     }
   },
   get canGoBack() {
-    return STEPS.indexOf(get().currentStep) > 0;
+    const currentIndex = STEPS.indexOf(get().currentStep);
+    if (currentIndex <= 0) return false;
+    
+    // If current step is class and previous would be animalType
+    if (get().currentStep === 'class' && get().formData.raceId !== SHAPESHIFTER_RACE_ID) {
+      return currentIndex > 1; // Can go back to race
+    }
+    
+    return true;
   },
   get canGoForward() {
-    return STEPS.indexOf(get().currentStep) < STEPS.length - 1;
+    const currentIndex = STEPS.indexOf(get().currentStep);
+    return currentIndex < STEPS.length - 1;
   },
 })); 

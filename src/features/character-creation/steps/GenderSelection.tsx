@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { RadioGroup, Text, Flex } from '@radix-ui/themes';
-import { useCharacterCreation } from '@/store/useCharacterCreation';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Card, Text, Flex, RadioGroup, Box } from '@radix-ui/themes';
+import { useCharacterCreation } from '@/store/useCharacterCreation';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { characterCreationService } from '@/lib/services/characterCreation';
 import { z } from 'zod';
 
 const genderSchema = z.object({
@@ -13,19 +16,21 @@ const genderSchema = z.object({
 
 type GenderFormData = z.infer<typeof genderSchema>;
 
-const genderOptions = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-] as const;
-
-const defaultPronouns = {
-  male: 'he/him',
-  female: 'she/her',
+type GenderOption = {
+  value: 'male' | 'female';
+  label: string;
+  pronouns: {
+    subject: string;
+    object: string;
+    possessive: string;
+  };
 };
 
 export function GenderSelection() {
   const { formData, updateFormData, setError, clearError } = useCharacterCreation();
-  
+  const [genderOptions, setGenderOptions] = useState<GenderOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const {
     handleSubmit,
     setValue,
@@ -40,14 +45,42 @@ export function GenderSelection() {
 
   const selectedGender = watch('gender');
 
+  useEffect(() => {
+    const fetchGenderOptions = async () => {
+      try {
+        const data = await characterCreationService.genders.list();
+        setGenderOptions(data);
+      } catch (error) {
+        setError('gender', 'Failed to load gender options');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGenderOptions();
+  }, [setError]);
+
   const onGenderChange = (value: 'male' | 'female') => {
     setValue('gender', value);
-    updateFormData({ gender: value, pronouns: defaultPronouns[value] });
+    const selectedOption = genderOptions.find(option => option.value === value);
+    if (selectedOption) {
+      updateFormData({ 
+        gender: value, 
+        pronouns: `${selectedOption.pronouns.subject}/${selectedOption.pronouns.object}` 
+      });
+    }
+    clearError('gender');
   };
 
   const onSubmit = (data: GenderFormData) => {
     clearError('gender');
-    updateFormData({ ...data, pronouns: defaultPronouns[data.gender] });
+    const selectedOption = genderOptions.find(option => option.value === data.gender);
+    if (selectedOption) {
+      updateFormData({ 
+        ...data, 
+        pronouns: `${selectedOption.pronouns.subject}/${selectedOption.pronouns.object}` 
+      });
+    }
   };
 
   const onError = () => {
@@ -56,6 +89,10 @@ export function GenderSelection() {
     }
   };
 
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
       <div className="space-y-4">
@@ -63,23 +100,30 @@ export function GenderSelection() {
           Choose your character's gender. This choice will influence how NPCs interact with your character
           and certain storyline elements.
         </Text>
-        
+
         <RadioGroup.Root
           value={selectedGender}
           onValueChange={onGenderChange}
         >
-          <Flex direction="column" gap="2">
+          <Flex direction="column" gap="3">
             {genderOptions.map((option) => (
-              <Text as="label" key={option.value} size="2">
-                <Flex gap="2" align="center">
+              <label key={option.value} className="cursor-pointer">
+                <Card variant={selectedGender === option.value ? 'classic' : 'surface'}>
                   <RadioGroup.Item value={option.value} />
-                  {option.label}
-                </Flex>
-              </Text>
+                  <Flex direction="column" gap="2" p="4">
+                    <Text size="3" weight="bold">
+                      {option.label}
+                    </Text>
+                    <Text size="2" className="text-gray-500">
+                      Pronouns: {option.pronouns.subject}/{option.pronouns.object}
+                    </Text>
+                  </Flex>
+                </Card>
+              </label>
             ))}
           </Flex>
         </RadioGroup.Root>
-        
+
         {errors.gender && (
           <Text color="red" size="2">{errors.gender.message}</Text>
         )}

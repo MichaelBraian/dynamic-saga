@@ -2,14 +2,16 @@ import { useCharacterCreation } from '@/store/useCharacterCreation';
 import { NameSelection } from './steps/NameSelection';
 import { GenderSelection } from './steps/GenderSelection';
 import { RaceSelection } from './steps/RaceSelection';
+import { AnimalTypeSelection } from './steps/AnimalTypeSelection';
+import { ClassSelection } from './steps/ClassSelection';
 import { Button } from '@radix-ui/themes';
 
 const steps = {
   name: NameSelection,
   gender: GenderSelection,
   race: RaceSelection,
-  animalType: () => <div>Animal Type Selection (Coming Soon)</div>,
-  class: () => <div>Class Selection (Coming Soon)</div>,
+  animalType: AnimalTypeSelection,
+  class: ClassSelection,
   attributes: () => <div>Attributes Assignment (Coming Soon)</div>,
   morality: () => <div>Morality System (Coming Soon)</div>,
   faith: () => <div>Faith Selection (Coming Soon)</div>,
