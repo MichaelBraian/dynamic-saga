@@ -40,8 +40,11 @@ export const api = {
         .eq('id', id)
         .single();
       if (error) throw error;
-      return data as Tables['characters']['Row'] & {
-        character_progress: Tables['character_progress']['Row'];
+      return {
+        ...data,
+        character_progress: data.character_progress[0] || null
+      } as Tables['characters']['Row'] & {
+        character_progress: Tables['character_progress']['Row'] | null;
       };
     },
     create: async (character: Tables['characters']['Insert']) => {

@@ -1,7 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { handleAPIError } from './errors';
-import { globalRateLimiter } from './rateLimiter';
-import type { Database } from '@/types/supabase';
+import { Database } from '@/types/supabase';
 
 export type Tables = Database['public']['Tables'];
 export type TableNames = keyof Tables;
@@ -9,66 +7,74 @@ export type TableNames = keyof Tables;
 export class BaseAPIClient {
   constructor(protected supabase: SupabaseClient<Database>) {}
 
-  protected async execute<T>(
-    operation: () => Promise<{ data: T | null; error: any }>
-  ): Promise<T> {
-    try {
-      await globalRateLimiter.checkLimit();
-      
-      const { data, error } = await operation();
-      
-      if (error) {
-        handleAPIError(error);
-      }
-      
-      if (!data) {
-        handleAPIError(new Error('No data returned from the API'));
-      }
-      
-      return data as T;
-    } catch (error) {
-      handleAPIError(error);
-    }
-  }
-
-  protected buildSelect<T extends TableNames>(
-    table: T,
-    query?: string
-  ) {
-    return this.supabase
+  protected async select<T extends TableNames>(table: T, query?: string) {
+    const { data, error } = await this.supabase
       .from(table)
-      .select(query ?? '*') as any;
+      .select(query ?? '*');
+    
+    if (error) throw error;
+    return data as unknown as Tables[T]['Row'][];
   }
 
-  protected buildInsert<T extends TableNames>(
-    table: T,
-    data: Tables[T]['Insert'] | Tables[T]['Insert'][]
-  ) {
-    return this.supabase
+  protected async insert<T extends TableNames>(table: T, data: Tables[T]['Insert']) {
+    const { data: result, error } = await this.supabase
       .from(table)
-      .insert(data) as any;
+      .insert(data as any)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return result as unknown as Tables[T]['Row'];
   }
 
-  protected buildUpdate<T extends TableNames>(
+  protected async update<T extends TableNames>(
     table: T,
-    data: Tables[T]['Update'],
-    column: keyof Tables[T]['Row'] & string,
-    value: Tables[T]['Row'][keyof Tables[T]['Row'] & string]
+    data: Partial<Tables[T]['Update']>,
+    id: string
   ) {
-    return this.supabase
+    const { data: result, error } = await this.supabase
       .from(table)
-      .update(data)
-      .eq(column, value) as any;
+      .update(data as any)
+      .eq('id' as any, id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return result as unknown as Tables[T]['Row'];
   }
 
-  protected buildDelete<T extends TableNames>(
-    table: T,
-    column: keyof Tables[T]['Row'] & string,
-    value: Tables[T]['Row'][keyof Tables[T]['Row'] & string]
-  ) {
-    return this.supabase
+  protected async delete<T extends TableNames>(table: T, id: string) {
+    const { error } = await this.supabase
       .from(table)
       .delete()
-      .eq(column, value) as any;
+      .eq('id' as any, id);
+    
+    if (error) throw error;
+  }
+
+  protected async getById<T extends TableNames>(table: T, id: string) {
+    const { data, error } = await this.supabase
+      .from(table)
+      .select()
+      .eq('id' as any, id)
+      .single();
+    
+    if (error) throw error;
+    return data as unknown as Tables[T]['Row'];
+  }
+
+  protected async getByColumn<T extends TableNames>(
+    table: T,
+    column: keyof Tables[T]['Row'],
+    value: string
+  ) {
+    const { data, error } = await this.supabase
+      .from(table)
+      .select()
+      .eq(column as any, value)
+      .single();
+    
+    if (error) throw error;
+    return data as unknown as Tables[T]['Row'];
   }
 } 

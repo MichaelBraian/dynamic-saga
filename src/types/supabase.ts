@@ -44,8 +44,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "races"
             referencedColumns: ["id"]
-          }
+          },
         ]
+      }
+      attributes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          max_value: number
+          min_value: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_value?: number
+          min_value?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_value?: number
+          min_value?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       backgrounds: {
         Row: {
@@ -76,49 +106,92 @@ export type Database = {
       }
       character_attributes: {
         Row: {
+          attribute_id: string
+          base_value: number
+          character_id: string
+          class_modifier: number | null
+          created_at: string
           id: string
-          profile_id: string
-          strength: number
-          dexterity: number
-          constitution: number
-          intelligence: number
-          wisdom: number
-          charisma: number
+          racial_modifier: number | null
+          updated_at: string
+        }
+        Insert: {
+          attribute_id: string
+          base_value: number
+          character_id: string
+          class_modifier?: number | null
+          created_at?: string
+          id?: string
+          racial_modifier?: number | null
+          updated_at?: string
+        }
+        Update: {
+          attribute_id?: string
+          base_value?: number
+          character_id?: string
+          class_modifier?: number | null
+          created_at?: string
+          id?: string
+          racial_modifier?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_attributes_attribute_id_fkey"
+            columns: ["attribute_id"]
+            isOneToOne: false
+            referencedRelation: "attributes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_attributes_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_backgrounds: {
+        Row: {
+          background_id: string
           created_at: string | null
+          id: string
+          notes: string | null
+          profile_id: string
           updated_at: string | null
         }
         Insert: {
-          id?: string
-          profile_id: string
-          strength: number
-          dexterity: number
-          constitution: number
-          intelligence: number
-          wisdom: number
-          charisma: number
+          background_id: string
           created_at?: string | null
+          id?: string
+          notes?: string | null
+          profile_id: string
           updated_at?: string | null
         }
         Update: {
-          id?: string
-          profile_id?: string
-          strength?: number
-          dexterity?: number
-          constitution?: number
-          intelligence?: number
-          wisdom?: number
-          charisma?: number
+          background_id?: string
           created_at?: string | null
+          id?: string
+          notes?: string | null
+          profile_id?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "character_attributes_profile_id_fkey"
+            foreignKeyName: "character_backgrounds_background_id_fkey"
+            columns: ["background_id"]
+            isOneToOne: false
+            referencedRelation: "backgrounds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_backgrounds_profile_id_fkey"
             columns: ["profile_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       character_classes: {
@@ -144,50 +217,227 @@ export type Database = {
       }
       character_equipment: {
         Row: {
-          id: string
-          profile_id: string
-          item_id: string
-          quantity: number
-          equipped: boolean
-          notes: string | null
           created_at: string | null
+          equipped: boolean
+          id: string
+          item_id: string
+          profile_id: string
+          quantity: number
           updated_at: string | null
         }
         Insert: {
-          id?: string
-          profile_id: string
-          item_id: string
-          quantity?: number
-          equipped?: boolean
-          notes?: string | null
           created_at?: string | null
+          equipped?: boolean
+          id?: string
+          item_id: string
+          profile_id: string
+          quantity?: number
           updated_at?: string | null
         }
         Update: {
-          id?: string
-          profile_id?: string
-          item_id?: string
-          quantity?: number
-          equipped?: boolean
-          notes?: string | null
           created_at?: string | null
+          equipped?: boolean
+          id?: string
+          item_id?: string
+          profile_id?: string
+          quantity?: number
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "character_equipment_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "character_equipment_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "equipment_items"
             referencedColumns: ["id"]
-          }
+          },
+          {
+            foreignKeyName: "character_equipment_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_faiths: {
+        Row: {
+          created_at: string | null
+          devotion_level: number
+          faith_id: string
+          id: string
+          profile_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          devotion_level?: number
+          faith_id: string
+          id?: string
+          profile_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          devotion_level?: number
+          faith_id?: string
+          id?: string
+          profile_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_faiths_faith_id_fkey"
+            columns: ["faith_id"]
+            isOneToOne: false
+            referencedRelation: "faiths"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_faiths_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_progress: {
+        Row: {
+          character_id: string
+          created_at: string | null
+          experience: number
+          id: string
+          level: number
+          updated_at: string | null
+        }
+        Insert: {
+          character_id: string
+          created_at?: string | null
+          experience?: number
+          id?: string
+          level?: number
+          updated_at?: string | null
+        }
+        Update: {
+          character_id?: string
+          created_at?: string | null
+          experience?: number
+          id?: string
+          level?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_progress_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_specialties: {
+        Row: {
+          created_at: string | null
+          id: string
+          profile_id: string
+          specialty_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          profile_id: string
+          specialty_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+          specialty_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_specialties_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      characters: {
+        Row: {
+          animal_type_id: string | null
+          class_id: string | null
+          created_at: string
+          gender: string | null
+          id: string
+          name: string
+          pronouns: Json | null
+          race_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          animal_type_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          name: string
+          pronouns?: Json | null
+          race_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          animal_type_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          name?: string
+          pronouns?: Json | null
+          race_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "characters_animal_type_id_fkey"
+            columns: ["animal_type_id"]
+            isOneToOne: false
+            referencedRelation: "animal_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "characters_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "character_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "characters_race_id_fkey"
+            columns: ["race_id"]
+            isOneToOne: false
+            referencedRelation: "races"
+            referencedColumns: ["id"]
+          },
         ]
       }
       equipment_items: {
@@ -246,6 +496,41 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      morality_alignments: {
+        Row: {
+          alignment: string
+          created_at: string | null
+          description: string
+          id: string
+          profile_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          alignment: string
+          created_at?: string | null
+          description: string
+          id?: string
+          profile_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          alignment?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          profile_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "morality_alignments_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -327,6 +612,54 @@ export type Database = {
           description?: string
           id?: string
           name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      specialties: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          name: string
+          requirements: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          name: string
+          requirements?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          name?: string
+          requirements?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
           updated_at?: string | null
         }
         Relationships: []
