@@ -24,7 +24,6 @@ export function RaceSelection() {
   });
 
   const selectedRaceId = watch('raceId');
-  const selectedRace = races.find(race => race.id === selectedRaceId);
 
   useEffect(() => {
     const fetchRaces = async () => {

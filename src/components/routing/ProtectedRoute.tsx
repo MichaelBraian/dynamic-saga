@@ -1,26 +1,24 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useSession, useAuthLoading } from '@/components/providers/AuthProvider';
+import { Navigate } from 'react-router-dom';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const session = useSession();
-  const isLoading = useAuthLoading();
-  const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
       </div>
     );
   }
 
-  if (!session) {
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
